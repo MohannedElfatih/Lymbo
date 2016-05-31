@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.mohaned.t6.dlogin"
+    tools:context="com.gailardia.lymbo.MainActivity"
     android:background="@drawable/bg5">
 
     <LinearLayout
@@ -11,25 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#00ffffff"
-        android:padding="20dp"
+        android:padding="0dp"
         android:weightSum="1">
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:background="#00ffffff">
-
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="40dp"
-                android:id="@+id/imageView5"
-                android:src="@drawable/bk"
-                android:layout_gravity="center_horizontal"
-                android:onClick="backToChoices" />
-
-        </LinearLayout>
 
         <LinearLayout
             android:orientation="vertical"
@@ -76,7 +59,8 @@
                     android:ems="10"
                     android:id="@+id/editText"
                     android:hint="               Username"
-                    android:background="#80ffffff" />
+                    android:background="#80ffffff"
+                    android:paddingStart="15dp" />
 
             </LinearLayout>
 
@@ -100,7 +84,8 @@
                     android:ems="10"
                     android:id="@+id/editText2"
                     android:hint="      Password"
-                    android:background="#80ffffff" />
+                    android:background="#80ffffff"
+                    android:paddingStart="15dp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -126,8 +111,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="#ffffff"
-            android:layout_weight=".3"
-            android:layout_marginTop="50dp"
+            android:layout_weight="0.06"
+            android:layout_marginTop="80dp"
             android:weightSum="1">
             <TextView
                 android:layout_width="wrap_content"
