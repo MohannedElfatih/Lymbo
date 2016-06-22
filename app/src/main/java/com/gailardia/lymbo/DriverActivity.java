@@ -1,6 +1,7 @@
 package com.gailardia.lymbo;
 
 import android.*;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -42,15 +45,36 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
     private LocationManager locationManager;
     Location location;
     String provider;
+    final LatLng sydney = new LatLng(-34, 151);
+    final LatLng test = new LatLng(-34, 150);
+    final LatLng burj = new LatLng(25.197525, 55.274288);
     //test
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_driver);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.mapLayout);
         mapFragment.getMapAsync(this);
+        RelativeLayout mapLayout = (RelativeLayout) findViewById(R.id.relative);
+        mapLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
+            @Override
+            public void onGlobalLayout() {
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                ArrayList<Marker> markers = new ArrayList<Marker>();
+                markers.add(mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))));
+                markers.add(mMap.addMarker(new MarkerOptions().position(test).title("Test").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))));
+                for(Marker marker : markers){
+                    builder.include(marker.getPosition());
+                }
+                mMap.addMarker(new MarkerOptions().position(burj).title("Burj Khalifa").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
+                LatLngBounds bounds = builder.build();
+                int padding = 75;
+                CameraUpdate cameraUpdate= CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                mMap.animateCamera(cameraUpdate);
+            }
+        });
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -71,27 +95,6 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
             return;
         }
         mMap.setMyLocationEnabled(true);
-        final LatLng sydney = new LatLng(-34, 151);
-        final LatLng test = new LatLng(-34, 152);
-        RelativeLayout mapLayout = (RelativeLayout) findViewById(R.id.mapLayout);
-        mapLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
-
-            @Override
-            public void onGlobalLayout() {
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                ArrayList<Marker> markers = new ArrayList<Marker>();
-                markers.add(mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))));
-                markers.add(mMap.addMarker(new MarkerOptions().position(test).title("Test").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))));
-                for(Marker marker : markers){
-                    builder.include(marker.getPosition());
-                }
-                LatLngBounds bounds = builder.build();
-                int padding = 75;
-                CameraUpdate cameraUpdate= CameraUpdateFactory.newLatLngBounds(bounds, padding);
-                mMap.animateCamera(cameraUpdate);
-            }
-        });
-
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
@@ -104,8 +107,8 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
                 }
             }
         });
-
     }
+
 
     @Override
     public void onLocationChanged(Location location) {
@@ -173,13 +176,20 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         locationManager.removeUpdates(this);
     }
 
-    protected void accept(View view){
+    public void accept(View view){
         final LatLng sydney = new LatLng(-34, 151);
         final LatLng test = new LatLng(-34, 152);
-        Intent intent = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("http://maps.google.com/mapsaddr=" +
-                        sydney.latitude + "," + sydney.longitude +
-                        "&daddr=" + test.latitude + "," + test.longitude));
-        startActivity(intent);
+        final Intent intent;
+        intent = new Intent(Intent.ACTION_VIEW,Uri.parse("http://maps.google.com/maps?" + "daddr=" + burj.latitude + "," + burj.longitude));
+        intent.setPackage("com.google.android.apps.maps");
+        if(intent.resolveActivity(getPackageManager()) != null){
+            intent.setClassName("com.google.android.apps.maps","com.google.android.maps.MapsActivity");
+            startActivity(intent);
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("Map unavailable")
+                    .setMessage("This application requires google maps to be installed!")
+                    .show();
+        }
     }
 }
