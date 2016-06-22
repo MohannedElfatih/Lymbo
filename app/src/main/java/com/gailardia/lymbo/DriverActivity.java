@@ -42,7 +42,6 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
     private LocationManager locationManager;
     Location location;
     String provider;
-    ImageButton accept = (ImageButton) findViewById(R.id.accept);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
