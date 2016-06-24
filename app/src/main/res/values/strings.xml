@@ -21,4 +21,5 @@
         completions."
     </string>
     <string name="title_activity_maps">Map</string>
+    <string name="title_activity_driver">Map</string>
 </resources>
