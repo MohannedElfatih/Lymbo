@@ -20,4 +20,7 @@ public class dlogin extends AppCompatActivity {
         Intent intent=new Intent(this,dsignup.class);
         startActivity(intent);
     }
+    public void  finishlogin(){
+        finish();
+    }
 }

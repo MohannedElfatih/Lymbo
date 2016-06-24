@@ -20,4 +20,7 @@ public class dsignup extends AppCompatActivity {
         Intent intent=new Intent(this,scndsignup.class);
         startActivity(intent);
     }
+    public  void finishsignup(){
+    finish();
+    }
 }

@@ -1,9 +1,13 @@
 package com.gailardia.lymbo;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -27,8 +31,19 @@ public class scndsignup extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scndsignup);
         imageView = (ImageView)findViewById(R.id.image);
-        findViewById(R.id.car).setOnClickListener(gonclick);
-        findViewById(R.id.car2).setOnClickListener(gonclick);
+        ImageButton car=(ImageButton) findViewById(R.id.car);
+        ImageButton tuktuk=(ImageButton) findViewById(R.id.tuktuk);
+        ImageButton amjad=(ImageButton) findViewById(R.id.amjad);
+        TextView car2=(TextView)findViewById(R.id.car2);
+        TextView tuktuk2=(TextView)findViewById(R.id.tuktuk2);
+        TextView amjad2=(TextView)findViewById(R.id.amjad2);
+        car.setOnClickListener(gonclick);
+        car2.setOnClickListener(gonclick);
+        amjad.setOnClickListener(gonclick);
+        amjad2.setOnClickListener(gonclick);
+        tuktuk.setOnClickListener(gonclick);
+        tuktuk2.setOnClickListener(gonclick);
+
         Button pickImage = (Button) findViewById(R.id.picked);
         pickImage.setOnClickListener(new View.OnClickListener() {
 
@@ -46,8 +61,11 @@ public class scndsignup extends AppCompatActivity {
         startActivity(intent);
     }
     public void goDlogin(View view){
+        dsignup s=new dsignup();
+        s.finishsignup();
+        dlogin d=new dlogin();
+        d.finishlogin();
         Intent intent=new Intent(this,dlogin.class);
-        Intent intent2=new Intent(this,dsignup.class);
         startActivity(intent);
         finish();
     }
@@ -72,6 +90,7 @@ public class scndsignup extends AppCompatActivity {
         }
     }
     final View.OnClickListener gonclick= new View.OnClickListener() {
+        @TargetApi(Build.VERSION_CODES.M)
         @Override
         public void onClick(View v) {
             ImageButton car = (ImageButton)findViewById(R.id.car);
@@ -85,31 +104,64 @@ public class scndsignup extends AppCompatActivity {
 
                 case R.id.car:
                     //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.redcar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
+                    amjad2.setTextColor(Color.parseColor("#d7d7d7"));
+
 
                     break;
                 case R.id.car2:
                     //Inform the user the button2 has been clicked
-                    System.out.print("text");
+                    car.setImageResource(R.drawable.redcar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
+                    amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     break;
                 case R.id.tuktuk:
                     //Inform the user the button1 has been clicked
-                    System.out.print("image");
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.redraksha);
+                    car2.setTextColor(Color.parseColor("#d7d7d7"));
+                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     break;
                 case R.id.tuktuk2:
                     //Inform the user the button1 has been clicked
-                    System.out.print("image");
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.redraksha);
+                    car2.setTextColor(Color.parseColor("#d7d7d7"));
+                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     break;
                 case R.id.amjad:
                     //Inform the user the button1 has been clicked
-                    System.out.print("image");
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.redamjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car2.setTextColor(Color.parseColor("#d7d7d7"));
+                    tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
+                    amjad2.setTextColor(Color.parseColor("#fa9684"));
                     break;
                 case R.id.amjad2:
                     //Inform the user the button1 has been clicked
-                    System.out.print("image");
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.redamjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car2.setTextColor(Color.parseColor("#d7d7d7"));
+                    tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
+                    amjad2.setTextColor(Color.parseColor("#fa9684"));
                     break;
             }
         }
     };
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return true;
