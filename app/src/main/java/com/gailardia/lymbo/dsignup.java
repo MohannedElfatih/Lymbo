@@ -43,7 +43,7 @@ import java.util.HashMap;
 
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
-    private ImageView imageView;
+    private ImageView selectphoto;
     LinearLayout scnd;
     LinearLayout first;
     int carType=0;
@@ -96,17 +96,18 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         startActivity(intent);
         finish();
     }
+    Bitmap selectedImage;
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-
+        selectphoto=(ImageView)findViewById(R.id.selected);
         switch(requestCode) {
             case SELECT_PHOTO:
                 if(resultCode == RESULT_OK){
                     try {
                         final Uri imageUri = imageReturnedIntent.getData();
                         final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                        final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                        imageView.setImageBitmap(selectedImage);
+                         selectedImage = BitmapFactory.decodeStream(imageStream);
+                        selectphoto.setImageBitmap(selectedImage);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -220,6 +221,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
             post.put("DIMEI",DIMEI);
             post.put("phone",Dphone);
             post.put("type",type);
+            post.put("image",selectedImage);
+
 
             PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
             Firstsignup();
