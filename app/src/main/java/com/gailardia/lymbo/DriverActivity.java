@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -23,7 +24,10 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+import java.util.HashMap;
 
+import com.kosalgeek.asynctask.AsyncResponse;
+import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,10 +40,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.kosalgeek.asynctask.PostResponseAsyncTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class DriverActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+public class DriverActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener, AsyncResponse {
 
     private GoogleMap mMap;
     private LocationManager locationManager;
@@ -57,7 +63,7 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapLayout);
         mapFragment.getMapAsync(this);
-        RelativeLayout mapLayout = (RelativeLayout) findViewById(R.id.relative);
+        /*RelativeLayout mapLayout = (RelativeLayout) findViewById(R.id.relative);
         mapLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
             @Override
             public void onGlobalLayout() {
@@ -74,7 +80,7 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
                 CameraUpdate cameraUpdate= CameraUpdateFactory.newLatLngBounds(bounds, padding);
                 mMap.animateCamera(cameraUpdate);
             }
-        });
+        });*/
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -179,7 +185,7 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
     public void accept(View view){
         final LatLng sydney = new LatLng(-34, 151);
         final LatLng test = new LatLng(-34, 152);
-        final Intent intent;
+        /*final Intent intent;
         intent = new Intent(Intent.ACTION_VIEW,Uri.parse("http://maps.google.com/maps?" + "daddr=" + burj.latitude + "," + burj.longitude));
         intent.setPackage("com.google.android.apps.maps");
         if(intent.resolveActivity(getPackageManager()) != null){
@@ -190,6 +196,20 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
                     .setTitle("Map unavailable")
                     .setMessage("This application requires google maps to be installed!")
                     .show();
-        }
+        }*/
+        SharedPreferences sharedPreferences = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
+        HashMap map=new HashMap();
+        Double latitude = test.latitude;
+        Double longitude = test.longitude;
+        map.put("latitude",String.valueOf(latitude));
+        map.put("longitude",String.valueOf(longitude));
+        map.put("Dname", sharedPreferences.getString("username", null));
+        PostResponseAsyncTask task=new PostResponseAsyncTask(this, map);
+        task.execute("http://lymbo.esy.es/DriverLocation.php");
+    }
+
+    @Override
+    public void processFinish(String s) {
+        Toast.makeText(this,s,Toast.LENGTH_LONG).show();
     }
 }

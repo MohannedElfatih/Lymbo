@@ -1,6 +1,8 @@
 package com.gailardia.lymbo;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -43,8 +45,15 @@ public class choices extends AppCompatActivity {
         }.start();
     }
     public void Dsignin(View view){
-        Intent intent=new Intent(this,dlogin.class);
-        startActivity(intent);
+        SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
+        if(shared.getBoolean("signed", false)){
+            Intent intent = new Intent(this, DriverActivity.class);
+            startActivity(intent);
+
+        } else {
+            Intent intent = new Intent(this, dlogin.class);
+            startActivity(intent);
+        }
     }
     private Boolean exit = false;
     @Override
