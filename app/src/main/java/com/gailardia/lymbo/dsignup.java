@@ -1,20 +1,18 @@
 package com.gailardia.lymbo;
 
 import android.annotation.TargetApi;
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
-import android.util.Log;
+import android.util.Base64;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -28,28 +26,24 @@ import android.widget.Toast;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.HashMap;
 
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
-    private ImageView imageView;
+    private ImageView selectphoto;
     LinearLayout scnd;
     LinearLayout first;
     int carType=0;
     String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dsignup);
         ImageButton car=(ImageButton) findViewById(R.id.car);
@@ -58,6 +52,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         TextView car2=(TextView)findViewById(R.id.car2);
         TextView tuktuk2=(TextView)findViewById(R.id.tuktuk2);
         TextView amjad2=(TextView)findViewById(R.id.amjad2);
+        type="";
         car.setOnClickListener(gonclick);
         car2.setOnClickListener(gonclick);
         amjad.setOnClickListener(gonclick);
@@ -83,10 +78,32 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         first.setVisibility(View.VISIBLE);
     }
     public void Scndsignup(View view){
+        EditText userName=(EditText) findViewById(R.id.name);
+        EditText password1=(EditText) findViewById(R.id.password1);
+        EditText password2=(EditText) findViewById(R.id.password2);
+        EditText phoneNumber=(EditText) findViewById(R.id.phone);
+
+        String user = userName.getText().toString();
+        String pass1 = password1.getText().toString();
+        String pass2 = password2.getText().toString();
+        String phoneNum = phoneNumber.getText().toString();
+
+        if(user.isEmpty() || pass1.isEmpty() || pass2.isEmpty() || phoneNum == null){
+            Toast.makeText(getApplicationContext(), "Fill all the fields!", Toast.LENGTH_SHORT).show();
+
+        }
+        else {
+            if(!(pass1.equals(pass2))) {
+                Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
+
+            }else{
         LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
         LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
         scnd.setVisibility(View.VISIBLE);
         first.setVisibility(View.INVISIBLE);
+            }
+        }
+
     }
     public void goDlogin(View view){
         dsignup s=new dsignup();
@@ -96,17 +113,18 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         startActivity(intent);
         finish();
     }
+    Bitmap selectedImage;
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-
+        selectphoto=(ImageView)findViewById(R.id.selected);
         switch(requestCode) {
             case SELECT_PHOTO:
                 if(resultCode == RESULT_OK){
                     try {
                         final Uri imageUri = imageReturnedIntent.getData();
                         final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                        final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                        imageView.setImageBitmap(selectedImage);
+                         selectedImage = BitmapFactory.decodeStream(imageStream);
+                        selectphoto.setImageBitmap(selectedImage);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -114,6 +132,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                 }
         }
     }
+
+
     final OnClickListener gonclick= new OnClickListener() {
         @TargetApi(Build.VERSION_CODES.M)
         @Override
@@ -124,11 +144,12 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
             TextView car2 = (TextView)findViewById(R.id.car2);
             TextView tuktuk2 = (TextView)findViewById(R.id.tuktuk2);
             TextView amjad2 = (TextView)findViewById(R.id.amjad2);
+            type="";
             if(car!=null) {
                 switch (v.getId()) {
 
                     case R.id.car:
-                        //Inform the user the button1 has been clicked
+                        //Inform the user te button1 has been clicked
                         car.setImageResource(R.drawable.redcar);
                         amjad.setImageResource(R.drawable.amjad);
                         tuktuk.setImageResource(R.drawable.tuktuk);
@@ -198,43 +219,51 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
             }
         }
     };
-    public  void finishsignup(View view) throws MalformedURLException {
+    public  void finishsignup(View view) throws MalformedURLException, UnsupportedEncodingException {
         EditText name=(EditText)findViewById(R.id.name);
         EditText password1=(EditText)findViewById(R.id.password1);
         EditText password2=(EditText)findViewById(R.id.password2);
         EditText phone=(EditText)findViewById(R.id.phone);
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
 
-
         Dname=name.getText().toString();
         Dpassword1=password1.getText().toString();
         Dpassword2=password2.getText().toString();
         Dphone=phone.getText().toString();
-
+        //String image=getStringImage(selectedImage);
         DIMEI=tm.getDeviceId();
 
-        if(Dpassword1.equals(Dpassword2)) {
-            HashMap post = new HashMap();
+
+            final HashMap post = new HashMap();
             post.put("Dname", Dname);
             post.put("Dpassword", Dpassword1);
             post.put("DIMEI",DIMEI);
             post.put("phone",Dphone);
             post.put("type",type);
+            //post.put("image",image);
+
 
             PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
-            Firstsignup();
 
-            task.execute("http://www.lymbo.esy.es/php.php");
 
-            Intent intent = new Intent(this, dlogin.class);
-            startActivity(intent);
+            if(type==""){
+                Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
+            }else {
+                Firstsignup();
+                Intent intent = new Intent(this, dlogin.class);
+                startActivity(intent);
+                task.execute("http://www.lymbo.esy.es/singup.php");
+            }
 
-        }
-        else{
-            Toast.makeText(this,"Password mismatch",Toast.LENGTH_LONG).show();
-        }
+
     }
-
+    /*public String getStringImage(Bitmap bmp){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        return encodedImage;
+    }*/
     @Override
     public void processFinish(String s) {
         Toast.makeText(this,s,Toast.LENGTH_LONG).show();
