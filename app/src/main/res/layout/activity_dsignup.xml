@@ -15,7 +15,7 @@
         android:layout_alignParentEnd="true"
         android:weightSum="1"
         android:id="@+id/scndSignup"
-        android:visibility="visible">
+        android:visibility="invisible">
 
         <LinearLayout
             android:orientation="vertical"
@@ -209,7 +209,7 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg5"
         android:id="@+id/firstSignup"
-        android:visibility="invisible">
+        android:visibility="visible">
 
         <LinearLayout
             android:orientation="vertical"
