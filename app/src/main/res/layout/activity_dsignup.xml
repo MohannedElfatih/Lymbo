@@ -15,7 +15,7 @@
         android:layout_alignParentEnd="true"
         android:weightSum="1"
         android:id="@+id/scndSignup"
-        android:visibility="invisible">
+        android:visibility="visible">
 
         <LinearLayout
             android:orientation="vertical"
@@ -52,7 +52,8 @@
                     android:layout_marginRight="0dp"
                     android:layout_marginLeft="0dp"
                     android:layout_gravity="center"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:onClick="type" />
 
                 <ImageButton
                     android:layout_width="wrap_content"
@@ -63,7 +64,8 @@
                     android:layout_marginRight="0dp"
                     android:layout_marginLeft="0dp"
                     android:layout_gravity="center"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:onClick="type" />
 
                 <ImageButton
                     android:layout_width="80dp"
@@ -74,7 +76,8 @@
                     android:layout_marginRight="0dp"
                     android:layout_marginLeft="0dp"
                     android:layout_gravity="center"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:onClick="type" />
             </LinearLayout>
 
             <LinearLayout
@@ -94,7 +97,8 @@
                     android:layout_marginRight="0dp"
                     android:layout_weight="0.38"
                     android:paddingLeft="0dp"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:onClick="type" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -106,7 +110,8 @@
                     android:layout_marginLeft="0dp"
                     android:layout_marginRight="0dp"
                     android:layout_weight="0.94"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:onClick="type" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -118,7 +123,8 @@
                     android:layout_marginLeft="0dp"
                     android:layout_marginRight="0dp"
                     android:layout_weight="0.60"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:onClick="type" />
             </LinearLayout>
         </LinearLayout>
 
@@ -203,7 +209,7 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg5"
         android:id="@+id/firstSignup"
-        android:visibility="visible">
+        android:visibility="invisible">
 
         <LinearLayout
             android:orientation="vertical"
