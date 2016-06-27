@@ -144,7 +144,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#fa9684"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
-
+//
                     break;
                 case R.id.tuktuk2:
                     //Inform the user the button1 has been clicked
