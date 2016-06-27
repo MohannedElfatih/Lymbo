@@ -30,7 +30,7 @@
             android:layout_weight="1"
             android:background="#d50000"
             android:src="@android:color/holo_red_dark"
-            android:text="Accept"/>
+            android:text="Decline"/>
 
         <Button
             android:layout_width="match_parent"
