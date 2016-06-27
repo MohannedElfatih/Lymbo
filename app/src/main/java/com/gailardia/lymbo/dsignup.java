@@ -75,6 +75,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
             }
         });
     }
+
     public void Firstsignup(){
         LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
         LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
@@ -95,16 +96,17 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         if(user.isEmpty() || pass1.isEmpty() || pass2.isEmpty() || phoneNum == null){
             Toast.makeText(getApplicationContext(), "Fill all the fields!", Toast.LENGTH_SHORT).show();
 
-        }
-        else {
-            if(!(pass1.equals(pass2))) {
-                Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
+        } else {
+                 if(!(pass1.equals(pass2))) {
+                     Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
 
-            }else{
-        LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
-        LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
-        scnd.setVisibility(View.VISIBLE);
-        first.setVisibility(View.INVISIBLE);
+                 } else {
+                     LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
+                     LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
+                     first = (LinearLayout)findViewById(R.id.firstSignup);
+                     scnd = (LinearLayout)findViewById(R.id.scndSignup);
+                     first.animate().alpha(0f).setDuration(1000);
+                     scnd.animate().alpha(1f).setDuration(1000);
             }
         }
 
