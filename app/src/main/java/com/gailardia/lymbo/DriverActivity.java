@@ -199,8 +199,8 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         }*/
         SharedPreferences sharedPreferences = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
         HashMap map=new HashMap();
-        Double latitude = test.latitude;
-        Double longitude = test.longitude;
+        Double latitude = burj.latitude;
+        Double longitude = burj.longitude;
         map.put("latitude",String.valueOf(latitude));
         map.put("longitude",String.valueOf(longitude));
         map.put("Dname", sharedPreferences.getString("username", null));

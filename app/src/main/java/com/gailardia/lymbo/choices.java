@@ -45,7 +45,7 @@ public class choices extends AppCompatActivity {
         }.start();
     }
     public void Dsignin(View view){
-        SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
+        /*SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
         if(shared.getBoolean("signed", false)){
             Intent intent = new Intent(this, DriverActivity.class);
             startActivity(intent);
@@ -53,7 +53,9 @@ public class choices extends AppCompatActivity {
         } else {
             Intent intent = new Intent(this, dlogin.class);
             startActivity(intent);
-        }
+        }*/
+        Intent intent = new Intent(this, dlogin.class);
+        startActivity(intent);
     }
     private Boolean exit = false;
     @Override

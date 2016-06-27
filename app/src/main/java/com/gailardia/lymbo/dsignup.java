@@ -23,6 +23,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.Firebase;
+import com.gailardia.lymbo.Users.Users;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 
@@ -40,12 +42,14 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     LinearLayout first;
     int carType=0;
     String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
-
+    Firebase ref;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dsignup);
+        Firebase.setAndroidContext(this);
+        ref = new Firebase("https://instagram-clone-ac0a7.firebaseio.com/");
         ImageButton car=(ImageButton) findViewById(R.id.car);
         ImageButton tuktuk=(ImageButton) findViewById(R.id.tuktuk);
         ImageButton amjad=(ImageButton) findViewById(R.id.amjad);
@@ -231,29 +235,27 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         Dpassword2=password2.getText().toString();
         Dphone=phone.getText().toString();
         //String image=getStringImage(selectedImage);
-        DIMEI=tm.getDeviceId();
+        DIMEI="00971503468518";
+
+        final HashMap post = new HashMap();
+        post.put("Dname", Dname);
+        post.put("Dpassword", Dpassword1);
+        post.put("DIMEI",DIMEI);
+        post.put("phone",Dphone);
+        post.put("type",type);
+        //post.put("image",image);
+
+        PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
 
 
-            final HashMap post = new HashMap();
-            post.put("Dname", Dname);
-            post.put("Dpassword", Dpassword1);
-            post.put("DIMEI",DIMEI);
-            post.put("phone",Dphone);
-            post.put("type",type);
-            //post.put("image",image);
-
-
-            PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
-
-
-            if(type==""){
-                Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
-            }else {
-                Firstsignup();
-                Intent intent = new Intent(this, dlogin.class);
-                startActivity(intent);
-                task.execute("http://www.lymbo.esy.es/singup.php");
-            }
+        if(type==""){
+            Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
+        }else {
+            Firstsignup();
+            Intent intent = new Intent(this, dlogin.class);
+            startActivity(intent);
+            task.execute("http://www.lymbo.esy.es/singup.php");
+        }
 
 
     }
@@ -267,6 +269,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     @Override
     public void processFinish(String s) {
         Toast.makeText(this,s,Toast.LENGTH_LONG).show();
+        Users users = new Users(Dpassword1, Dname, Dphone, DIMEI, type);
+        ref.child("Users").push().setValue(users);
     }
 }
 
