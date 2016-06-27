@@ -106,7 +106,9 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                      first = (LinearLayout)findViewById(R.id.firstSignup);
                      scnd = (LinearLayout)findViewById(R.id.scndSignup);
                      first.animate().alpha(0f).setDuration(1000);
+                     first.setVisibility(View.GONE);
                      scnd.animate().alpha(1f).setDuration(1000);
+                     scnd.setVisibility(View.VISIBLE);
             }
         }
 
