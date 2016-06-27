@@ -1,6 +1,8 @@
 package com.gailardia.lymbo;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -13,7 +15,8 @@ import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import java.util.HashMap;
 
 public class dlogin extends AppCompatActivity implements AsyncResponse {
-    //sssss
+    String U;
+    String P;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,14 +37,12 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
         HashMap map=new HashMap();
         EditText user=(EditText)findViewById(R.id.loginUser);
         EditText pass=(EditText)findViewById(R.id.loginPass);
-        String U=user.getText().toString();
-        String P=pass.getText().toString();
+        U=user.getText().toString();
+        P=pass.getText().toString();
         map.put("Dname",U);
         map.put("Dpassword",P);
-
-        PostResponseAsyncTask task=new PostResponseAsyncTask(this,map);
+        PostResponseAsyncTask task = new PostResponseAsyncTask(this,map);
         task.execute("http://lymbo.esy.es/signin.php");
-
     }
     public void finishlogin(){
         finish();
@@ -50,6 +51,14 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
     @Override
     public void processFinish(String s) {
         Toast.makeText(this,s,Toast.LENGTH_LONG).show();
+        if(s.equalsIgnoreCase("connected success")){
+            SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
+            shared.edit().putString("username", U).apply();
+            shared.edit().putString("password", P).apply();
+            shared.edit().putBoolean("signed", true).apply();
+            Intent intent = new Intent(this, DriverActivity.class);
+            startActivity(intent);
+        }
     }
 }
 
