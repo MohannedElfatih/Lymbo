@@ -15,7 +15,7 @@
         android:layout_alignParentEnd="true"
         android:weightSum="1"
         android:id="@+id/scndSignup"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:alpha="0">
 
         <LinearLayout
