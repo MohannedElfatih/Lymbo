@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -258,7 +259,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
             Firstsignup();
             Intent intent = new Intent(this, dlogin.class);
             startActivity(intent);
-            task.execute("http://www.lymbo.esy.es/singup.php");
+            task.execute("http://www.lymbo.esy.es/signup.php");
         }
 
 
@@ -273,7 +274,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     @Override
     public void processFinish(String s) {
         Toast.makeText(this,s,Toast.LENGTH_LONG).show();
-        Users users = new Users(Dpassword1, Dname, Dphone, DIMEI, type);
+        Log.i("Error SQL", s);
+        Users users = new Users(Dpassword1, Dname, DIMEI, Dphone, type);
         ref.child("Users").push().setValue(users);
     }
 }
