@@ -23,13 +23,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.firebase.client.Firebase;
-import com.gailardia.lymbo.Users.Users;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
+import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -41,24 +40,20 @@ import java.util.HashMap;
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
     private ImageView selectphoto;
-    LinearLayout scnd;
+    RelativeLayout scnd;
     LinearLayout first;
     int carType=0;
     String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
-    Firebase ref;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dsignup);
-        Firebase.setAndroidContext(this);
-        ref = new Firebase("https://instagram-clone-ac0a7.firebaseio.com/");
         type="";
 
 
-        Button pickImage = (Button) findViewById(R.id.picked);
+        CircularImageView pickImage = (CircularImageView) findViewById(R.id.selected);
         pickImage.setOnClickListener(new OnClickListener() {
-
             @Override
             public void onClick(View view) {
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
@@ -69,7 +64,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     }
 
     public void Firstsignup(){
-        LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
+        RelativeLayout scnd=(RelativeLayout) findViewById(R.id.scndSignup);
         LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
         scnd.setVisibility(View.INVISIBLE);
         first.setVisibility(View.VISIBLE);
@@ -93,14 +88,17 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                      Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
 
                  } else {
-                     LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
-                     LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
-                     first = (LinearLayout)findViewById(R.id.firstSignup);
-                     scnd = (LinearLayout)findViewById(R.id.scndSignup);
-                     first.animate().alpha(0f).setDuration(1000);
-                     first.setVisibility(View.GONE);
-                     scnd.animate().alpha(1f).setDuration(1000);
+                     scnd=(RelativeLayout) findViewById(R.id.scndSignup);
+                     first=(LinearLayout) findViewById(R.id.firstSignup);
+                     first.animate().translationXBy(-1000f).setDuration(700);
+                     scnd.setAlpha(1f);
                      scnd.setVisibility(View.VISIBLE);
+                     first.postDelayed(new Runnable() {
+                         @Override
+                         public void run() {
+                             first.setVisibility(View.GONE);
+                         }
+                     }, 700);
             }
         }
 
@@ -116,7 +114,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     Bitmap selectedImage;
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        selectphoto=(ImageView)findViewById(R.id.selected);
+        CircularImageView selectphoto=(CircularImageView) findViewById(R.id.selected);
         switch(requestCode) {
             case SELECT_PHOTO:
                 if(resultCode == RESULT_OK){
@@ -132,15 +130,18 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                 }
         }
     }
-    public void type(View view){
-        ImageButton car = (ImageButton)findViewById(R.id.car);
-        ImageButton tuktuk = (ImageButton)findViewById(R.id.tuktuk);
-        ImageButton  amjad = (ImageButton)findViewById(R.id.amjad);
-        TextView car2 = (TextView)findViewById(R.id.car2);
-        TextView tuktuk2 = (TextView)findViewById(R.id.tuktuk2);
-        TextView amjad2 = (TextView)findViewById(R.id.amjad2);
-        type="";
-        if(car!=null && car2!=null && tuktuk!=null && tuktuk2!=null && amjad2!=null && amjad!=null) {
+    public void type(View view) {
+        String type = "";
+        ImageButton car = (ImageButton) findViewById(R.id.car);
+        ImageButton tuktuk = (ImageButton) findViewById(R.id.tuktuk);
+        ImageButton amjad = (ImageButton) findViewById(R.id.amjad);
+        TextView car2 = (TextView) findViewById(R.id.car2);
+        TextView tuktuk2 = (TextView) findViewById(R.id.tuktuk2);
+        TextView amjad2 = (TextView) findViewById(R.id.amjad2);
+        type = "";
+        LinearLayout linear = (LinearLayout) findViewById(R.id.linearLayout);
+        final CircularImageView selectImage = (CircularImageView) findViewById(R.id.selected);
+        if (car != null && car2 != null && tuktuk != null && tuktuk2 != null && amjad2 != null && amjad != null) {
             switch (view.getId()) {
 
                 case R.id.car:
@@ -212,6 +213,24 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     break;
             }
         }
+        if (view.getId() == findViewById(R.id.car).getId() || view.getId() == findViewById(R.id.car2).getId()) {
+            if (selectImage.getVisibility() != View.VISIBLE) {
+                linear.animate().translationYBy(-400f).setDuration(500);
+                selectImage.animate().alpha(1f).setDuration(1100);
+                selectImage.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (selectImage.getVisibility() == View.VISIBLE) {
+                linear.animate().translationYBy(400f).setDuration(600);
+                selectImage.animate().alpha(0f).setDuration(300);
+                selectImage.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        selectImage.setVisibility(View.INVISIBLE);
+                    }
+                }, 500);
+            }
+        }
     }
 
     public  void finishsignup(View view) throws MalformedURLException, UnsupportedEncodingException {
@@ -279,8 +298,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                 Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
 
         }
-        Users users = new Users(Dpassword1, Dname, Dphone, DIMEI, type);
-        ref.child("Users").push().setValue(users);
     }
 }
 

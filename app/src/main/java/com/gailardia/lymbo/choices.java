@@ -17,7 +17,6 @@ import android.widget.Toast;
  * status bar and navigation/system bar) with user interaction.
  */
 public class choices extends AppCompatActivity {
-    //FUCK You mohanned
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
