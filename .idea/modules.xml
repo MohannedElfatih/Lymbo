@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AliBranchMerge.iml" filepath="$PROJECT_DIR$/AliBranchMerge.iml" />
       <module fileurl="file://$PROJECT_DIR$/GenAsync/GenAsync.iml" filepath="$PROJECT_DIR$/GenAsync/GenAsync.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Lymbo2.iml" filepath="$PROJECT_DIR$/Lymbo2.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

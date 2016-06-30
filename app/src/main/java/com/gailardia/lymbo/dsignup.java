@@ -2,10 +2,13 @@ package com.gailardia.lymbo;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -13,7 +16,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -51,19 +53,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         setContentView(R.layout.activity_dsignup);
         Firebase.setAndroidContext(this);
         ref = new Firebase("https://instagram-clone-ac0a7.firebaseio.com/");
-        ImageButton car=(ImageButton) findViewById(R.id.car);
-        ImageButton tuktuk=(ImageButton) findViewById(R.id.tuktuk);
-        ImageButton amjad=(ImageButton) findViewById(R.id.amjad);
-        TextView car2=(TextView)findViewById(R.id.car2);
-        TextView tuktuk2=(TextView)findViewById(R.id.tuktuk2);
-        TextView amjad2=(TextView)findViewById(R.id.amjad2);
         type="";
-        car.setOnClickListener(gonclick);
-        car2.setOnClickListener(gonclick);
-        amjad.setOnClickListener(gonclick);
-        amjad2.setOnClickListener(gonclick);
-        tuktuk.setOnClickListener(gonclick);
-        tuktuk2.setOnClickListener(gonclick);
+
 
         Button pickImage = (Button) findViewById(R.id.picked);
         pickImage.setOnClickListener(new OnClickListener() {
@@ -141,93 +132,88 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                 }
         }
     }
+    public void type(View view){
+        ImageButton car = (ImageButton)findViewById(R.id.car);
+        ImageButton tuktuk = (ImageButton)findViewById(R.id.tuktuk);
+        ImageButton  amjad = (ImageButton)findViewById(R.id.amjad);
+        TextView car2 = (TextView)findViewById(R.id.car2);
+        TextView tuktuk2 = (TextView)findViewById(R.id.tuktuk2);
+        TextView amjad2 = (TextView)findViewById(R.id.amjad2);
+        type="";
+        if(car!=null && car2!=null && tuktuk!=null && tuktuk2!=null && amjad2!=null && amjad!=null) {
+            switch (view.getId()) {
+
+                case R.id.car:
+                    //Inform the user te button1 has been clicked
+                    car.setImageResource(R.drawable.redcar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
+                    amjad2.setTextColor(Color.parseColor("#d7d7d7"));
+                    type = "car";
 
 
-    final OnClickListener gonclick= new OnClickListener() {
-        @TargetApi(Build.VERSION_CODES.M)
-        @Override
-        public void onClick(View v) {
-            ImageButton car = (ImageButton)findViewById(R.id.car);
-            ImageButton tuktuk = (ImageButton)findViewById(R.id.tuktuk);
-            ImageButton  amjad = (ImageButton)findViewById(R.id.amjad);
-            TextView car2 = (TextView)findViewById(R.id.car2);
-            TextView tuktuk2 = (TextView)findViewById(R.id.tuktuk2);
-            TextView amjad2 = (TextView)findViewById(R.id.amjad2);
-            type="";
-            if(car!=null) {
-                switch (v.getId()) {
+                    break;
+                case R.id.car2:
+                    //Inform the user the button2 has been clicked
+                    car.setImageResource(R.drawable.redcar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
+                    amjad2.setTextColor(Color.parseColor("#d7d7d7"));
+                    type = "car";
 
-                    case R.id.car:
-                        //Inform the user te button1 has been clicked
-                        car.setImageResource(R.drawable.redcar);
-                        amjad.setImageResource(R.drawable.amjad);
-                        tuktuk.setImageResource(R.drawable.tuktuk);
-                        car2.setTextColor(Color.parseColor("#fa9684"));
-                        tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                        amjad2.setTextColor(Color.parseColor("#d7d7d7"));
-                        type = "car";
+                    break;
+                case R.id.tuktuk:
+                    //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.redraksha);
+                    car2.setTextColor(Color.parseColor("#d7d7d7"));
+                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#d7d7d7"));
+                    type = "tuktuk";
 
+                    break;
+                case R.id.tuktuk2:
+                    //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.redraksha);
+                    car2.setTextColor(Color.parseColor("#d7d7d7"));
+                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#d7d7d7"));
+                    type = "tuktuk";
 
-                        break;
-                    case R.id.car2:
-                        //Inform the user the button2 has been clicked
-                        car.setImageResource(R.drawable.redcar);
-                        amjad.setImageResource(R.drawable.amjad);
-                        tuktuk.setImageResource(R.drawable.tuktuk);
-                        car2.setTextColor(Color.parseColor("#fa9684"));
-                        tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                        amjad2.setTextColor(Color.parseColor("#d7d7d7"));
-                        type = "car";
+                    break;
+                case R.id.amjad:
+                    //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.redamjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car2.setTextColor(Color.parseColor("#d7d7d7"));
+                    tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
+                    amjad2.setTextColor(Color.parseColor("#fa9684"));
+                    type = "amjad";
 
-                        break;
-                    case R.id.tuktuk:
-                        //Inform the user the button1 has been clicked
-                        car.setImageResource(R.drawable.choicecar);
-                        amjad.setImageResource(R.drawable.amjad);
-                        tuktuk.setImageResource(R.drawable.redraksha);
-                        car2.setTextColor(Color.parseColor("#d7d7d7"));
-                        tuktuk2.setTextColor(Color.parseColor("#fa9684"));
-                        amjad2.setTextColor(Color.parseColor("#d7d7d7"));
-                        type = "tuktuk";
+                    break;
+                case R.id.amjad2:
+                    //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.redamjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car2.setTextColor(Color.parseColor("#d7d7d7"));
+                    tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
+                    amjad2.setTextColor(Color.parseColor("#fa9684"));
+                    type = "amjad";
 
-                        break;
-                    case R.id.tuktuk2:
-                        //Inform the user the button1 has been clicked
-                        car.setImageResource(R.drawable.choicecar);
-                        amjad.setImageResource(R.drawable.amjad);
-                        tuktuk.setImageResource(R.drawable.redraksha);
-                        car2.setTextColor(Color.parseColor("#d7d7d7"));
-                        tuktuk2.setTextColor(Color.parseColor("#fa9684"));
-                        amjad2.setTextColor(Color.parseColor("#d7d7d7"));
-                        type = "tuktuk";
-
-                        break;
-                    case R.id.amjad:
-                        //Inform the user the button1 has been clicked
-                        car.setImageResource(R.drawable.choicecar);
-                        amjad.setImageResource(R.drawable.redamjad);
-                        tuktuk.setImageResource(R.drawable.tuktuk);
-                        car2.setTextColor(Color.parseColor("#d7d7d7"));
-                        tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                        amjad2.setTextColor(Color.parseColor("#fa9684"));
-                        type = "amjad";
-
-                        break;
-                    case R.id.amjad2:
-                        //Inform the user the button1 has been clicked
-                        car.setImageResource(R.drawable.choicecar);
-                        amjad.setImageResource(R.drawable.redamjad);
-                        tuktuk.setImageResource(R.drawable.tuktuk);
-                        car2.setTextColor(Color.parseColor("#d7d7d7"));
-                        tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                        amjad2.setTextColor(Color.parseColor("#fa9684"));
-                        type = "amjad";
-
-                        break;
-                }
+                    break;
             }
         }
-    };
+    }
+
     public  void finishsignup(View view) throws MalformedURLException, UnsupportedEncodingException {
         EditText name=(EditText)findViewById(R.id.name);
         EditText password1=(EditText)findViewById(R.id.password1);
@@ -256,9 +242,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         if(type==""){
             Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
         }else {
-            Firstsignup();
-            Intent intent = new Intent(this, dlogin.class);
-            startActivity(intent);
+
             task.execute("http://www.lymbo.esy.es/signup.php");
         }
 
@@ -271,11 +255,31 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
         return encodedImage;
     }*/
+    public boolean isOnline() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        }
+
+        return false;
+    }
     @Override
     public void processFinish(String s) {
-        Toast.makeText(this,s,Toast.LENGTH_LONG).show();
-        Log.i("Error SQL", s);
-        Users users = new Users(Dpassword1, Dname, DIMEI, Dphone, type);
+        if(s.equalsIgnoreCase("connected success")){
+            Firstsignup();
+            Intent intent = new Intent(this, dlogin.class);
+            startActivity(intent);
+        }
+        else {
+            if(!isOnline())
+                Toast.makeText(this,"NO INTERNET",Toast.LENGTH_LONG).show();
+            else
+                Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
+
+        }
+        Users users = new Users(Dpassword1, Dname, Dphone, DIMEI, type);
         ref.child("Users").push().setValue(users);
     }
 }
