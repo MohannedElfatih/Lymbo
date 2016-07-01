@@ -317,8 +317,9 @@
                 android:layout_height="40dp"
                 android:layout_weight="0.2"
                 android:id="@+id/imageView111"
-                android:src="@drawable/phone"
-                android:layout_gravity="center_vertical" />
+                android:src="@drawable/names"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="3dp" />
 
             <EditText
                 android:layout_width="150dp"
