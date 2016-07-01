@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -39,7 +40,6 @@ import java.util.HashMap;
 
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
-    private ImageView selectphoto;
     RelativeLayout scnd;
     LinearLayout first;
     int carType=0;
@@ -293,14 +293,15 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     }
     @Override
     public void processFinish(String s) {
-        if(s.equalsIgnoreCase("connected success")){
+        Log.i("Database result", s);
+        if(s.equalsIgnoreCase("success")){
             Firstsignup();
             Intent intent = new Intent(this, dlogin.class);
             startActivity(intent);
         }
         else {
             if(!isOnline())
-                Toast.makeText(this,"NO INTERNET",Toast.LENGTH_LONG).show();
+                Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
             else
                 Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
 
