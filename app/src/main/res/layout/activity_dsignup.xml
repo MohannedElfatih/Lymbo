@@ -12,7 +12,7 @@
         android:id="@+id/scndSignup"
         android:background="@drawable/bg5"
         android:visibility="gone"
-        android:alpha="0"
+        android:alpha="1"
         >
         <LinearLayout
             android:id="@+id/linearLayout"
@@ -31,7 +31,8 @@
                 android:textSize="22sp"
                 android:layout_above="@+id/linearLayout"
                 android:layout_alignRight="@+id/linearLayout2"
-                android:layout_alignEnd="@+id/linearLayout2" />
+                android:layout_alignEnd="@+id/linearLayout2"
+                android:fontFamily="@string/abc_action_bar_home_description" />
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -154,14 +155,14 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_below="@+id/selected"
             android:layout_above="@id/imageButton11"
-            android:layout_height="48dp"
+            android:layout_height="40dp"
             android:layout_gravity="center"
             android:layout_marginLeft="14dp"
             android:layout_centerHorizontal="true"
             android:id="@+id/linearLayout2"
-            android:layout_marginRight="20dp">
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="45dp">
 
             <ImageView
                 android:id="@+id/imageView11"
@@ -175,14 +176,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:background="@drawable/lymbo_edit_text_holo_dark"
-                android:gravity="center_vertical|left"
                 android:hint="Phone number"
                 android:inputType="phone"
                 android:paddingEnd="3dp"
                 android:paddingStart="6dp"
                 android:paddingTop="5dp"
                 android:textColor="#fdfdfd"
-                android:textColorHint="#9ff1f1f1" />
+                android:textColorHint="#9ff1f1f1"
+                android:gravity="left"
+                android:layout_gravity="left"/>
         </LinearLayout>
     </RelativeLayout>
     <LinearLayout
@@ -336,7 +338,7 @@
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
                 android:textColor="#fdfdfd"
-                android:layout_marginRight="20dp" />
+                android:layout_marginRight="7dp" />
 
             <EditText
                 android:layout_width="150dp"

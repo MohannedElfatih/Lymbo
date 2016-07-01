@@ -50,8 +50,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dsignup);
         type="";
-
-
         CircularImageView pickImage = (CircularImageView) findViewById(R.id.selected);
         pickImage.setOnClickListener(new OnClickListener() {
             @Override
@@ -131,7 +129,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         }
     }
     public void type(View view) {
-        String type = "";
+        type = "";
         ImageButton car = (ImageButton) findViewById(R.id.car);
         ImageButton tuktuk = (ImageButton) findViewById(R.id.tuktuk);
         ImageButton amjad = (ImageButton) findViewById(R.id.amjad);
@@ -139,8 +137,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         TextView tuktuk2 = (TextView) findViewById(R.id.tuktuk2);
         TextView amjad2 = (TextView) findViewById(R.id.amjad2);
         type = "";
-        LinearLayout linear = (LinearLayout) findViewById(R.id.linearLayout);
-        final CircularImageView selectImage = (CircularImageView) findViewById(R.id.selected);
         if (car != null && car2 != null && tuktuk != null && tuktuk2 != null && amjad2 != null && amjad != null) {
             switch (view.getId()) {
 
@@ -153,8 +149,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
-
-
+                    animateCarChoice();
                     break;
                 case R.id.car2:
                     //Inform the user the button2 has been clicked
@@ -165,7 +160,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
-
+                    animateCarChoice();
                     break;
                 case R.id.tuktuk:
                     //Inform the user the button1 has been clicked
@@ -176,7 +171,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#fa9684"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
-
+                    unanimateCarChoice();
                     break;
                 case R.id.tuktuk2:
                     //Inform the user the button1 has been clicked
@@ -187,7 +182,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#fa9684"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
-
+                    unanimateCarChoice();
                     break;
                 case R.id.amjad:
                     //Inform the user the button1 has been clicked
@@ -198,7 +193,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#fa9684"));
                     type = "amjad";
-
+                    unanimateCarChoice();
                     break;
                 case R.id.amjad2:
                     //Inform the user the button1 has been clicked
@@ -209,27 +204,35 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#fa9684"));
                     type = "amjad";
-
+                    unanimateCarChoice();
                     break;
             }
         }
-        if (view.getId() == findViewById(R.id.car).getId() || view.getId() == findViewById(R.id.car2).getId()) {
-            if (selectImage.getVisibility() != View.VISIBLE) {
-                linear.animate().translationYBy(-400f).setDuration(500);
-                selectImage.animate().alpha(1f).setDuration(1100);
-                selectImage.setVisibility(View.VISIBLE);
-            }
-        } else {
-            if (selectImage.getVisibility() == View.VISIBLE) {
-                linear.animate().translationYBy(400f).setDuration(600);
-                selectImage.animate().alpha(0f).setDuration(300);
-                selectImage.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        selectImage.setVisibility(View.INVISIBLE);
-                    }
-                }, 500);
-            }
+    }
+
+    protected void animateCarChoice(){
+        LinearLayout linear = (LinearLayout) findViewById(R.id.linearLayout);
+        final CircularImageView selectImage = (CircularImageView) findViewById(R.id.selected);
+        if (selectImage.getVisibility() != View.VISIBLE) {
+            linear.animate().translationYBy(-400f).setDuration(500);
+            selectImage.animate().alpha(1f).setDuration(1100);
+            selectImage.setVisibility(View.VISIBLE);
+            return;
+        }
+    }
+    protected void unanimateCarChoice(){
+        LinearLayout linear = (LinearLayout) findViewById(R.id.linearLayout);
+        final CircularImageView selectImage = (CircularImageView) findViewById(R.id.selected);
+        if (selectImage.getVisibility() == View.VISIBLE) {
+            linear.animate().translationYBy(400f).setDuration(600);
+            selectImage.animate().alpha(0f).setDuration(300);
+            selectImage.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    selectImage.setVisibility(View.INVISIBLE);
+                }
+            }, 500);
+            return;
         }
     }
 
