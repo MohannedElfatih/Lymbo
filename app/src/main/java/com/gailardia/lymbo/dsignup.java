@@ -238,12 +238,15 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         EditText password1=(EditText)findViewById(R.id.password1);
         EditText password2=(EditText)findViewById(R.id.password2);
         EditText phone=(EditText)findViewById(R.id.phone);
+        EditText firstName = (EditText)findViewById(R.id.firstName);
+        EditText lastName = (EditText)findViewById(R.id.lastName);
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
 
         Dname=name.getText().toString();
         Dpassword1=password1.getText().toString();
         Dpassword2=password2.getText().toString();
         Dphone=phone.getText().toString();
+
         //String image=getStringImage(selectedImage);
         DIMEI="00971503468518";
 
@@ -253,6 +256,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         post.put("DIMEI",DIMEI);
         post.put("phone",Dphone);
         post.put("type",type);
+        post.put("firstName", firstName.getText().toString());
+        post.put("lastName", lastName.getText().toString());
         //post.put("image",image);
 
         PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
@@ -261,7 +266,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         if(type==""){
             Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
         }else {
-
             task.execute("http://www.lymbo.esy.es/signup.php");
         }
 

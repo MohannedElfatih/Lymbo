@@ -216,7 +216,6 @@
             android:layout_width="fill_parent"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:layout_marginLeft="15dp"
             android:layout_marginTop="20dp">
 
             <ImageView
@@ -227,7 +226,7 @@
                 android:layout_gravity="center_vertical" />
 
             <EditText
-                android:layout_width="246dp"
+                android:layout_width="match_parent"
                 android:layout_height="fill_parent"
                 android:inputType="text"
                 android:id="@+id/name"
@@ -241,14 +240,14 @@
                 android:textColorHint="#9ff1f1f1"
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
-                android:textColor="#fdfdfd" />
+                android:textColor="#fdfdfd"
+                android:layout_marginRight="15dp" />
         </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="48dp"
-            android:layout_marginLeft="15dp"
             android:layout_gravity="center"
             android:layout_marginTop="20dp">
 
@@ -260,7 +259,7 @@
                 android:layout_gravity="center_vertical" />
 
             <EditText
-                android:layout_width="246dp"
+                android:layout_width="match_parent"
                 android:layout_height="fill_parent"
                 android:inputType="textPassword"
                 android:id="@+id/password1"
@@ -274,7 +273,8 @@
                 android:textColorHint="#9ff1f1f1"
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
-                android:textColor="#fdfdfd" />
+                android:textColor="#fdfdfd"
+                android:layout_marginRight="15dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -282,11 +282,10 @@
             android:layout_width="fill_parent"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:layout_marginLeft="15dp"
             android:layout_marginTop="20dp">
 
             <EditText
-                android:layout_width="246dp"
+                android:layout_width="match_parent"
                 android:layout_height="fill_parent"
                 android:inputType="textPassword"
                 android:id="@+id/password2"
@@ -301,7 +300,8 @@
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
                 android:textColor="#fdfdfd"
-                android:layout_marginLeft="64dp" />
+                android:layout_marginLeft="64dp"
+                android:layout_marginRight="15dp" />
 
         </LinearLayout>
         <LinearLayout
@@ -309,38 +309,57 @@
             android:layout_width="fill_parent"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="20dp" >
+            android:weightSum="1"
+            android:layout_marginTop="20dp">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
+                android:layout_weight="0.2"
                 android:id="@+id/imageView111"
                 android:src="@drawable/phone"
                 android:layout_gravity="center_vertical" />
 
             <EditText
-                android:layout_width="246dp"
+                android:layout_width="150dp"
                 android:layout_height="fill_parent"
-                android:inputType="phone"
-                android:id="@+id/phone213"
-                android:hint="Phone number"
-                android:background="@drawable/lymbo_edit_text_holo_dark"
+                android:id="@+id/firstName"
+                android:hint="First Name"
+                android:layout_weight="0.4"
                 android:paddingStart="6dp"
                 android:paddingLeft="0dp"
-                android:paddingRight="0dp"
                 android:paddingEnd="3dp"
+                android:background="@drawable/lymbo_edit_text_holo_dark"
                 android:gravity="center_vertical|left"
                 android:textColorHint="#9ff1f1f1"
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
-                android:textColor="#fdfdfd" />
+                android:textColor="#fdfdfd"
+                android:layout_marginRight="20dp" />
+
+            <EditText
+                android:layout_width="150dp"
+                android:layout_height="fill_parent"
+                android:id="@+id/lastName"
+                android:hint="Last Name"
+                android:layout_weight="0.4"
+                android:paddingStart="6dp"
+                android:paddingLeft="0dp"
+                android:paddingRight="0dp"
+                android:paddingEnd="3dp"
+                android:background="@drawable/lymbo_edit_text_holo_dark"
+                android:gravity="center_vertical|left"
+                android:textColorHint="#9ff1f1f1"
+                android:paddingTop="5dp"
+                android:paddingBottom="10dp"
+                android:textColor="#fdfdfd"
+                android:layout_marginRight="15dp" />
         </LinearLayout>
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="20dp"
             android:weightSum="1"
             android:layout_gravity="right"
             android:gravity="right"
