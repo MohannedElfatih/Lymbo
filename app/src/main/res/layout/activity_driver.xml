@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.gailardia.lymbo.MainActivity"
-    android:background="@drawable/bg5"
-    android:id="@+id/relative">
+    android:background="@drawable/bg5">
         <fragment
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -26,7 +25,6 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/decline"
             android:layout_weight="1"
             android:background="#d50000"
             android:src="@android:color/holo_red_dark"
@@ -35,7 +33,6 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/accept"
             android:layout_weight="1"
             android:background="#00C853"
             android:onClick="accept"

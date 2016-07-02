@@ -32,7 +32,6 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="Vehicle type"
-                    android:id="@+id/textView5"
                     android:textAlignment="center"
                     android:textColor="#d7d7d7"
                     android:textSize="22dp"
@@ -179,7 +178,6 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageButton6"
                 android:src="@drawable/next"
                 android:background="@null"
                 android:layout_marginLeft="0dp"
@@ -211,7 +209,6 @@
                 style="@style/Widget.AppCompat.Button.Borderless.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/imageView8"
                 android:src="@drawable/logot2"
                 android:baselineAlignBottom="false" />
 
@@ -261,7 +258,6 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:id="@+id/imageView3"
                 android:src="@drawable/locked3"
                 android:layout_gravity="center_vertical" />
 
@@ -321,7 +317,6 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:id="@+id/imageView11"
                 android:src="@drawable/phone"
                 android:layout_gravity="center_vertical" />
 
@@ -356,7 +351,6 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageButton"
                 android:src="@drawable/next"
                 android:background="@null"
                 android:layout_marginLeft="0dp"

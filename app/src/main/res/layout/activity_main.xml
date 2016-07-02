@@ -13,7 +13,6 @@
     <ImageView
         android:layout_width="350dp"
         android:layout_height="140dp"
-        android:id="@+id/logo"
         android:src="@drawable/logot2"
         android:layout_marginTop="0dp"
         android:layout_alignParentTop="true"
@@ -24,7 +23,6 @@
         style="?android:attr/progressBarStyleSmall"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:id="@+id/progressBar"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
 

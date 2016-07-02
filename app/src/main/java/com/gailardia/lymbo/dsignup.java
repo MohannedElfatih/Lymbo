@@ -1,7 +1,5 @@
 package com.gailardia.lymbo;
 
-import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,12 +8,11 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
-import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -26,33 +23,38 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.firebase.client.Firebase;
 import com.gailardia.lymbo.Users.Users;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 
+import self.philbrown.droidQuery.$;
+import self.philbrown.droidQuery.AjaxOptions;
+import self.philbrown.droidQuery.AjaxTask;
+import self.philbrown.droidQuery.Function;
+
 public class dsignup extends AppCompatActivity implements AsyncResponse {
+    private final int FIVE_SECONDS = 5000;
+    Handler handler=new Handler();
     private final int SELECT_PHOTO = 1;
     private ImageView selectphoto;
-    LinearLayout scnd;
-    LinearLayout first;
-    int carType=0;
-    String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
-    Firebase ref;
+    String Dname;
+    String Dpassword1;
+    String Dpassword2;
+    String DIMEI;
+    String type;
+    String Dphone;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dsignup);
-        Firebase.setAndroidContext(this);
-        ref = new Firebase("https://instagram-clone-ac0a7.firebaseio.com/");
+        scheduleSendLocation();
         type="";
 
 
@@ -67,7 +69,36 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
             }
         });
     }
+    public void scheduleSendLocation() {
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                sendLocation();          // this method will contain your almost-finished HTTP calls
+                handler.postDelayed(this, FIVE_SECONDS);
+            }
+        }, FIVE_SECONDS);
+    }
+    public void sendLocation(){
+        String latitude="1.2",longitude="2.2";
 
+        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/ajaxPut.php")
+                .type("POST")
+                .data("{\"Dname\":\"h\",\"latitude\":\""+latitude+"\",\"longitude\":\""+longitude+"\"}")
+                .context(this)
+                .success(new Function() {
+
+                    @Override
+                    public void invoke($ $, Object... objects) {
+                        Toast.makeText(dsignup.this,"success",Toast.LENGTH_LONG).show();
+                    }
+                })
+                .error(new Function() {
+                    @Override
+                    public void invoke($ $, Object... args) {
+                        Toast.makeText(dsignup.this,"error",Toast.LENGTH_LONG).show();
+                    }
+                }));
+
+    }
     public void Firstsignup(){
         LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
         LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
@@ -103,7 +134,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                      scnd.setVisibility(View.VISIBLE);
             }
         }
-
     }
     public void goDlogin(View view){
         dsignup s=new dsignup();
@@ -148,7 +178,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
-                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    car2.setTextColor(Color.parseColor("#3289C7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
@@ -160,7 +190,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
-                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    car2.setTextColor(Color.parseColor("#3289C7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
@@ -172,7 +202,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
-                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#3289C7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
 
@@ -183,7 +213,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
-                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#3289C7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
 
@@ -195,7 +225,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                    amjad2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#3289C7"));
                     type = "amjad";
 
                     break;
@@ -206,14 +236,13 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                    amjad2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#3289C7"));
                     type = "amjad";
 
                     break;
             }
         }
     }
-
     public  void finishsignup(View view) throws MalformedURLException, UnsupportedEncodingException {
         EditText name=(EditText)findViewById(R.id.name);
         EditText password1=(EditText)findViewById(R.id.password1);
@@ -248,13 +277,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
 
     }
-    /*public String getStringImage(Bitmap bmp){
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] imageBytes = baos.toByteArray();
-        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        return encodedImage;
-    }*/
     public boolean isOnline() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -267,22 +289,17 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     }
     @Override
     public void processFinish(String s) {
-        if(s.equalsIgnoreCase("connected success")){
+        if(s.equalsIgnoreCase("success")){
             Firstsignup();
             Intent intent = new Intent(this, dlogin.class);
             startActivity(intent);
         }
         else {
-            if(!isOnline())
-                Toast.makeText(this,"NO INTERNET",Toast.LENGTH_LONG).show();
+            if (!isOnline())
+                Toast.makeText(this, "NO INTERNET", Toast.LENGTH_LONG).show();
             else
-                Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Try Again", Toast.LENGTH_LONG).show();
 
         }
-        Users users = new Users(Dpassword1, Dname, Dphone, DIMEI, type);
-        ref.child("Users").push().setValue(users);
     }
 }
-
-
-

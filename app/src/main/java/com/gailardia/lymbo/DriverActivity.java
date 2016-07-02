@@ -54,7 +54,6 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
     final LatLng sydney = new LatLng(-34, 151);
     final LatLng test = new LatLng(-34, 150);
     final LatLng burj = new LatLng(25.197525, 55.274288);
-    //test
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
