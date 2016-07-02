@@ -156,7 +156,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_above="@id/imageButton11"
-            android:layout_height="40dp"
+            android:layout_height="48dp"
             android:layout_gravity="center"
             android:layout_marginLeft="14dp"
             android:layout_centerHorizontal="true"
@@ -174,7 +174,7 @@
             <EditText
                 android:id="@+id/phone"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="fill_parent"
                 android:background="@drawable/lymbo_edit_text_holo_dark"
                 android:hint="Phone number"
                 android:inputType="phone"
@@ -183,8 +183,9 @@
                 android:paddingTop="5dp"
                 android:textColor="#fdfdfd"
                 android:textColorHint="#9ff1f1f1"
-                android:gravity="left"
-                android:layout_gravity="left"/>
+                android:gravity="bottom"
+                android:layout_gravity="left"
+                android:elegantTextHeight="false" />
         </LinearLayout>
     </RelativeLayout>
     <LinearLayout
@@ -238,12 +239,12 @@
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
                 android:paddingEnd="3dp"
-                android:gravity="center_vertical|left"
                 android:textColorHint="#9ff1f1f1"
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
                 android:textColor="#fdfdfd"
-                android:layout_marginRight="15dp" />
+                android:layout_marginRight="15dp"
+                android:gravity="bottom" />
         </LinearLayout>
 
         <LinearLayout
@@ -271,7 +272,7 @@
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
                 android:paddingEnd="3dp"
-                android:gravity="center_vertical|left"
+                android:gravity="bottom"
                 android:textColorHint="#9ff1f1f1"
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
@@ -297,13 +298,13 @@
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
                 android:paddingEnd="3dp"
-                android:gravity="center_vertical|left"
                 android:textColorHint="#9ff1f1f1"
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
                 android:textColor="#fdfdfd"
                 android:layout_marginLeft="64dp"
-                android:layout_marginRight="15dp" />
+                android:layout_marginRight="15dp"
+                android:gravity="bottom" />
 
         </LinearLayout>
         <LinearLayout
@@ -333,12 +334,12 @@
                 android:paddingLeft="0dp"
                 android:paddingEnd="3dp"
                 android:background="@drawable/lymbo_edit_text_holo_dark"
-                android:gravity="center_vertical|left"
                 android:textColorHint="#9ff1f1f1"
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
                 android:textColor="#fdfdfd"
-                android:layout_marginRight="7dp" />
+                android:layout_marginRight="7dp"
+                android:gravity="bottom" />
 
             <EditText
                 android:layout_width="150dp"
@@ -351,7 +352,7 @@
                 android:paddingRight="0dp"
                 android:paddingEnd="3dp"
                 android:background="@drawable/lymbo_edit_text_holo_dark"
-                android:gravity="center_vertical|left"
+                android:gravity="bottom"
                 android:textColorHint="#9ff1f1f1"
                 android:paddingTop="5dp"
                 android:paddingBottom="10dp"
