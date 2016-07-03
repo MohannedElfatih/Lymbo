@@ -116,7 +116,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                                          }, 700);
                                      }
                                  }
-                             })
+                             })//
                              .error(new Function() {
                                  @Override
                                  public void invoke($ $, Object... args) {
