@@ -38,6 +38,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 
+import self.philbrown.droidQuery.$;
+import self.philbrown.droidQuery.AjaxOptions;
+import self.philbrown.droidQuery.Function;
+
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
     RelativeLayout scnd;
@@ -86,17 +90,40 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                      Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
 
                  } else {
-                     scnd=(RelativeLayout) findViewById(R.id.scndSignup);
-                     first=(LinearLayout) findViewById(R.id.firstSignup);
-                     first.animate().translationXBy(-1000f).setDuration(700);
-                     scnd.setAlpha(1f);
-                     scnd.setVisibility(View.VISIBLE);
-                     first.postDelayed(new Runnable() {
-                         @Override
-                         public void run() {
-                             first.setVisibility(View.GONE);
-                         }
-                     }, 700);
+                     $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/validateUser.php")
+                             .type("POST")
+                             .data("{\"Dname\":\""+user+"\"}")
+                             .context(this)
+                             .success(new Function() {
+
+                                 @Override
+                                 public void invoke($ droidQuery, Object... objects) {
+                                     if(((String)objects[0]).equalsIgnoreCase("false")) {
+                                         Toast.makeText(dsignup.this,"Username is used !!",Toast.LENGTH_LONG).show();
+                                     }
+                                     else
+                                     if(((String)objects[0]).equalsIgnoreCase("true")){
+                                         scnd=(RelativeLayout) findViewById(R.id.scndSignup);
+                                         first=(LinearLayout) findViewById(R.id.firstSignup);
+                                         first.animate().translationXBy(-1000f).setDuration(700);
+                                         scnd.setAlpha(1f);
+                                         scnd.setVisibility(View.VISIBLE);
+                                         first.postDelayed(new Runnable() {
+                                             @Override
+                                             public void run() {
+                                                 first.setVisibility(View.GONE);
+                                             }
+                                         }, 700);
+                                     }
+                                 }
+                             })
+                             .error(new Function() {
+                                 @Override
+                                 public void invoke($ $, Object... args) {
+                                     Toast.makeText(dsignup.this,"error",Toast.LENGTH_LONG).show();
+                                 }
+                             }));
+                    /* */
             }
         }
 
