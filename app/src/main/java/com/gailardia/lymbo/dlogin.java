@@ -51,7 +51,7 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
     @Override
     public void processFinish(String s) {
         Toast.makeText(this,s,Toast.LENGTH_LONG).show();
-        if(s.equalsIgnoreCase("connected success")){
+        if(s.equalsIgnoreCase("success")){
             SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
             shared.edit().putString("username", U).apply();
             shared.edit().putString("password", P).apply();
