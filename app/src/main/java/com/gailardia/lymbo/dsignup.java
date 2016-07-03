@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -23,13 +24,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.firebase.client.Firebase;
-import com.gailardia.lymbo.Users.Users;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
+import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -40,25 +40,18 @@ import java.util.HashMap;
 
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
-    private ImageView selectphoto;
-    LinearLayout scnd;
+    RelativeLayout scnd;
     LinearLayout first;
     int carType=0;
     String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
-    Firebase ref;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dsignup);
-        Firebase.setAndroidContext(this);
-        ref = new Firebase("https://instagram-clone-ac0a7.firebaseio.com/");
         type="";
-
-
-        Button pickImage = (Button) findViewById(R.id.picked);
+        CircularImageView pickImage = (CircularImageView) findViewById(R.id.selected);
         pickImage.setOnClickListener(new OnClickListener() {
-
             @Override
             public void onClick(View view) {
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
@@ -69,7 +62,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     }
 
     public void Firstsignup(){
-        LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
+        RelativeLayout scnd=(RelativeLayout) findViewById(R.id.scndSignup);
         LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
         scnd.setVisibility(View.INVISIBLE);
         first.setVisibility(View.VISIBLE);
@@ -93,14 +86,17 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                      Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
 
                  } else {
-                     LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
-                     LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
-                     first = (LinearLayout)findViewById(R.id.firstSignup);
-                     scnd = (LinearLayout)findViewById(R.id.scndSignup);
-                     first.animate().alpha(0f).setDuration(1000);
-                     first.setVisibility(View.GONE);
-                     scnd.animate().alpha(1f).setDuration(1000);
+                     scnd=(RelativeLayout) findViewById(R.id.scndSignup);
+                     first=(LinearLayout) findViewById(R.id.firstSignup);
+                     first.animate().translationXBy(-1000f).setDuration(700);
+                     scnd.setAlpha(1f);
                      scnd.setVisibility(View.VISIBLE);
+                     first.postDelayed(new Runnable() {
+                         @Override
+                         public void run() {
+                             first.setVisibility(View.GONE);
+                         }
+                     }, 700);
             }
         }
 
@@ -116,7 +112,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     Bitmap selectedImage;
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        selectphoto=(ImageView)findViewById(R.id.selected);
+        CircularImageView selectphoto=(CircularImageView) findViewById(R.id.selected);
         switch(requestCode) {
             case SELECT_PHOTO:
                 if(resultCode == RESULT_OK){
@@ -132,15 +128,16 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                 }
         }
     }
-    public void type(View view){
-        ImageButton car = (ImageButton)findViewById(R.id.car);
-        ImageButton tuktuk = (ImageButton)findViewById(R.id.tuktuk);
-        ImageButton  amjad = (ImageButton)findViewById(R.id.amjad);
-        TextView car2 = (TextView)findViewById(R.id.car2);
-        TextView tuktuk2 = (TextView)findViewById(R.id.tuktuk2);
-        TextView amjad2 = (TextView)findViewById(R.id.amjad2);
-        type="";
-        if(car!=null && car2!=null && tuktuk!=null && tuktuk2!=null && amjad2!=null && amjad!=null) {
+    public void type(View view) {
+        type = "";
+        ImageButton car = (ImageButton) findViewById(R.id.car);
+        ImageButton tuktuk = (ImageButton) findViewById(R.id.tuktuk);
+        ImageButton amjad = (ImageButton) findViewById(R.id.amjad);
+        TextView car2 = (TextView) findViewById(R.id.car2);
+        TextView tuktuk2 = (TextView) findViewById(R.id.tuktuk2);
+        TextView amjad2 = (TextView) findViewById(R.id.amjad2);
+        type = "";
+        if (car != null && car2 != null && tuktuk != null && tuktuk2 != null && amjad2 != null && amjad != null) {
             switch (view.getId()) {
 
                 case R.id.car:
@@ -152,8 +149,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
-
-
+                    animateCarChoice();
                     break;
                 case R.id.car2:
                     //Inform the user the button2 has been clicked
@@ -164,7 +160,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
-
+                    animateCarChoice();
                     break;
                 case R.id.tuktuk:
                     //Inform the user the button1 has been clicked
@@ -175,7 +171,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#fa9684"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
-
+                    unanimateCarChoice();
                     break;
                 case R.id.tuktuk2:
                     //Inform the user the button1 has been clicked
@@ -186,7 +182,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#fa9684"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
-
+                    unanimateCarChoice();
                     break;
                 case R.id.amjad:
                     //Inform the user the button1 has been clicked
@@ -197,7 +193,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#fa9684"));
                     type = "amjad";
-
+                    unanimateCarChoice();
                     break;
                 case R.id.amjad2:
                     //Inform the user the button1 has been clicked
@@ -208,9 +204,35 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#fa9684"));
                     type = "amjad";
-
+                    unanimateCarChoice();
                     break;
             }
+        }
+    }
+
+    protected void animateCarChoice(){
+        LinearLayout linear = (LinearLayout) findViewById(R.id.linearLayout);
+        final CircularImageView selectImage = (CircularImageView) findViewById(R.id.selected);
+        if (selectImage.getVisibility() != View.VISIBLE) {
+            linear.animate().translationYBy(-400f).setDuration(500);
+            selectImage.animate().alpha(1f).setDuration(1100);
+            selectImage.setVisibility(View.VISIBLE);
+            return;
+        }
+    }
+    protected void unanimateCarChoice(){
+        LinearLayout linear = (LinearLayout) findViewById(R.id.linearLayout);
+        final CircularImageView selectImage = (CircularImageView) findViewById(R.id.selected);
+        if (selectImage.getVisibility() == View.VISIBLE) {
+            linear.animate().translationYBy(400f).setDuration(600);
+            selectImage.animate().alpha(0f).setDuration(300);
+            selectImage.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    selectImage.setVisibility(View.INVISIBLE);
+                }
+            }, 500);
+            return;
         }
     }
 
@@ -219,12 +241,15 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         EditText password1=(EditText)findViewById(R.id.password1);
         EditText password2=(EditText)findViewById(R.id.password2);
         EditText phone=(EditText)findViewById(R.id.phone);
+        EditText firstName = (EditText)findViewById(R.id.firstName);
+        EditText lastName = (EditText)findViewById(R.id.lastName);
         TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
 
         Dname=name.getText().toString();
         Dpassword1=password1.getText().toString();
         Dpassword2=password2.getText().toString();
         Dphone=phone.getText().toString();
+
         //String image=getStringImage(selectedImage);
         DIMEI="00971503468518";
 
@@ -234,6 +259,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         post.put("DIMEI",DIMEI);
         post.put("phone",Dphone);
         post.put("type",type);
+        post.put("firstName", firstName.getText().toString());
+        post.put("lastName", lastName.getText().toString());
         //post.put("image",image);
 
         PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
@@ -242,7 +269,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         if(type==""){
             Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
         }else {
-
             task.execute("http://www.lymbo.esy.es/signup.php");
         }
 
@@ -267,20 +293,19 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     }
     @Override
     public void processFinish(String s) {
-        if(s.equalsIgnoreCase("connected success")){
+        Log.i("Database result", s);
+        if(s.equalsIgnoreCase("success")){
             Firstsignup();
             Intent intent = new Intent(this, dlogin.class);
             startActivity(intent);
         }
         else {
             if(!isOnline())
-                Toast.makeText(this,"NO INTERNET",Toast.LENGTH_LONG).show();
+                Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
             else
                 Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
 
         }
-        Users users = new Users(Dpassword1, Dname, Dphone, DIMEI, type);
-        ref.child("Users").push().setValue(users);
     }
 }
 
