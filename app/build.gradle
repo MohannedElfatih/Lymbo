@@ -32,5 +32,6 @@ dependencies {
     compile 'com.google.android.gms:play-services:9.0.2'
     compile files('libs/GenAsync.jar')
     compile 'com.mikhaellopez:circularimageview:3.0.2'
+    compile 'com.android.support:design:23.2.1'
 }
 
