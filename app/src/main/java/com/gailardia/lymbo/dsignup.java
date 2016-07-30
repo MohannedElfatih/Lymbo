@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
@@ -40,14 +41,17 @@ import java.util.HashMap;
 
 import self.philbrown.droidQuery.$;
 import self.philbrown.droidQuery.AjaxOptions;
+import self.philbrown.droidQuery.AjaxTask;
 import self.philbrown.droidQuery.Function;
 
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
+    private final int FIVE_SECONDS = 5000;
+    Handler handler=new Handler();
     RelativeLayout scnd;
     LinearLayout first;
     int carType=0;
-    String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
+    String Dname,Dpassword1,Dpassword2,DIMEI,type,Dphone;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -63,6 +67,35 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
             }
         });
+    }
+
+    public void scheduleSendLocation() {
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                sendLocation();          // this method will contain your almost-finished HTTP calls
+                handler.postDelayed(this, FIVE_SECONDS);
+            }
+        }, FIVE_SECONDS);
+    }
+    public void sendLocation(){
+        String latitude="1.2",longitude="2.2";
+
+        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/ajaxPut.php")
+                .type("POST")
+                .data("{\"Dname\":\"h\",\"latitude\":\""+latitude+"\",\"longitude\":\""+longitude+"\"}")
+                .context(this)
+                .success(new Function() {
+
+                    @Override
+                    public void invoke($ $, Object... objects) {
+                    }
+                })
+                .error(new Function() {
+                    @Override
+                    public void invoke($ $, Object... args) {
+                    }
+                }));
+
     }
 
     public void Firstsignup(){
@@ -83,11 +116,11 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         String phoneNum = phoneNumber.getText().toString();
 
         if(user.isEmpty() || pass1.isEmpty() || pass2.isEmpty() || phoneNum == null){
-            Toast.makeText(getApplicationContext(), "Fill all the fields!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Fill all the fields.", Toast.LENGTH_SHORT).show();
 
         } else {
                  if(!(pass1.equals(pass2))) {
-                     Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
+                     Toast.makeText(getApplicationContext(), "Passwords don't match.", Toast.LENGTH_SHORT).show();
 
                  } else {
                      $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/validateUser.php")
@@ -99,7 +132,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                                  @Override
                                  public void invoke($ droidQuery, Object... objects) {
                                      if(((String)objects[0]).equalsIgnoreCase("false")) {
-                                         Toast.makeText(dsignup.this,"Username is used !!",Toast.LENGTH_LONG).show();
+                                         Toast.makeText(dsignup.this,"Username is used :(",Toast.LENGTH_LONG).show();
                                      }
                                      else
                                      if(((String)objects[0]).equalsIgnoreCase("true")){
@@ -172,7 +205,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
-                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    car2.setTextColor(Color.parseColor("#3289C7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
@@ -183,7 +216,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
-                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    car2.setTextColor(Color.parseColor("#3289C7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
@@ -195,7 +228,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
-                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#3289C7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
                     unanimateCarChoice();
@@ -206,7 +239,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
-                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#3289C7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
                     unanimateCarChoice();
@@ -218,7 +251,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                    amjad2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#3289C7"));
                     type = "amjad";
                     unanimateCarChoice();
                     break;
@@ -229,7 +262,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                    amjad2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#3289C7"));
                     type = "amjad";
                     unanimateCarChoice();
                     break;
@@ -276,8 +309,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         Dpassword1=password1.getText().toString();
         Dpassword2=password2.getText().toString();
         Dphone=phone.getText().toString();
-
-        //String image=getStringImage(selectedImage);
         DIMEI="00971503468518";
 
         final HashMap post = new HashMap();
@@ -288,7 +319,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         post.put("type",type);
         post.put("firstName", firstName.getText().toString());
         post.put("lastName", lastName.getText().toString());
-        //post.put("image",image);
 
         PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
 
@@ -301,13 +331,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
 
     }
-    /*public String getStringImage(Bitmap bmp){
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] imageBytes = baos.toByteArray();
-        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        return encodedImage;
-    }*/
+
     public boolean isOnline() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
