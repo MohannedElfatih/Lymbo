@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.jar.*;
 
 public class DriverActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener, AsyncResponse {
-    private static final int REQUEST_PERMISSION = 10;
     private GoogleMap mMap;
     private LocationManager locationManager;
     Location location;
@@ -66,9 +65,6 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if(Build.VERSION.SDK_INT >= 23){
-            requestPermission();
-        }
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapLayout);
         mapFragment.getMapAsync(this);
@@ -101,42 +97,6 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
             Log.i("Last Known Location", "Successful");
         }
     }
-
-    private void requestPermission() {
-        String[] permissionLocation = new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION};
-        ActivityCompat.requestPermissions(DriverActivity.this,
-                permissionLocation,
-                REQUEST_PERMISSION);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_PERMISSION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(DriverActivity.this, "Yay", Toast.LENGTH_SHORT).show();
-                    if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        return;
-                    }
-                    provider = locationManager.getBestProvider(new Criteria(), false);
-                    location = locationManager.getLastKnownLocation(provider);
-                    if (location == null) {
-                        Log.i("Last Known Location", "Unsuccessful");
-                    } else {
-                        Log.i("Last Known Location", "Successful");
-                    }
-                } else {
-                    Toast.makeText(DriverActivity.this, "Boohoo", Toast.LENGTH_SHORT).show();
-                }
-                return;
-            }
-        }
-    }
-
 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
