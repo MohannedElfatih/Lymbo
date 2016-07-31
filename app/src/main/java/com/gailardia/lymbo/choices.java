@@ -71,11 +71,8 @@ public class choices extends AppCompatActivity {
                     exit = false;
                 }
             }, 3 * 1000);
-
         }
-
     }
-
     public void openMap(View view){
         Intent intent = new Intent(this, DriverActivity.class);
         startActivity(intent);

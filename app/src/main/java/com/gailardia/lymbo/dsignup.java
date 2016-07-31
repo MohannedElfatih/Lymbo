@@ -1,7 +1,5 @@
 package com.gailardia.lymbo;
 
-import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,28 +8,23 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -76,13 +69,17 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         EditText password1=(EditText) findViewById(R.id.password1);
         EditText password2=(EditText) findViewById(R.id.password2);
         EditText phoneNumber=(EditText) findViewById(R.id.phone);
+        EditText firstName=(EditText)findViewById(R.id.firstName);
+        EditText lastName=(EditText)findViewById(R.id.lastName);
 
         String user = userName.getText().toString();
         String pass1 = password1.getText().toString();
         String pass2 = password2.getText().toString();
         String phoneNum = phoneNumber.getText().toString();
+        String firstN =firstName.getText().toString();
+        String last =lastName.getText().toString();
 
-        if(user.isEmpty() || pass1.isEmpty() || pass2.isEmpty() || phoneNum == null){
+        if(user.isEmpty() || pass1.isEmpty() || pass2.isEmpty() || phoneNum.isEmpty() || firstN.isEmpty() || last.isEmpty()){
             Toast.makeText(getApplicationContext(), "Fill all the fields!", Toast.LENGTH_SHORT).show();
 
         } else {
@@ -90,40 +87,43 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                      Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
 
                  } else {
-                     $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/validateUser.php")
-                             .type("POST")
-                             .data("{\"Dname\":\""+user+"\"}")
-                             .context(this)
-                             .success(new Function() {
+                     if (isOnline())
+                     {
+                         $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/validateUser.php")
+                                 .type("POST")
+                                 .data("{\"Dname\":\"" + user + "\"}")
+                                 .context(this)
+                                 .success(new Function() {
 
-                                 @Override
-                                 public void invoke($ droidQuery, Object... objects) {
-                                     if(((String)objects[0]).equalsIgnoreCase("false")) {
-                                         Toast.makeText(dsignup.this,"Username is used !!",Toast.LENGTH_LONG).show();
+                                     @Override
+                                     public void invoke($ droidQuery, Object... objects) {
+                                         if (((String) objects[0]).equalsIgnoreCase("false")) {
+                                             Toast.makeText(dsignup.this, "Username is used :(", Toast.LENGTH_LONG).show();
+                                         } else if (((String) objects[0]).equalsIgnoreCase("true")) {
+                                             scnd = (RelativeLayout) findViewById(R.id.scndSignup);
+                                             first = (LinearLayout) findViewById(R.id.firstSignup);
+                                             first.animate().translationXBy(-1000f).setDuration(700);
+                                             scnd.setAlpha(1f);
+                                             scnd.setVisibility(View.VISIBLE);
+                                             first.postDelayed(new Runnable() {
+                                                 @Override
+                                                 public void run() {
+                                                     first.setVisibility(View.GONE);
+                                                 }
+                                             }, 700);
+                                         }
                                      }
-                                     else
-                                     if(((String)objects[0]).equalsIgnoreCase("true")){
-                                         scnd=(RelativeLayout) findViewById(R.id.scndSignup);
-                                         first=(LinearLayout) findViewById(R.id.firstSignup);
-                                         first.animate().translationXBy(-1000f).setDuration(700);
-                                         scnd.setAlpha(1f);
-                                         scnd.setVisibility(View.VISIBLE);
-                                         first.postDelayed(new Runnable() {
-                                             @Override
-                                             public void run() {
-                                                 first.setVisibility(View.GONE);
-                                             }
-                                         }, 700);
+                                 })
+                                 .error(new Function() {
+                                     @Override
+                                     public void invoke($ $, Object... args) {
                                      }
-                                 }
-                             })
-                             .error(new Function() {
-                                 @Override
-                                 public void invoke($ $, Object... args) {
-                                     Toast.makeText(dsignup.this,"error",Toast.LENGTH_LONG).show();
-                                 }
-                             }));
+                                 }));
                     /* */
+                 }
+                     else{
+                         Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
+                     }
             }
         }
 
