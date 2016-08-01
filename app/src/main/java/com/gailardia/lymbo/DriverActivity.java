@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import java.util.HashMap;
@@ -46,6 +47,9 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
+import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
+import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
+import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,6 +100,69 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         } else {
             Log.i("Last Known Location", "Successful");
         }
+
+
+        ImageView icon = new ImageView(this); // Create an icon
+        icon.setImageDrawable( getResources().getDrawable(R.drawable.amjad) );
+
+        FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
+                .setContentView(icon)
+                .build();
+
+        SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
+
+        ImageView itemIcon = new ImageView(this);
+        itemIcon.setImageDrawable( getResources().getDrawable(R.drawable.car) );
+        SubActionButton button1 = itemBuilder.setContentView(itemIcon).build();
+
+        ImageView itemIcon2 = new ImageView(this);
+        itemIcon2.setImageDrawable( getResources().getDrawable(R.drawable.boy) );
+        SubActionButton button2 = itemBuilder.setContentView(itemIcon2).build();
+
+        ImageView itemIcon3 = new ImageView(this);
+        itemIcon3.setImageDrawable( getResources().getDrawable(R.drawable.car) );
+        SubActionButton button3 = itemBuilder.setContentView(itemIcon3).build();
+
+        ImageView itemIcon4 = new ImageView(this);
+        itemIcon4.setImageDrawable( getResources().getDrawable(R.drawable.boy) );
+        SubActionButton button4 = itemBuilder.setContentView(itemIcon4).build();
+
+
+        FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
+                .addSubActionView(button1)
+                .addSubActionView(button2)
+                // ...
+                .attachTo(actionButton)
+                .build();
+
+        FloatingActionMenu actionMenu2 = new FloatingActionMenu.Builder(this)
+                .addSubActionView(button3)
+                .addSubActionView(button4)
+                // ...
+                .attachTo(button1)
+                .build();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
     public void onMapReady(GoogleMap googleMap) {
