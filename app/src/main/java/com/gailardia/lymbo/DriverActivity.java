@@ -13,6 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -30,6 +31,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 
 import com.kosalgeek.asynctask.AsyncResponse;
@@ -50,6 +58,9 @@ import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -100,8 +111,6 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         } else {
             Log.i("Last Known Location", "Successful");
         }
-
-
         ImageView icon = new ImageView(this); // Create an icon
         icon.setImageDrawable( getResources().getDrawable(R.drawable.amjad) );
 
@@ -128,41 +137,31 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         SubActionButton button4 = itemBuilder.setContentView(itemIcon4).build();
 
 
-        FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
+        final FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button1)
                 .addSubActionView(button2)
                 // ...
                 .attachTo(actionButton)
                 .build();
 
-        FloatingActionMenu actionMenu2 = new FloatingActionMenu.Builder(this)
+        final FloatingActionMenu actionMenu2 = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button3)
                 .addSubActionView(button4)
                 // ...
                 .attachTo(button1)
                 .build();
 
+        actionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                actionMenu.toggle(true);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                if(!actionMenu.isOpen()&&actionMenu2.isOpen()){
+                    actionMenu.toggle(true);
+                    actionMenu2.toggle(true);
+                }
+            }
+        });
     }
 
     public void onMapReady(GoogleMap googleMap) {
@@ -256,8 +255,8 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
     public void accept(View view){
         final LatLng sydney = new LatLng(-34, 151);
         final LatLng test = new LatLng(-34, 152);
-        /*final Intent intent;
-        intent = new Intent(Intent.ACTION_VIEW,Uri.parse("http://maps.google.com/maps?" + "daddr=" + burj.latitude + "," + burj.longitude));
+        final Intent intent;
+        /*intent = new Intent(Intent.ACTION_VIEW,Uri.parse("http://maps.google.com/maps?" + "daddr=" + burj.latitude + "," + burj.longitude));
         intent.setPackage("com.google.android.apps.maps");
         if(intent.resolveActivity(getPackageManager()) != null){
             intent.setClassName("com.google.android.apps.maps","com.google.android.maps.MapsActivity");
@@ -276,11 +275,42 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         map.put("longitude",String.valueOf(longitude));
         map.put("Dname", sharedPreferences.getString("username", null));
         PostResponseAsyncTask task=new PostResponseAsyncTask(this, map);
-        task.execute("http://lymbo.esy.es/DriverLocation.php");
+        task.execute("http://lymbo.esy.es/locationsarray.php");
+        new getLocations().execute();
     }
 
     @Override
     public void processFinish(String s) {
-        Toast.makeText(this,s,Toast.LENGTH_LONG).show();
+        Log.i("Locations", s);
+    }
+
+    public class getLocations extends AsyncTask<String, String, String>{
+
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = "";
+            try {
+                URL url = new URL("http://lymbo.esy.es/locationsarray.php");
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                result = bufferedReader.readLine();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            try {
+                JSONObject jsonObject = new JSONObject(s);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.i("Locationsaha", s);
+        }
     }
 }
