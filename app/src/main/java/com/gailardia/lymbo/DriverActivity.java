@@ -1,8 +1,5 @@
 package com.gailardia.lymbo;
 
-import android.*;
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,24 +9,14 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -42,19 +29,12 @@ import java.util.HashMap;
 
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
@@ -64,8 +44,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.jar.*;
 
 public class DriverActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener, AsyncResponse {
     private GoogleMap mMap;
@@ -309,18 +287,42 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
                 JSONObject jsonObject;
                 JSONArray jsonArray = new JSONArray(s);
                 ArrayList<LatLng> latLng = new ArrayList<LatLng>();
+                ArrayList<Integer> carTypes = new ArrayList<>();
                 for(int i = 0; i < jsonArray.length(); i++){
                     jsonObject = (JSONObject) jsonArray.get(i);
                     latLng.add(new LatLng(jsonObject.getDouble("latitude"), jsonObject.getDouble("longitude")));
+                    switch(jsonObject.getString("type")){
+                        case "car": carTypes.add(1);
+                            break;
+                        case "amjad": carTypes.add(2);
+                            break;
+                        case "tuktuk": carTypes.add(3);
+                            break;
+                    }
                     Log.i("hala", String.valueOf(latLng.get(i).latitude));
                     Log.i("hala", String.valueOf(latLng.get(i).longitude));
                 }
                 for(int i = 0; i < latLng.size(); i++){
-                    mMap.addMarker(new MarkerOptions()
-                    .position(latLng.get(i))
-                    .draggable(false)
-                    .title("Driver" + i)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
+                    switch(carTypes.get(i)) {
+                        case 1 : mMap.addMarker(new MarkerOptions()
+                                .position(latLng.get(i))
+                                .draggable(false)
+                                .title("Driver" + i)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.carmarker)));
+                            break;
+                        case 2 : mMap.addMarker(new MarkerOptions()
+                                .position(latLng.get(i))
+                                .draggable(false)
+                                .title("Driver" + i)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.amjadmarker)));
+                            break;
+                        case 3 : mMap.addMarker(new MarkerOptions()
+                                .position(latLng.get(i))
+                                .draggable(false)
+                                .title("Driver" + i)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.tuktukmarker)));
+                            break;
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
