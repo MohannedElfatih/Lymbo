@@ -1,12 +1,19 @@
 package com.gailardia.lymbo;
 
+import android.*;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -17,13 +24,42 @@ import android.widget.Toast;
  * status bar and navigation/system bar) with user interaction.
  */
 public class choices extends AppCompatActivity {
-
+    private static final int REQUEST_PERMISSION = 10;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choices);
+        if(Build.VERSION.SDK_INT >= 23){
+            requestPermission();
+        }
         fade();
     }
+
+    private void requestPermission() {
+        String[] permissionLocation = new String[]{
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION};
+        ActivityCompat.requestPermissions(this,
+                permissionLocation,
+                REQUEST_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Yay", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Boohoo", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
+    }
+
     public  void fade(){
         LinearLayout choice = (LinearLayout) findViewById(R.id.choice);
         final ImageView logo = (ImageView) findViewById(R.id.imageView2);

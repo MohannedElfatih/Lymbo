@@ -6,4 +6,5 @@
     <!-- Strings related to login -->
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_driver">Map</string>
+    <string name="msg">Please enable all permissions</string>
 </resources>

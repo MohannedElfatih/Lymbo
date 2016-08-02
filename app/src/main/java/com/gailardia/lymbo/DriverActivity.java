@@ -1,7 +1,5 @@
 package com.gailardia.lymbo;
 
-import android.*;
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,42 +9,43 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.RelativeLayout;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.kosalgeek.asynctask.PostResponseAsyncTask;
+import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
+import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
+import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class DriverActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener, AsyncResponse {
-
     private GoogleMap mMap;
     private LocationManager locationManager;
     Location location;
@@ -54,14 +53,19 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
     final LatLng sydney = new LatLng(-34, 151);
     final LatLng test = new LatLng(-34, 150);
     final LatLng burj = new LatLng(25.197525, 55.274288);
+    private View view;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapLayout);
         mapFragment.getMapAsync(this);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        provider = locationManager.getBestProvider(new Criteria(), false);
         /*RelativeLayout mapLayout = (RelativeLayout) findViewById(R.id.relative);
         mapLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
             @Override
@@ -80,20 +84,65 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
                 mMap.animateCamera(cameraUpdate);
             }
         });*/
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        provider = locationManager.getBestProvider(new Criteria(), false);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
         location = locationManager.getLastKnownLocation(provider);
         if (location == null) {
             Log.i("Last Known Location", "Unsuccessful");
         } else {
             Log.i("Last Known Location", "Successful");
         }
+        ImageView icon = new ImageView(this); // Create an icon
+        icon.setImageDrawable( getResources().getDrawable(R.drawable.amjad) );
+
+        FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
+                .setContentView(icon)
+                .build();
+
+        SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
+
+        ImageView itemIcon = new ImageView(this);
+        itemIcon.setImageDrawable( getResources().getDrawable(R.drawable.car) );
+        SubActionButton button1 = itemBuilder.setContentView(itemIcon).build();
+
+        ImageView itemIcon2 = new ImageView(this);
+        itemIcon2.setImageDrawable( getResources().getDrawable(R.drawable.boy) );
+        SubActionButton button2 = itemBuilder.setContentView(itemIcon2).build();
+
+        ImageView itemIcon3 = new ImageView(this);
+        itemIcon3.setImageDrawable( getResources().getDrawable(R.drawable.car) );
+        SubActionButton button3 = itemBuilder.setContentView(itemIcon3).build();
+
+        ImageView itemIcon4 = new ImageView(this);
+        itemIcon4.setImageDrawable( getResources().getDrawable(R.drawable.boy) );
+        SubActionButton button4 = itemBuilder.setContentView(itemIcon4).build();
+
+
+        final FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
+                .addSubActionView(button1)
+                .addSubActionView(button2)
+                // ...
+                .attachTo(actionButton)
+                .build();
+
+        final FloatingActionMenu actionMenu2 = new FloatingActionMenu.Builder(this)
+                .addSubActionView(button3)
+                .addSubActionView(button4)
+                // ...
+                .attachTo(button1)
+                .build();
+
+        actionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                actionMenu.toggle(true);
+
+                if(!actionMenu.isOpen()&&actionMenu2.isOpen()){
+                    actionMenu.toggle(true);
+                    actionMenu2.toggle(true);
+                }
+            }
+        });
     }
 
-    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -170,6 +219,7 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        provider = locationManager.getBestProvider(new Criteria(), false);
         locationManager.requestLocationUpdates(provider, 400, 1, this);
     }
 
@@ -184,8 +234,8 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
     public void accept(View view){
         final LatLng sydney = new LatLng(-34, 151);
         final LatLng test = new LatLng(-34, 152);
-        /*final Intent intent;
-        intent = new Intent(Intent.ACTION_VIEW,Uri.parse("http://maps.google.com/maps?" + "daddr=" + burj.latitude + "," + burj.longitude));
+        final Intent intent;
+        /*intent = new Intent(Intent.ACTION_VIEW,Uri.parse("http://maps.google.com/maps?" + "daddr=" + burj.latitude + "," + burj.longitude));
         intent.setPackage("com.google.android.apps.maps");
         if(intent.resolveActivity(getPackageManager()) != null){
             intent.setClassName("com.google.android.apps.maps","com.google.android.maps.MapsActivity");
@@ -204,11 +254,80 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         map.put("longitude",String.valueOf(longitude));
         map.put("Dname", sharedPreferences.getString("username", null));
         PostResponseAsyncTask task=new PostResponseAsyncTask(this, map);
-        task.execute("http://lymbo.esy.es/DriverLocation.php");
+        task.execute("http://lymbo.esy.es/locationsarray.php");
+        new getLocations().execute();
     }
 
     @Override
     public void processFinish(String s) {
-        Toast.makeText(this,s,Toast.LENGTH_LONG).show();
+    }
+
+    public class getLocations extends AsyncTask<String, String, String>{
+
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = "";
+            try {
+                URL url = new URL("http://lymbo.esy.es/locationsarray.php");
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                result = bufferedReader.readLine();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            try {
+                JSONObject jsonObject;
+                JSONArray jsonArray = new JSONArray(s);
+                ArrayList<LatLng> latLng = new ArrayList<LatLng>();
+                ArrayList<Integer> carTypes = new ArrayList<>();
+                for(int i = 0; i < jsonArray.length(); i++){
+                    jsonObject = (JSONObject) jsonArray.get(i);
+                    latLng.add(new LatLng(jsonObject.getDouble("latitude"), jsonObject.getDouble("longitude")));
+                    switch(jsonObject.getString("type")){
+                        case "car": carTypes.add(1);
+                            break;
+                        case "amjad": carTypes.add(2);
+                            break;
+                        case "tuktuk": carTypes.add(3);
+                            break;
+                    }
+                    Log.i("hala", String.valueOf(latLng.get(i).latitude));
+                    Log.i("hala", String.valueOf(latLng.get(i).longitude));
+                }
+                for(int i = 0; i < latLng.size(); i++){
+                    switch(carTypes.get(i)) {
+                        case 1 : mMap.addMarker(new MarkerOptions()
+                                .position(latLng.get(i))
+                                .draggable(false)
+                                .title("Driver" + i)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.carmarker)));
+                            break;
+                        case 2 : mMap.addMarker(new MarkerOptions()
+                                .position(latLng.get(i))
+                                .draggable(false)
+                                .title("Driver" + i)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.amjadmarker)));
+                            break;
+                        case 3 : mMap.addMarker(new MarkerOptions()
+                                .position(latLng.get(i))
+                                .draggable(false)
+                                .title("Driver" + i)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.tuktukmarker)));
+                            break;
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.i("Locationsaha", s);
+        }
     }
 }
