@@ -59,6 +59,7 @@ import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -281,7 +282,6 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
 
     @Override
     public void processFinish(String s) {
-        Log.i("Locations", s);
     }
 
     public class getLocations extends AsyncTask<String, String, String>{
@@ -306,7 +306,22 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             try {
-                JSONObject jsonObject = new JSONObject(s);
+                JSONObject jsonObject;
+                JSONArray jsonArray = new JSONArray(s);
+                ArrayList<LatLng> latLng = new ArrayList<LatLng>();
+                for(int i = 0; i < jsonArray.length(); i++){
+                    jsonObject = (JSONObject) jsonArray.get(i);
+                    latLng.add(new LatLng(jsonObject.getDouble("latitude"), jsonObject.getDouble("longitude")));
+                    Log.i("hala", String.valueOf(latLng.get(i).latitude));
+                    Log.i("hala", String.valueOf(latLng.get(i).longitude));
+                }
+                for(int i = 0; i < latLng.size(); i++){
+                    mMap.addMarker(new MarkerOptions()
+                    .position(latLng.get(i))
+                    .draggable(false)
+                    .title("Driver" + i)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
