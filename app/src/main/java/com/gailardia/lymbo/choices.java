@@ -1,5 +1,8 @@
 package com.gailardia.lymbo;
 
+import android.*;
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -7,7 +10,10 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,43 +25,85 @@ import android.widget.Toast;
  * status bar and navigation/system bar) with user interaction.
  */
 public class choices extends AppCompatActivity {
-    private static final int REQUEST_PERMISSION = 10;
+    protected static final int REQUEST_PERMISSION = 10;
+    final String[] permissionLocation = new String[]{
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION};
+    boolean check = false;
+    View coordinatorLayoutView;
+    private android.app.Activity act;
     private Boolean exit = false;
+    private int counter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choices);
+        coordinatorLayoutView = findViewById(R.id.snackbarPosition);
         if(Build.VERSION.SDK_INT >= 23){
-            requestPermission();
+            counter = 0;
+            requestPermission(choices.this, coordinatorLayoutView);
         }
         fade();
     }
 
-    private void requestPermission() {
-        String[] permissionLocation = new String[]{
+    protected boolean requestPermission(final android.app.Activity choices, View view) {
+        act = choices;
+        final String[] permissionLocation = new String[]{
                 android.Manifest.permission.ACCESS_FINE_LOCATION,
                 android.Manifest.permission.ACCESS_COARSE_LOCATION};
-        ActivityCompat.requestPermissions(this,
-                permissionLocation,
-                REQUEST_PERMISSION);
+        if (ContextCompat.checkSelfPermission(act, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            check = true;
+            return check;
+        } else {
+            if (ContextCompat.checkSelfPermission(act,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(act,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    Snackbar.make(view, "Please enable permission for application to work.", Snackbar.LENGTH_INDEFINITE)
+                            .setAction("Enable", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    ActivityCompat.requestPermissions(act,
+                                            permissionLocation,
+                                            REQUEST_PERMISSION);
+                                }
+                            })
+                            .show();
+                } else {
+                    ActivityCompat.requestPermissions(act,
+                            permissionLocation,
+                            REQUEST_PERMISSION);
+                }
+            }
+            return check;
+        }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case REQUEST_PERMISSION: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "Yay", Toast.LENGTH_SHORT).show();
+                    check = true;
                 } else {
-                    Toast.makeText(this, "Boohoo", Toast.LENGTH_SHORT).show();
+                    if (counter == 0) {
+                        requestPermission(act, coordinatorLayoutView);
+                        counter++;
+                    } else {
+                        Toast.makeText(this, "Permission denied, application will close", Toast.LENGTH_SHORT).show();
+                        this.finishAffinity();
+                    }
                 }
-                return;
             }
+            return;
         }
     }
+
 
     public  void fade(){
         LinearLayout choice = (LinearLayout) findViewById(R.id.choice);
@@ -111,8 +159,22 @@ public class choices extends AppCompatActivity {
     }
 
     public void openMap(View view){
-        Intent intent = new Intent(this, Rider.class);
-        startActivity(intent);
+        if (ContextCompat.checkSelfPermission(act,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            Snackbar.make(view, "Please enable permission for application to work.", Snackbar.LENGTH_INDEFINITE)
+                    .setAction("Enable", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            ActivityCompat.requestPermissions(act,
+                                    permissionLocation,
+                                    REQUEST_PERMISSION);
+                        }
+                    })
+                    .show();
+        } else {
+            Intent intent = new Intent(this, Rider.class);
+            startActivity(intent);
+        }
     }
-
 }
