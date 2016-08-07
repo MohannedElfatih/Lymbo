@@ -1,7 +1,5 @@
 package com.gailardia.lymbo;
 
-import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,29 +8,23 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -41,17 +33,14 @@ import java.util.HashMap;
 
 import self.philbrown.droidQuery.$;
 import self.philbrown.droidQuery.AjaxOptions;
-import self.philbrown.droidQuery.AjaxTask;
 import self.philbrown.droidQuery.Function;
 
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
-    private final int FIVE_SECONDS = 5000;
-    Handler handler=new Handler();
     RelativeLayout scnd;
     LinearLayout first;
     int carType=0;
-    String Dname,Dpassword1,Dpassword2,DIMEI,type,Dphone;
+    String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -69,35 +58,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         });
     }
 
-    public void scheduleSendLocation() {
-        handler.postDelayed(new Runnable() {
-            public void run() {
-                sendLocation();          // this method will contain your almost-finished HTTP calls
-                handler.postDelayed(this, FIVE_SECONDS);
-            }
-        }, FIVE_SECONDS);
-    }
-    public void sendLocation(){
-        String latitude="1.2",longitude="2.2";
-
-        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/ajaxPut.php")
-                .type("POST")
-                .data("{\"Dname\":\"h\",\"latitude\":\""+latitude+"\",\"longitude\":\""+longitude+"\"}")
-                .context(this)
-                .success(new Function() {
-
-                    @Override
-                    public void invoke($ $, Object... objects) {
-                    }
-                })
-                .error(new Function() {
-                    @Override
-                    public void invoke($ $, Object... args) {
-                    }
-                }));
-
-    }
-
     public void Firstsignup(){
         RelativeLayout scnd=(RelativeLayout) findViewById(R.id.scndSignup);
         LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
@@ -109,54 +69,61 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         EditText password1=(EditText) findViewById(R.id.password1);
         EditText password2=(EditText) findViewById(R.id.password2);
         EditText phoneNumber=(EditText) findViewById(R.id.phone);
+        EditText firstName=(EditText)findViewById(R.id.firstName);
+        EditText lastName=(EditText)findViewById(R.id.lastName);
 
         String user = userName.getText().toString();
         String pass1 = password1.getText().toString();
         String pass2 = password2.getText().toString();
         String phoneNum = phoneNumber.getText().toString();
+        String firstN =firstName.getText().toString();
+        String last =lastName.getText().toString();
 
-        if(user.isEmpty() || pass1.isEmpty() || pass2.isEmpty() || phoneNum == null){
-            Toast.makeText(getApplicationContext(), "Fill all the fields.", Toast.LENGTH_SHORT).show();
+        if(user.isEmpty() || pass1.isEmpty() || pass2.isEmpty() || phoneNum.isEmpty() || firstN.isEmpty() || last.isEmpty()){
+            Toast.makeText(getApplicationContext(), "Fill all the fields!", Toast.LENGTH_SHORT).show();
 
         } else {
                  if(!(pass1.equals(pass2))) {
-                     Toast.makeText(getApplicationContext(), "Passwords don't match.", Toast.LENGTH_SHORT).show();
+                     Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
 
                  } else {
-                     $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/validateUser.php")
-                             .type("POST")
-                             .data("{\"Dname\":\""+user+"\"}")
-                             .context(this)
-                             .success(new Function() {
+                     if (isOnline())
+                     {
+                         $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/validateUser.php")
+                                 .type("POST")
+                                 .data("{\"Dname\":\"" + user + "\"}")
+                                 .context(this)
+                                 .success(new Function() {
 
-                                 @Override
-                                 public void invoke($ droidQuery, Object... objects) {
-                                     if(((String)objects[0]).equalsIgnoreCase("false")) {
-                                         Toast.makeText(dsignup.this,"Username is used :(",Toast.LENGTH_LONG).show();
+                                     @Override
+                                     public void invoke($ droidQuery, Object... objects) {
+                                         if (((String) objects[0]).equalsIgnoreCase("false")) {
+                                             Toast.makeText(dsignup.this, "Username is used :(", Toast.LENGTH_LONG).show();
+                                         } else if (((String) objects[0]).equalsIgnoreCase("true")) {
+                                             scnd = (RelativeLayout) findViewById(R.id.scndSignup);
+                                             first = (LinearLayout) findViewById(R.id.firstSignup);
+                                             first.animate().translationXBy(-1000f).setDuration(700);
+                                             scnd.setAlpha(1f);
+                                             scnd.setVisibility(View.VISIBLE);
+                                             first.postDelayed(new Runnable() {
+                                                 @Override
+                                                 public void run() {
+                                                     first.setVisibility(View.GONE);
+                                                 }
+                                             }, 700);
+                                         }
                                      }
-                                     else
-                                     if(((String)objects[0]).equalsIgnoreCase("true")){
-                                         scnd=(RelativeLayout) findViewById(R.id.scndSignup);
-                                         first=(LinearLayout) findViewById(R.id.firstSignup);
-                                         first.animate().translationXBy(-1000f).setDuration(700);
-                                         scnd.setAlpha(1f);
-                                         scnd.setVisibility(View.VISIBLE);
-                                         first.postDelayed(new Runnable() {
-                                             @Override
-                                             public void run() {
-                                                 first.setVisibility(View.GONE);
-                                             }
-                                         }, 700);
+                                 })
+                                 .error(new Function() {
+                                     @Override
+                                     public void invoke($ $, Object... args) {
                                      }
-                                 }
-                             })//
-                             .error(new Function() {
-                                 @Override
-                                 public void invoke($ $, Object... args) {
-                                     Toast.makeText(dsignup.this,"error",Toast.LENGTH_LONG).show();
-                                 }
-                             }));
+                                 }));
                     /* */
+                 }
+                     else{
+                         Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
+                     }
             }
         }
 
@@ -205,7 +172,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
-                    car2.setTextColor(Color.parseColor("#3289C7"));
+                    car2.setTextColor(Color.parseColor("#fa9684"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
@@ -216,7 +183,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
-                    car2.setTextColor(Color.parseColor("#3289C7"));
+                    car2.setTextColor(Color.parseColor("#fa9684"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
@@ -228,7 +195,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
-                    tuktuk2.setTextColor(Color.parseColor("#3289C7"));
+                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
                     unanimateCarChoice();
@@ -239,7 +206,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
-                    tuktuk2.setTextColor(Color.parseColor("#3289C7"));
+                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
                     unanimateCarChoice();
@@ -251,7 +218,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                    amjad2.setTextColor(Color.parseColor("#3289C7"));
+                    amjad2.setTextColor(Color.parseColor("#fa9684"));
                     type = "amjad";
                     unanimateCarChoice();
                     break;
@@ -262,7 +229,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                    amjad2.setTextColor(Color.parseColor("#3289C7"));
+                    amjad2.setTextColor(Color.parseColor("#fa9684"));
                     type = "amjad";
                     unanimateCarChoice();
                     break;
@@ -309,6 +276,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         Dpassword1=password1.getText().toString();
         Dpassword2=password2.getText().toString();
         Dphone=phone.getText().toString();
+
+        //String image=getStringImage(selectedImage);
         DIMEI="00971503468518";
 
         final HashMap post = new HashMap();
@@ -319,6 +288,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         post.put("type",type);
         post.put("firstName", firstName.getText().toString());
         post.put("lastName", lastName.getText().toString());
+        //post.put("image",image);
 
         PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
 
@@ -331,7 +301,13 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
 
     }
-
+    /*public String getStringImage(Bitmap bmp){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        return encodedImage;
+    }*/
     public boolean isOnline() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
