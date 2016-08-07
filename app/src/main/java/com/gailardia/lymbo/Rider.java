@@ -193,6 +193,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                             @Override
                             public void onClick(View view) {
                                 destinationMarker(place.getLatLng());
+                                new getLocations().execute();
                             }
                         })
                         .show();
@@ -211,7 +212,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             return;
         }
         mMap.setMyLocationEnabled(true);
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+        if (location != null) {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+        }
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
