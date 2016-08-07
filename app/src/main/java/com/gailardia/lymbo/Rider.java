@@ -1,5 +1,6 @@
 package com.gailardia.lymbo;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -74,6 +76,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rider);
+        coordinatorLayoutView = findViewById(R.id.snackbarPosition);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapLayout);
@@ -177,6 +180,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             public void onPlaceSelected(final Place place) {
                 Log.i("Place", "Place: " + place.getName());
                 Log.i("place location", String.valueOf(place.getLatLng()));
+                if (searchMarker != null) {
+                    searchMarker.remove();
+                }
                 searchMarker = mMap.addMarker(new MarkerOptions()
                         .position(place.getLatLng())
                         .draggable(false)
