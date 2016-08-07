@@ -1,11 +1,7 @@
 package com.gailardia.lymbo;
 
-import android.*;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -13,7 +9,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,6 +20,8 @@ import android.widget.Toast;
  */
 public class choices extends AppCompatActivity {
     private static final int REQUEST_PERMISSION = 10;
+    private Boolean exit = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,10 +76,11 @@ public class choices extends AppCompatActivity {
             }
         }.start();
     }
+
     public void Dsignin(View view){
         /*SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
         if(shared.getBoolean("signed", false)){
-            Intent intent = new Intent(this, DriverActivity.class);
+            Intent intent = new Intent(this, Rider.class);
             startActivity(intent);
 
         } else {
@@ -92,7 +90,7 @@ public class choices extends AppCompatActivity {
         Intent intent = new Intent(this, dlogin.class);
         startActivity(intent);
     }
-    private Boolean exit = false;
+
     @Override
     public void onBackPressed() {
         if (exit) {
@@ -113,7 +111,7 @@ public class choices extends AppCompatActivity {
     }
 
     public void openMap(View view){
-        Intent intent = new Intent(this, DriverActivity.class);
+        Intent intent = new Intent(this, Rider.class);
         startActivity(intent);
     }
 

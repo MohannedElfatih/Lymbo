@@ -10,10 +10,12 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -27,6 +29,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.google.android.gms.maps.GoogleMap;
@@ -45,19 +60,20 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class DriverActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener, AsyncResponse {
-    private GoogleMap mMap;
-    private LocationManager locationManager;
+public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
     Location location;
     String provider;
-    final LatLng sydney = new LatLng(-34, 151);
-    final LatLng test = new LatLng(-34, 150);
-    final LatLng burj = new LatLng(25.197525, 55.274288);
-    private View view;
+    View coordinatorLayoutView;
+    private GoogleMap mMap;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationManager locationManager;
+    private Marker destinationMarker;
+    private Marker searchMarker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_driver);
+        setContentView(R.layout.activity_rider);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapLayout);
@@ -90,8 +106,20 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         } else {
             Log.i("Last Known Location", "Successful");
         }
+        //createFloatingAction();
+        autoCompleteListener();
+        coordinatorLayoutView = findViewById(R.id.snackbarPosition);
+        mGoogleApiClient = new GoogleApiClient
+                .Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
+    }
+
+    private void createFloatingAction() {
         ImageView icon = new ImageView(this); // Create an icon
-        icon.setImageDrawable( getResources().getDrawable(R.drawable.amjad) );
+        icon.setImageDrawable(getResources().getDrawable(R.drawable.amjad));
 
         FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
                 .setContentView(icon)
@@ -100,33 +128,30 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
 
         ImageView itemIcon = new ImageView(this);
-        itemIcon.setImageDrawable( getResources().getDrawable(R.drawable.car) );
+        itemIcon.setImageDrawable(getResources().getDrawable(R.drawable.car));
         SubActionButton button1 = itemBuilder.setContentView(itemIcon).build();
-
         ImageView itemIcon2 = new ImageView(this);
-        itemIcon2.setImageDrawable( getResources().getDrawable(R.drawable.boy) );
+        itemIcon2.setImageDrawable(getResources().getDrawable(R.drawable.boy));
         SubActionButton button2 = itemBuilder.setContentView(itemIcon2).build();
 
         ImageView itemIcon3 = new ImageView(this);
-        itemIcon3.setImageDrawable( getResources().getDrawable(R.drawable.car) );
+        itemIcon3.setImageDrawable(getResources().getDrawable(R.drawable.search));
         SubActionButton button3 = itemBuilder.setContentView(itemIcon3).build();
 
         ImageView itemIcon4 = new ImageView(this);
-        itemIcon4.setImageDrawable( getResources().getDrawable(R.drawable.boy) );
+        itemIcon4.setImageDrawable(getResources().getDrawable(R.drawable.boy));
         SubActionButton button4 = itemBuilder.setContentView(itemIcon4).build();
 
 
         final FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button1)
                 .addSubActionView(button2)
-                // ...
                 .attachTo(actionButton)
                 .build();
 
         final FloatingActionMenu actionMenu2 = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button3)
                 .addSubActionView(button4)
-                // ...
                 .attachTo(button1)
                 .build();
 
@@ -135,10 +160,41 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
             public void onClick(View view) {
                 actionMenu.toggle(true);
 
-                if(!actionMenu.isOpen()&&actionMenu2.isOpen()){
+                if (!actionMenu.isOpen() && actionMenu2.isOpen()) {
                     actionMenu.toggle(true);
                     actionMenu2.toggle(true);
                 }
+            }
+        });
+        autoCompleteListener();
+    }
+
+    private void autoCompleteListener() {
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(final Place place) {
+                Log.i("Place", "Place: " + place.getName());
+                Log.i("place location", String.valueOf(place.getLatLng()));
+                searchMarker = mMap.addMarker(new MarkerOptions()
+                        .position(place.getLatLng())
+                        .draggable(false)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.searchlocation)));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15));
+                Snackbar.make(coordinatorLayoutView, "Make this your destination?", Snackbar.LENGTH_LONG)
+                        .setAction("Yes!", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                destinationMarker(place.getLatLng());
+                            }
+                        })
+                        .show();
+            }
+
+            @Override
+            public void onError(Status status) {
+                Log.i("Place Error", "An error occurred: " + status);
             }
         });
     }
@@ -149,11 +205,12 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
             return;
         }
         mMap.setMyLocationEnabled(true);
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
                 boolean gpsStatus = locationManager.isProviderEnabled(locationManager.GPS_PROVIDER);
-                if(!gpsStatus){
+                if (!gpsStatus) {
                     alert();
                     return true;
                 } else {
@@ -161,8 +218,32 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
                 }
             }
         });
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                destinationMarker(latLng);
+            }
+        });
     }
 
+    protected void destinationMarker(LatLng latLng) {
+        if (searchMarker != null) {
+            searchMarker.remove();
+        }
+        if (destinationMarker == null) {
+            destinationMarker = mMap.addMarker(new MarkerOptions()
+                    .title("Destination")
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                    .position(latLng));
+        } else {
+            destinationMarker.remove();
+            destinationMarker = mMap.addMarker(new MarkerOptions()
+                    .title("Destination")
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                    .draggable(true)
+                    .position(latLng));
+        }
+    }
 
     @Override
     public void onLocationChanged(Location location) {
@@ -184,7 +265,7 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         alert();
     }
 
-    protected void alert(){
+    protected void alert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
         // Setting Dialog Title
@@ -198,7 +279,7 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
 
         // On pressing Settings button
         alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
+            public void onClick(DialogInterface dialog, int which) {
                 startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             }
         });
@@ -231,38 +312,16 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
         locationManager.removeUpdates(this);
     }
 
-    public void accept(View view){
-        final LatLng sydney = new LatLng(-34, 151);
-        final LatLng test = new LatLng(-34, 152);
-        final Intent intent;
-        /*intent = new Intent(Intent.ACTION_VIEW,Uri.parse("http://maps.google.com/maps?" + "daddr=" + burj.latitude + "," + burj.longitude));
-        intent.setPackage("com.google.android.apps.maps");
-        if(intent.resolveActivity(getPackageManager()) != null){
-            intent.setClassName("com.google.android.apps.maps","com.google.android.maps.MapsActivity");
-            startActivity(intent);
-        } else {
-            new AlertDialog.Builder(this)
-                    .setTitle("Map unavailable")
-                    .setMessage("This application requires google maps to be installed!")
-                    .show();
-        }*/
-        SharedPreferences sharedPreferences = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
-        HashMap map=new HashMap();
-        Double latitude = burj.latitude;
-        Double longitude = burj.longitude;
-        map.put("latitude",String.valueOf(latitude));
-        map.put("longitude",String.valueOf(longitude));
-        map.put("Dname", sharedPreferences.getString("username", null));
-        PostResponseAsyncTask task=new PostResponseAsyncTask(this, map);
-        task.execute("http://lymbo.esy.es/locationsarray.php");
-        new getLocations().execute();
-    }
-
     @Override
     public void processFinish(String s) {
     }
 
-    public class getLocations extends AsyncTask<String, String, String>{
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(Rider.this, "Connection to places database failed.", Toast.LENGTH_SHORT).show();
+    }
+
+    public class getLocations extends AsyncTask<String, String, String> {
 
         @Override
         protected String doInBackground(String... strings) {
@@ -288,39 +347,45 @@ public class DriverActivity extends FragmentActivity implements OnMapReadyCallba
                 JSONArray jsonArray = new JSONArray(s);
                 ArrayList<LatLng> latLng = new ArrayList<LatLng>();
                 ArrayList<Integer> carTypes = new ArrayList<>();
-                for(int i = 0; i < jsonArray.length(); i++){
+                for (int i = 0; i < jsonArray.length(); i++) {
                     jsonObject = (JSONObject) jsonArray.get(i);
                     latLng.add(new LatLng(jsonObject.getDouble("latitude"), jsonObject.getDouble("longitude")));
-                    switch(jsonObject.getString("type")){
-                        case "car": carTypes.add(1);
+                    switch (jsonObject.getString("type")) {
+                        case "car":
+                            carTypes.add(1);
                             break;
-                        case "amjad": carTypes.add(2);
+                        case "amjad":
+                            carTypes.add(2);
                             break;
-                        case "tuktuk": carTypes.add(3);
+                        case "tuktuk":
+                            carTypes.add(3);
                             break;
                     }
                     Log.i("hala", String.valueOf(latLng.get(i).latitude));
                     Log.i("hala", String.valueOf(latLng.get(i).longitude));
                 }
-                for(int i = 0; i < latLng.size(); i++){
-                    switch(carTypes.get(i)) {
-                        case 1 : mMap.addMarker(new MarkerOptions()
-                                .position(latLng.get(i))
-                                .draggable(false)
-                                .title("Driver" + i)
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.carmarker)));
+                for (int i = 0; i < latLng.size(); i++) {
+                    switch (carTypes.get(i)) {
+                        case 1:
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(latLng.get(i))
+                                    .draggable(false)
+                                    .title("Driver" + i)
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.carmarker)));
                             break;
-                        case 2 : mMap.addMarker(new MarkerOptions()
-                                .position(latLng.get(i))
-                                .draggable(false)
-                                .title("Driver" + i)
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.amjadmarker)));
+                        case 2:
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(latLng.get(i))
+                                    .draggable(false)
+                                    .title("Driver" + i)
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.amjadmarker)));
                             break;
-                        case 3 : mMap.addMarker(new MarkerOptions()
-                                .position(latLng.get(i))
-                                .draggable(false)
-                                .title("Driver" + i)
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.tuktukmarker)));
+                        case 3:
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(latLng.get(i))
+                                    .draggable(false)
+                                    .title("Driver" + i)
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.tuktukmarker)));
                             break;
                     }
                 }
