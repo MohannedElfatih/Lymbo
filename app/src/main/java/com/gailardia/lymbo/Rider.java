@@ -180,6 +180,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             public void onPlaceSelected(final Place place) {
                 Log.i("Place", "Place: " + place.getName());
                 Log.i("place location", String.valueOf(place.getLatLng()));
+                if (searchMarker != null) {
+                    searchMarker.remove();
+                }
                 searchMarker = mMap.addMarker(new MarkerOptions()
                         .position(place.getLatLng())
                         .draggable(false)
