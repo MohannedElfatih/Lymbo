@@ -41,6 +41,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     LinearLayout first;
     int carType=0;
     String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
+    Bitmap selectedImage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -64,6 +66,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         scnd.setVisibility(View.INVISIBLE);
         first.setVisibility(View.VISIBLE);
     }
+
     public void Scndsignup(View view){
         EditText userName=(EditText) findViewById(R.id.name);
         EditText password1=(EditText) findViewById(R.id.password1);
@@ -128,6 +131,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         }
 
     }
+
     public void goDlogin(View view){
         dsignup s=new dsignup();
         dlogin d=new dlogin();
@@ -136,7 +140,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         startActivity(intent);
         finish();
     }
-    Bitmap selectedImage;
+
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
         CircularImageView selectphoto=(CircularImageView) findViewById(R.id.selected);
@@ -172,7 +176,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
-                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    car2.setTextColor(Color.parseColor("#3289C7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
@@ -183,7 +187,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
-                    car2.setTextColor(Color.parseColor("#fa9684"));
+                    car2.setTextColor(Color.parseColor("#3289C7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
@@ -195,7 +199,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
-                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#3289C7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
                     unanimateCarChoice();
@@ -206,7 +210,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
-                    tuktuk2.setTextColor(Color.parseColor("#fa9684"));
+                    tuktuk2.setTextColor(Color.parseColor("#3289C7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
                     unanimateCarChoice();
@@ -218,7 +222,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                    amjad2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#3289C7"));
                     type = "amjad";
                     unanimateCarChoice();
                     break;
@@ -229,7 +233,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     car2.setTextColor(Color.parseColor("#d7d7d7"));
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
-                    amjad2.setTextColor(Color.parseColor("#fa9684"));
+                    amjad2.setTextColor(Color.parseColor("#3289C7"));
                     type = "amjad";
                     unanimateCarChoice();
                     break;
