@@ -42,6 +42,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.kosalgeek.asynctask.AsyncResponse;
@@ -61,6 +62,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
     Location location;
@@ -186,7 +188,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 searchMarker = mMap.addMarker(new MarkerOptions()
                         .position(place.getLatLng())
                         .draggable(false)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.searchlocation)));
+                        .icon(imageType(place.getPlaceTypes())));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15));
                 Snackbar.make(coordinatorLayoutView, "Make this your destination?", Snackbar.LENGTH_LONG)
                         .setAction("Yes!", new View.OnClickListener() {
@@ -204,6 +206,70 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 Log.i("Place Error", "An error occurred: " + status);
             }
         });
+    }
+
+    private BitmapDescriptor imageType(List<Integer> placeTypes) {
+        BitmapDescriptor icon;
+        switch (placeTypes.get(0)) {
+            case 6:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.atmpin);
+                break;
+            case 7:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.bakerypin);
+                break;
+            case 8:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.bankpin);
+                break;
+            case 15:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.coffeeshoppin);
+                break;
+            case 30:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.doctorpin);
+                break;
+            case 33:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.embassypin);
+                break;
+            case 36:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.firestation);
+                break;
+            case 41:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.gasstationpoint);
+                break;
+            case 44:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.gympin);
+                break;
+            case 50:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.doctorpin);
+                break;
+            case 2:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.markerairport);
+                break;
+            case 66:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.museumpin);
+                break;
+            case 72:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.pharmacypin);
+                break;
+            case 76:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.policepin);
+                break;
+            case 79:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.restaurantpin);
+                break;
+            case 1020:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.roadpin);
+                break;
+            case 84:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.shoplocation);
+                break;
+            case 94:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.universitypin);
+                break;
+            default:
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.atmpin);
+                break;
+        }
+        return icon;
     }
 
     public void onMapReady(GoogleMap googleMap) {
