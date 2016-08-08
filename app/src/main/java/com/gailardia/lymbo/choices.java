@@ -153,11 +153,8 @@ public class choices extends AppCompatActivity {
                     exit = false;
                 }
             }, 3 * 1000);
-
         }
-
     }
-
     public void openMap(View view){
         if (ContextCompat.checkSelfPermission(act,
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
