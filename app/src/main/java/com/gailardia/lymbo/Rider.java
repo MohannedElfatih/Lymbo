@@ -1,6 +1,7 @@
 package com.gailardia.lymbo;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,8 +20,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -73,6 +77,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     private LocationManager locationManager;
     private Marker destinationMarker;
     private Marker searchMarker;
+    View bottomsheet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +125,62 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this, this)
                 .build();
+    }
+
+    public void openBottomSheet() {
+        bottomsheet = getLayoutInflater().inflate(R.layout.bottom_sheet, null);
+
+        ImageButton car = (ImageButton) findViewById(R.id.car);
+        ImageButton tuktuk =  (ImageButton) findViewById(R.id.tuktuk);
+        ImageView amjad = (ImageView) findViewById(R.id.amjad);
+
+
+        final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
+        mBottomSheetDialog.setContentView(bottomsheet);
+        mBottomSheetDialog.setCancelable(true);
+        mBottomSheetDialog.setCanceledOnTouchOutside(false);
+        mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+        mBottomSheetDialog.show();
+
+
+    }
+    public void type(View view) {
+        String type = "";
+        ImageButton car = (ImageButton) bottomsheet.findViewById(R.id.car);
+        ImageButton tuktuk = (ImageButton) bottomsheet.findViewById(R.id.tuktuk);
+        ImageButton amjad = (ImageButton) bottomsheet.findViewById(R.id.amjad);
+
+
+        type = "";
+        if (car != null && tuktuk != null && amjad != null) {
+            switch (view.getId()) {
+
+                case R.id.car:
+                    //Inform the user te button1 has been clicked
+                    car.setImageResource(R.drawable.redcar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    type = "car";
+                    break;
+
+                case R.id.tuktuk:
+                    //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.amjad);
+                    tuktuk.setImageResource(R.drawable.redraksha);
+                    type = "tuktuk";
+                    break;
+
+                case R.id.amjad:
+                    //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.choicecar);
+                    amjad.setImageResource(R.drawable.redamjad);
+                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    type = "amjad";
+                    break;
+            }
+        }
     }
 
     private void createFloatingAction() {
