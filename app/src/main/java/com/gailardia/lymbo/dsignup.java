@@ -71,18 +71,16 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         EditText userName=(EditText) findViewById(R.id.name);
         EditText password1=(EditText) findViewById(R.id.password1);
         EditText password2=(EditText) findViewById(R.id.password2);
-        EditText phoneNumber=(EditText) findViewById(R.id.phone);
         EditText firstName=(EditText)findViewById(R.id.firstName);
         EditText lastName=(EditText)findViewById(R.id.lastName);
 
         String user = userName.getText().toString();
         String pass1 = password1.getText().toString();
         String pass2 = password2.getText().toString();
-        String phoneNum = phoneNumber.getText().toString();
         String firstN =firstName.getText().toString();
         String last =lastName.getText().toString();
 
-        if(user.isEmpty() || pass1.isEmpty() || pass2.isEmpty() || phoneNum.isEmpty() || firstN.isEmpty() || last.isEmpty()){
+        if(user.isEmpty() || pass1.isEmpty() | pass2.isEmpty() || firstN.isEmpty() || last.isEmpty()){
             Toast.makeText(getApplicationContext(), "Fill all the fields!", Toast.LENGTH_SHORT).show();
 
         } else {
