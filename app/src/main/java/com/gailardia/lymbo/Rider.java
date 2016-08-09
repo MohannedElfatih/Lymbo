@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -49,6 +50,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.google.android.gms.maps.GoogleMap;
@@ -69,15 +72,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
+    public List<Polyline> polyLines = new ArrayList<Polyline>();
     Location location;
     String provider;
     View coordinatorLayoutView;
+    View bottomsheet;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
     private Marker destinationMarker;
     private Marker searchMarker;
-    View bottomsheet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,17 +146,12 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
         mBottomSheetDialog.show();
-
-
     }
     public void type(View view) {
         String type = "";
         ImageButton car = (ImageButton) bottomsheet.findViewById(R.id.car);
         ImageButton tuktuk = (ImageButton) bottomsheet.findViewById(R.id.tuktuk);
         ImageButton amjad = (ImageButton) bottomsheet.findViewById(R.id.amjad);
-
-
-        type = "";
         if (car != null && tuktuk != null && amjad != null) {
             switch (view.getId()) {
 
@@ -257,6 +256,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                             public void onClick(View view) {
                                 destinationMarker(place.getLatLng());
                                 new getLocations().execute();
+                                String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(place.getLatLng().latitude), String.valueOf(place.getLatLng().longitude)};
+                                new getRoute().execute(params);
                             }
                         })
                         .show();
@@ -455,6 +456,77 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Toast.makeText(Rider.this, "Connection to places database failed.", Toast.LENGTH_SHORT).show();
+    }
+
+    public class getRoute extends AsyncTask<String, String, String> {
+        private List<LatLng> latLngs = new ArrayList<LatLng>();
+
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = "";
+            try {
+                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin="
+                        + strings[0] + "," + strings[1] + "&"
+                        + "destination=" + strings[2] + "," + strings[3] + "&key"
+                        + "AIzaSyDtYl3HYOjjLLbyEkISc4jiy9KG4rUDrms");
+                StringBuffer buffer = new StringBuffer();
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                while ((result = bufferedReader.readLine()) != null) {
+                    buffer.append(result + "\n");
+                }
+                return buffer.toString();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String data) {
+            try {
+                List<Route> routes = new ArrayList<>();
+                JSONObject jsonObject = new JSONObject(data);
+                JSONArray jsonArray = jsonObject.getJSONArray("routes");
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonRoute = jsonArray.getJSONObject(i);
+                    Route route = new Route();
+                    JSONObject overviewPoly = jsonRoute.getJSONObject("overview_polyline");
+                    JSONArray legs = jsonRoute.getJSONArray("legs");
+                    JSONObject leg = legs.getJSONObject(0);
+                    route.distance = leg.getJSONObject("distance").getInt("value");
+                    route.distanceText = leg.getJSONObject("distance").getString("text");
+                    route.duration = leg.getJSONObject("duration").getInt("value");
+                    route.durationText = leg.getJSONObject("duration").getString("text");
+                    route.endAddress = leg.getString("end_address");
+                    route.startAddress = leg.getString("start_address");
+                    route.endLocation = new LatLng(leg.getJSONObject("end_location").getDouble("lat"), leg.getJSONObject("end_location").getDouble("lng"));
+                    route.startLocation = new LatLng(leg.getJSONObject("start_location").getDouble("lat"), leg.getJSONObject("start_location").getDouble("lng"));
+                    route.points = new Route().decodePolyLine(overviewPoly.getString("points"));
+                    routes.add(route);
+                }
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(routes.get(0).startLocation, 14));
+                PolylineOptions polylineOptions = new PolylineOptions()
+                        .geodesic(true)
+                        .color(Color.BLUE)
+                        .width(10);
+                polylineOptions.add(routes.get(0).startLocation);
+                for (int i = 0; i < routes.get(0).points.size(); i++) {
+                    polylineOptions.add(routes.get(0).points.get(i));
+                }
+                Log.i("Distance", "Distance is : " + routes.get(0).getDistanceText() + " Duration is : " + routes.get(0).getDurationText());
+                polylineOptions.add(routes.get(0).endLocation);
+                for (int i = 0; i < polyLines.size(); i++) {
+                    polyLines.get(i).remove();
+                }
+                polyLines.clear();
+                polyLines.add(mMap.addPolyline(polylineOptions));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public class getLocations extends AsyncTask<String, String, String> {
