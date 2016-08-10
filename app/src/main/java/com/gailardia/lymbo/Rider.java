@@ -76,7 +76,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     Location location;
     String provider;
     View coordinatorLayoutView;
-    View bottomsheet;
+    View bottomsheet,driversheet;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
@@ -146,6 +146,17 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
         mBottomSheetDialog.show();
+    }
+    public void openDriverSheet() {
+        driversheet = getLayoutInflater().inflate(R.layout.driver_sheet, null);
+        final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
+        mBottomSheetDialog.setContentView(driversheet);
+        mBottomSheetDialog.setCancelable(true);
+        //   mBottomSheetDialog.setCanceledOnTouchOutside(false);
+        mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+        mBottomSheetDialog.show();
+
     }
     public void type(View view) {
         String type = "";
