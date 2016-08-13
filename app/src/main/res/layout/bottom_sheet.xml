@@ -97,7 +97,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Price : "
-            android:id="@+id/textView2"
+            android:id="@+id/priceID"
             android:textSize="18sp"
             android:paddingTop="10dp"
             android:textColor="#FFFFFF"
