@@ -65,6 +65,7 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
@@ -73,8 +74,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     public List<Route> routes = new ArrayList<>();
     Location location;
     String provider;
+    View bottomsheet, driversheet;
     View coordinatorLayoutView;
-    View bottomsheet;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
@@ -129,11 +130,20 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .build();
     }
 
+    public void openDriverSheet() {
+        driversheet = getLayoutInflater().inflate(R.layout.driver_sheet, null);
+        final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
+        mBottomSheetDialog.setContentView(driversheet);
+        mBottomSheetDialog.setCancelable(true);
+        //   mBottomSheetDialog.setCanceledOnTouchOutside(false);
+        mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+        mBottomSheetDialog.show();
+
+    }
+
     public void openBottomSheet() {
         bottomsheet = getLayoutInflater().inflate(R.layout.bottom_sheet, null);
-        ImageButton car = (ImageButton) findViewById(R.id.car);
-        ImageButton tuktuk = (ImageButton) findViewById(R.id.tuktuk);
-        ImageView amjad = (ImageView) findViewById(R.id.amjad);
         ImageButton accept = (ImageButton) bottomsheet.findViewById(R.id.accept);
         ImageButton cancel = (ImageButton) bottomsheet.findViewById(R.id.cancel);
         TextView price = (TextView) bottomsheet.findViewById(R.id.price);
@@ -142,7 +152,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         Log.wtf("ErrorsMan", String.valueOf(routes.size()));
         duration.setText(routes.get(routes.size() - 1).durationText);
         distance.setText(routes.get(routes.size() - 1).distanceText);
-        price.setText("Price is 100 SDG");
+        price.setText(" Choose vehicle type.");
         final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -199,19 +209,21 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     }
 
     public void type(View view) {
-        String type = "";
+        String type = "", textprice;
         ImageButton car = (ImageButton) bottomsheet.findViewById(R.id.car);
         ImageButton tuktuk = (ImageButton) bottomsheet.findViewById(R.id.tuktuk);
         ImageButton amjad = (ImageButton) bottomsheet.findViewById(R.id.amjad);
+        TextView text = (TextView) bottomsheet.findViewById(R.id.price);
         if (car != null && tuktuk != null && amjad != null) {
             switch (view.getId()) {
-
                 case R.id.car:
                     //Inform the user te button1 has been clicked
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     type = "car";
+                    textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    text.setText("The price is: " + textprice + "SDG");
                     break;
 
                 case R.id.tuktuk:
@@ -220,6 +232,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     type = "tuktuk";
+                    textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    text.setText("The price is: " + textprice + " SDG");
                     break;
 
                 case R.id.amjad:
@@ -228,9 +242,60 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     amjad.setImageResource(R.drawable.redamjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     type = "amjad";
+                    textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    text.setText("The price is: " + textprice + "SDG");
                     break;
             }
         }
+        Log.i("DistanceVal", String.valueOf(routes.get(routes.size() - 1).distance));
+    }
+
+    public int getPrice(String type, int distance) {
+        //The method takes the type or vehicle and the distance which should be provided by Mohanned later
+        int GenehperKilo = 0, price = 0;
+
+        //Genehperkilo int is  the price that the vehicle takes per kilometer, could be adjusted to meters if you guys want to
+        Calendar calendar = Calendar.getInstance();
+        //Calender is the class that gets the time from the machine, could be adjusted later if we could get time from internet
+        TextView text = (TextView) bottomsheet.findViewById(R.id.price);
+        int current_hour = calendar.get(Calendar.HOUR_OF_DAY);
+        //Calender.HOUR_OF_DAY gets the time in the 24 hour format
+        if (type.equalsIgnoreCase("car")) {
+            GenehperKilo = 20;
+            // Each vehicle has an initial Genehperkilo value that can be increased or decreased depending on the time
+            //In these if clauses are the times specified for me by Omran, at each time the Genehperkilo for a vehicle changes depending on the trafic state
+            // time and how Genehperkilo increase or decrease can be adjusted later to things we see fit
+
+            if (current_hour >= 0 && current_hour < 13) {
+
+                GenehperKilo += 2;
+            } else if (current_hour >= 13 && current_hour < 19) {
+                GenehperKilo += 4;
+            } else if (current_hour >= 19 && current_hour <= 23) {
+                GenehperKilo += 6;
+            }
+        } else if (type.equalsIgnoreCase("tuktuk")) {
+            GenehperKilo = 10;
+            if (current_hour >= 0 && current_hour < 18) {
+                GenehperKilo += 2;
+            } else if (current_hour >= 18 && current_hour < 23) {
+                GenehperKilo += 6;
+            }
+        } else if (type.equalsIgnoreCase("amjad")) {
+            //          text.setText("amjad clicked!!");
+            GenehperKilo = 25;
+            if (current_hour >= 0 && current_hour < 13) {
+                GenehperKilo += 2;
+            } else if (current_hour >= 13 && current_hour < 19) {
+                GenehperKilo += 4;
+            } else if (current_hour >= 19 && current_hour <= 23) {
+                GenehperKilo += 6;
+            }
+        }
+        price = GenehperKilo * distance;
+        // In the end the total price gets generated by multipying the Genehperkilo and the distance specified for us by Mohanned
+        return price / 1000;
+        // And don't forget to embrace my amazing programming skills and please like and subscribe!!!!!
     }
 
     private void createFloatingAction() {
@@ -293,14 +358,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             public void onPlaceSelected(final Place place) {
                 Log.i("Place", "Place: " + place.getName());
                 Log.i("place location", String.valueOf(place.getLatLng()));
-                if (searchMarker != null) {
-                    searchMarker.remove();
-                }
-                searchMarker = mMap.addMarker(new MarkerOptions()
-                        .position(place.getLatLng())
-                        .draggable(false)
-                        .icon(imageType(place.getPlaceTypes())));
-                destinationMarker(place.getLatLng());
+                setSearchMarker(place);
             }
 
             @Override
@@ -401,6 +459,45 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 destinationMarker(latLng);
             }
         });
+    }
+
+    protected void setSearchMarker(final Place place) {
+        if (searchMarker != null) {
+            searchMarker.remove();
+            if (destinationMarker != null) {
+                destinationMarker.remove();
+            }
+        }
+        searchMarker = mMap.addMarker(new MarkerOptions()
+                .title("Search Result")
+                .icon(imageType(place.getPlaceTypes()))
+                .position(place.getLatLng()));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15));
+        Snackbar.make(coordinatorLayoutView, "Is this your destination?", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Yes!", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(place.getLatLng().latitude), String.valueOf(place.getLatLng().longitude)};
+                        new getRoute().execute(params);
+                        if (searchMarker != null) {
+                            searchMarker.remove();
+                        }
+                        if (destinationMarker == null) {
+                            destinationMarker = mMap.addMarker(new MarkerOptions()
+                                    .title("Destination")
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                                    .position(place.getLatLng()));
+                        } else {
+                            destinationMarker.remove();
+                            destinationMarker = mMap.addMarker(new MarkerOptions()
+                                    .title("Destination")
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                                    .draggable(true)
+                                    .position(place.getLatLng()));
+                        }
+                    }
+                })
+                .show();
     }
 
     protected void destinationMarker(final LatLng latLng) {
