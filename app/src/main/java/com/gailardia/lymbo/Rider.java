@@ -62,20 +62,28 @@ import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import self.philbrown.droidQuery.$;
+import self.philbrown.droidQuery.AjaxOptions;
+import self.philbrown.droidQuery.Function;
+
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
 
+    static String n[];
+    static Double m[];
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
+    String vehicleType = "";
     Location location;
     String provider;
     View bottomsheet, driversheet;
     View coordinatorLayoutView;
+    ArrayList<String> name;
+    ArrayList<Double> metars;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
@@ -158,6 +166,11 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             @Override
             public void onClick(View view) {
                 animateRoute();
+                if (vehicleType.equalsIgnoreCase("")) {
+                    Toast.makeText(Rider.this, "Please choose a vehicle type.", Toast.LENGTH_LONG).show();
+                } else {
+                    getDriverLocation(vehicleType, location.getLatitude(), location.getLongitude());
+                }
                 mBottomSheetDialog.dismiss();
             }
         });
@@ -247,6 +260,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     break;
             }
         }
+        vehicleType = type;
         Log.i("DistanceVal", String.valueOf(routes.get(routes.size() - 1).distance));
     }
 
@@ -527,6 +541,74 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     }
                 })
                 .show();
+    }
+
+    public void getDriverLocation(String type, Double latitude, Double longitude) {
+        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/tst.php")
+                .type("POST")
+                .data("{\"type\":\"" + type + "\"" + ",\"latitude\":\"" + latitude + "\"" + ",\"longitude\":\"" + longitude + "\"}")
+                .context(this)
+                .success(new Function() {
+
+                    @Override
+                    public void invoke($ droidQuery, Object... objects) {
+                        if ((objects[0]).toString().equalsIgnoreCase("No drivers")) {
+                            Toast.makeText(Rider.this, "No drivers close :(", Toast.LENGTH_LONG).show();
+                        } else {
+                            try {
+                                getArray(objects[0]);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                })
+                .error(new Function() {
+                    @Override
+                    public void invoke($ $, Object... args) {
+                    }
+                }));
+    }
+
+    public void getArray(Object o) throws JSONException {
+        JSONObject jsonObject;
+        JSONArray jsonArray = new JSONArray(o.toString());
+        name = new ArrayList<>();
+        metars = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            jsonObject = (JSONObject) jsonArray.get(i);
+            name.add(jsonObject.getString("Dname"));
+            metars.add(jsonObject.getDouble("metar"));
+
+        }
+        n = new String[name.size()];
+        m = new Double[name.size()];
+        for (int x = 0; x < name.size(); x++) {
+            n[x] = name.get(x);
+            m[x] = metars.get(x);
+            Log.i("Arrays", "Driver name is : " + name.get(x) + " And distance from location is : " + String.valueOf(metars.get(x)));
+        }
+
+        insertionSort(m, n);
+
+    }
+
+    private void insertionSort(Double[] arr, String[] ar) {
+        for (int i = 1; i < arr.length; i++) {
+            Double valueToSort = arr[i];
+            String sValue = ar[i];
+            int j = i;
+            while (j > 0 && arr[j - 1] > valueToSort) {
+                arr[j] = arr[j - 1];
+                ar[j] = ar[j - 1];
+                j--;
+            }
+            arr[j] = valueToSort;
+            ar[j] = sValue;
+        }
+        n = ar;
+        m = arr;
+        //Toast.makeText(getApplicationContext(),n[0],Toast.LENGTH_LONG).show();
     }
 
     @Override
