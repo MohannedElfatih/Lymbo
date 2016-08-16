@@ -183,15 +183,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     final String[] params = {vehicleType, String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude())};
                     int i = getDriverLocation(vehicleType, location.getLatitude(), location.getLongitude());
                     System.out.println(i);
-                    Handler handler1 = new Handler();
-                    handler1.postDelayed(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            Log.i("Handler", "In handler baby");
-                            new GetDriversLocation().execute(params);
-                        }
-                    }, 5000);
+                    Log.i("Handler", "In handler baby");
+                    new GetDriversLocation().execute(params);
                     mBottomSheetDialog.dismiss();
                 }
             }
@@ -323,9 +316,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             switch (view.getId()) {
                 case R.id.car:
                     //Inform the user te button1 has been clicked
-                    car.setImageResource(R.drawable.redcar);
-                    amjad.setImageResource(R.drawable.amjad);
-                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car.setImageResource(R.drawable.carsheet);
+                    amjad.setImageResource(R.drawable.amjadchoice);
+                    tuktuk.setImageResource(R.drawable.tuktukchoice);
                     type = "car";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
                     text.setText("The price is: " + textprice + "SDG");
@@ -333,9 +326,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
                 case R.id.tuktuk:
                     //Inform the user the button1 has been clicked
-                    car.setImageResource(R.drawable.choicecar);
-                    amjad.setImageResource(R.drawable.amjad);
-                    tuktuk.setImageResource(R.drawable.redraksha);
+                    car.setImageResource(R.drawable.carchoice);
+                    amjad.setImageResource(R.drawable.amjadchoice);
+                    tuktuk.setImageResource(R.drawable.tuktuksheet);
                     type = "tuktuk";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
                     text.setText("The price is: " + textprice + " SDG");
@@ -343,9 +336,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
                 case R.id.amjad:
                     //Inform the user the button1 has been clicked
-                    car.setImageResource(R.drawable.choicecar);
-                    amjad.setImageResource(R.drawable.redamjad);
-                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car.setImageResource(R.drawable.carchoice);
+                    amjad.setImageResource(R.drawable.amjadsheet);
+                    tuktuk.setImageResource(R.drawable.tuktukchoice);
                     type = "amjad";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
                     text.setText("The price is: " + textprice + "SDG");
@@ -496,10 +489,10 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.embassypin);
                 break;
             case 36:
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.firestation);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.firestationpin);
                 break;
             case 41:
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.gasstationpoint);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.gasstationpin);
                 break;
             case 44:
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.gympin);
@@ -508,7 +501,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.doctorpin);
                 break;
             case 2:
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.markerairport);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.airportpin);
                 break;
             case 66:
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.museumpin);
@@ -532,7 +525,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.universitypin);
                 break;
             default:
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.atmpin);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.roadpin);
                 break;
         }
         return icon;
