@@ -43,6 +43,8 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
         map.put("Dpassword",P);
         PostResponseAsyncTask task = new PostResponseAsyncTask(this,map);
         task.execute("http://lymbo.esy.es/signin.php");
+
+
     }
     public void finishlogin(){
         finish();
@@ -56,7 +58,7 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
             shared.edit().putString("username", U).apply();
             shared.edit().putString("password", P).apply();
             shared.edit().putBoolean("signed", true).apply();
-            Intent intent = new Intent(this, Rider.class);
+            Intent intent = new Intent(this, Driver.class);
             startActivity(intent);
         }
     }

@@ -1,11 +1,10 @@
 package com.gailardia.lymbo;
 
-import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Criteria;
@@ -17,7 +16,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -35,19 +33,15 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.HashMap;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -55,7 +49,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.kosalgeek.asynctask.AsyncResponse;
-import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -71,14 +64,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import self.philbrown.droidQuery.$;
+import self.philbrown.droidQuery.AjaxOptions;
+import self.philbrown.droidQuery.Function;
+
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
+
+    static String n[];
+    static Double m[];
     public List<Polyline> polyLines = new ArrayList<Polyline>();
+    public List<Route> routes = new ArrayList<>();
+    String vehicleType = "";
     Location location;
     String provider;
+    View bottomsheet, driversheet;
     View coordinatorLayoutView;
-    View bottomsheet,driversheet;
+    ArrayList<String> name;
+    ArrayList<Double> metars;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
@@ -122,7 +127,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         } else {
             Log.i("Last Known Location", "Successful");
         }
-        //createFloatingAction();
+     //   createFloatingAction();
         autoCompleteListener();
         coordinatorLayoutView = findViewById(R.id.snackbarPosition);
         mGoogleApiClient = new GoogleApiClient
@@ -133,22 +138,6 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .build();
     }
 
-    public void openBottomSheet() {
-        bottomsheet = getLayoutInflater().inflate(R.layout.bottom_sheet, null);
-
-        ImageButton car = (ImageButton) findViewById(R.id.car);
-        ImageButton tuktuk =  (ImageButton) findViewById(R.id.tuktuk);
-        ImageView amjad = (ImageView) findViewById(R.id.amjad);
-
-
-        final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
-        mBottomSheetDialog.setContentView(bottomsheet);
-        mBottomSheetDialog.setCancelable(true);
-        mBottomSheetDialog.setCanceledOnTouchOutside(false);
-        mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
-        mBottomSheetDialog.show();
-    }
     public void openDriverSheet() {
         driversheet = getLayoutInflater().inflate(R.layout.driver_sheet, null);
         final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
@@ -160,23 +149,94 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         mBottomSheetDialog.show();
 
     }
+
+    public void openBottomSheet() {
+        bottomsheet = getLayoutInflater().inflate(R.layout.bottom_sheet, null);
+        ImageButton accept = (ImageButton) bottomsheet.findViewById(R.id.accept);
+        ImageButton cancel = (ImageButton) bottomsheet.findViewById(R.id.cancel);
+        TextView price = (TextView) bottomsheet.findViewById(R.id.price);
+        TextView duration = (TextView) bottomsheet.findViewById(R.id.duration);
+        TextView distance = (TextView) bottomsheet.findViewById(R.id.distance);
+        Log.wtf("ErrorsMan", String.valueOf(routes.size()));
+        duration.setText(routes.get(routes.size() - 1).durationText);
+        distance.setText(routes.get(routes.size() - 1).distanceText);
+        price.setText(" Choose vehicle type.");
+        final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
+        accept.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                animateRoute();
+                if (vehicleType.equalsIgnoreCase("")) {
+                    Toast.makeText(Rider.this, "Please choose a vehicle type.", Toast.LENGTH_LONG).show();
+                } else {
+                    getDriverLocation(vehicleType, location.getLatitude(), location.getLongitude());
+                }
+                mBottomSheetDialog.dismiss();
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                unanimateRoute();
+                mBottomSheetDialog.cancel();
+            }
+        });
+        mBottomSheetDialog.setContentView(bottomsheet);
+        mBottomSheetDialog.setCancelable(true);
+        mBottomSheetDialog.setCanceledOnTouchOutside(false);
+        mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+        mBottomSheetDialog.show();
+    }
+
+    protected void unanimateRoute() {
+        for (int i = 0; i < polyLines.size(); i++) {
+            polyLines.get(i).remove();
+        }
+        polyLines.clear();
+        destinationMarker.remove();
+    }
+
+    protected void animateRoute() {
+        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        bounds.include(routes.get(routes.size() - 1).getStartLocation());
+        bounds.include(routes.get(routes.size() - 1).getEndLocation());
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .geodesic(true)
+                .color(Color.BLUE)
+                .width(10);
+        polylineOptions.add(routes.get(routes.size() - 1).startLocation);
+        for (int i = 0; i < routes.get(routes.size() - 1).points.size(); i++) {
+            polylineOptions.add(routes.get(routes.size() - 1).points.get(i));
+        }
+        Log.i("Distance", "Distance is : " + routes.get(routes.size() - 1).getDistanceText() + " Duration is : " + routes.get(routes.size() - 1).getDurationText());
+        polylineOptions.add(routes.get(routes.size() - 1).endLocation);
+        for (int i = 0; i < polyLines.size(); i++) {
+            polyLines.get(i).remove();
+        }
+        polyLines.clear();
+        polyLines.add(mMap.addPolyline(polylineOptions));
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
+        mMap.animateCamera(cameraUpdate);
+    }
+
     public void type(View view) {
-        String type = "",textprice;
+        String type = "", textprice;
         ImageButton car = (ImageButton) bottomsheet.findViewById(R.id.car);
         ImageButton tuktuk = (ImageButton) bottomsheet.findViewById(R.id.tuktuk);
         ImageButton amjad = (ImageButton) bottomsheet.findViewById(R.id.amjad);
-        TextView text = (TextView)findViewById(R.id.priceID);
+        TextView text = (TextView) bottomsheet.findViewById(R.id.price);
         if (car != null && tuktuk != null && amjad != null) {
             switch (view.getId()) {
-
                 case R.id.car:
                     //Inform the user te button1 has been clicked
                     car.setImageResource(R.drawable.redcar);
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     type = "car";
-                    textprice=String.valueOf(getPrice(type,2));
-                    text.setText("The price is :"+textprice +"SDG");
+                    textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    text.setText("The price is: " + textprice + "SDG");
                     break;
 
                 case R.id.tuktuk:
@@ -185,8 +245,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     amjad.setImageResource(R.drawable.amjad);
                     tuktuk.setImageResource(R.drawable.redraksha);
                     type = "tuktuk";
-                    textprice=String.valueOf(getPrice(type,2));
-                    text.setText("The price is :"+textprice+"SDG");
+                    textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    text.setText("The price is: " + textprice + " SDG");
                     break;
 
                 case R.id.amjad:
@@ -195,66 +255,62 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     amjad.setImageResource(R.drawable.redamjad);
                     tuktuk.setImageResource(R.drawable.tuktuk);
                     type = "amjad";
-                    textprice=String.valueOf(getPrice(type,2));
-                    text.setText("The price is :"+textprice+"SDG");
+                    textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    text.setText("The price is: " + textprice + "SDG");
                     break;
             }
         }
+        vehicleType = type;
+        Log.i("DistanceVal", String.valueOf(routes.get(routes.size() - 1).distance));
     }
+
     public int getPrice(String type, int distance) {
         //The method takes the type or vehicle and the distance which should be provided by Mohanned later
-        int GenehperKilo=0,price = 0;
+        int GenehperKilo = 0, price = 0;
 
         //Genehperkilo int is  the price that the vehicle takes per kilometer, could be adjusted to meters if you guys want to
         Calendar calendar = Calendar.getInstance();
         //Calender is the class that gets the time from the machine, could be adjusted later if we could get time from internet
-        TextView text = (TextView) bottomsheet.findViewById(R.id.priceID);
+        TextView text = (TextView) bottomsheet.findViewById(R.id.price);
         int current_hour = calendar.get(Calendar.HOUR_OF_DAY);
         //Calender.HOUR_OF_DAY gets the time in the 24 hour format
         if (type.equalsIgnoreCase("car")) {
             GenehperKilo = 20;
-        // Each vehicle has an initial Genehperkilo value that can be increased or decreased depending on the time
-        //In these if clauses are the times specified for me by Omran, at each time the Genehperkilo for a vehicle changes depending on the trafic state
-        // time and how Genehperkilo increase or decrease can be adjusted later to things we see fit
+            // Each vehicle has an initial Genehperkilo value that can be increased or decreased depending on the time
+            //In these if clauses are the times specified for me by Omran, at each time the Genehperkilo for a vehicle changes depending on the trafic state
+            // time and how Genehperkilo increase or decrease can be adjusted later to things we see fit
 
             if (current_hour >= 0 && current_hour < 13) {
 
                 GenehperKilo += 2;
-            }
-            else  if (current_hour >= 13 && current_hour < 19) {
+            } else if (current_hour >= 13 && current_hour < 19) {
                 GenehperKilo += 4;
-            }
-            else if (current_hour >= 19 && current_hour <= 23) {
+            } else if (current_hour >= 19 && current_hour <= 23) {
                 GenehperKilo += 6;
             }
-        }else  if (type.equalsIgnoreCase("tuktuk")) {
+        } else if (type.equalsIgnoreCase("tuktuk")) {
             GenehperKilo = 10;
             if (current_hour >= 0 && current_hour < 18) {
                 GenehperKilo += 2;
-            }
-            else if (current_hour >= 18 && current_hour < 23) {
+            } else if (current_hour >= 18 && current_hour < 23) {
                 GenehperKilo += 6;
             }
-        }else if (type.equalsIgnoreCase("amjad")) {
+        } else if (type.equalsIgnoreCase("amjad")) {
             //          text.setText("amjad clicked!!");
             GenehperKilo = 25;
             if (current_hour >= 0 && current_hour < 13) {
-                GenehperKilo+= 2;
-            }
-            else if (current_hour >= 13 && current_hour < 19) {
+                GenehperKilo += 2;
+            } else if (current_hour >= 13 && current_hour < 19) {
                 GenehperKilo += 4;
-            }
-            else if (current_hour >= 19 && current_hour <= 23) {
+            } else if (current_hour >= 19 && current_hour <= 23) {
                 GenehperKilo += 6;
             }
         }
         price = GenehperKilo * distance;
-// In the end the total price gets generated by multipying the Genehperkilo and the distance specified for us by Mohanned
-        return price;
-// And don't forget to embrace my amazing programming skills and please like and subscribe!!!!!
+        // In the end the total price gets generated by multipying the Genehperkilo and the distance specified for us by Mohanned
+        return price / 1000;
+        // And don't forget to embrace my amazing programming skills and please like and subscribe!!!!!
     }
-
-
 
     private void createFloatingAction() {
         ImageView icon = new ImageView(this); // Create an icon
@@ -265,6 +321,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .build();
 
         SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
+
 
         ImageView itemIcon = new ImageView(this);
         itemIcon.setImageDrawable(getResources().getDrawable(R.drawable.car));
@@ -316,25 +373,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             public void onPlaceSelected(final Place place) {
                 Log.i("Place", "Place: " + place.getName());
                 Log.i("place location", String.valueOf(place.getLatLng()));
-                if (searchMarker != null) {
-                    searchMarker.remove();
-                }
-                searchMarker = mMap.addMarker(new MarkerOptions()
-                        .position(place.getLatLng())
-                        .draggable(false)
-                        .icon(imageType(place.getPlaceTypes())));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15));
-                Snackbar.make(coordinatorLayoutView, "Make this your destination?", Snackbar.LENGTH_LONG)
-                        .setAction("Yes!", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                destinationMarker(place.getLatLng());
-                                new getLocations().execute();
-                                String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(place.getLatLng().latitude), String.valueOf(place.getLatLng().longitude)};
-                                new getRoute().execute(params);
-                            }
-                        })
-                        .show();
+                setSearchMarker(place);
             }
 
             @Override
@@ -437,7 +476,46 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         });
     }
 
-    protected void destinationMarker(LatLng latLng) {
+    protected void setSearchMarker(final Place place) {
+        if (searchMarker != null) {
+            searchMarker.remove();
+            if (destinationMarker != null) {
+                destinationMarker.remove();
+            }
+        }
+        searchMarker = mMap.addMarker(new MarkerOptions()
+                .title("Search Result")
+                .icon(imageType(place.getPlaceTypes()))
+                .position(place.getLatLng()));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15));
+        Snackbar.make(coordinatorLayoutView, "Is this your destination?", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Yes!", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(place.getLatLng().latitude), String.valueOf(place.getLatLng().longitude)};
+                        new getRoute().execute(params);
+                        if (searchMarker != null) {
+                            searchMarker.remove();
+                        }
+                        if (destinationMarker == null) {
+                            destinationMarker = mMap.addMarker(new MarkerOptions()
+                                    .title("Destination")
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                                    .position(place.getLatLng()));
+                        } else {
+                            destinationMarker.remove();
+                            destinationMarker = mMap.addMarker(new MarkerOptions()
+                                    .title("Destination")
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                                    .draggable(true)
+                                    .position(place.getLatLng()));
+                        }
+                    }
+                })
+                .show();
+    }
+
+    protected void destinationMarker(final LatLng latLng) {
         if (searchMarker != null) {
             searchMarker.remove();
         }
@@ -454,6 +532,84 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     .draggable(true)
                     .position(latLng));
         }
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+        Snackbar.make(coordinatorLayoutView, "Is this your destination?", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Yes!", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(latLng.latitude), String.valueOf(latLng.longitude)};
+                        new getRoute().execute(params);
+                    }
+                })
+                .show();
+    }
+
+    public void getDriverLocation(String type, Double latitude, Double longitude) {
+        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/tst.php")
+                .type("POST")
+                .data("{\"type\":\"" + type + "\"" + ",\"latitude\":\"" + latitude + "\"" + ",\"longitude\":\"" + longitude + "\"}")
+                .context(this)
+                .success(new Function() {
+
+                    @Override
+                    public void invoke($ droidQuery, Object... objects) {
+                        if ((objects[0]).toString().equalsIgnoreCase("No drivers")) {
+                            Toast.makeText(Rider.this, "No drivers close :(", Toast.LENGTH_LONG).show();
+                        } else {
+                            try {
+                                getArray(objects[0]);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                })
+                .error(new Function() {
+                    @Override
+                    public void invoke($ $, Object... args) {
+                    }
+                }));
+    }
+
+    public void getArray(Object o) throws JSONException {
+        JSONObject jsonObject;
+        JSONArray jsonArray = new JSONArray(o.toString());
+        name = new ArrayList<>();
+        metars = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            jsonObject = (JSONObject) jsonArray.get(i);
+            name.add(jsonObject.getString("Dname"));
+            metars.add(jsonObject.getDouble("metar"));
+
+        }
+        n = new String[name.size()];
+        m = new Double[name.size()];
+        for (int x = 0; x < name.size(); x++) {
+            n[x] = name.get(x);
+            m[x] = metars.get(x);
+            Log.i("Arrays", "Driver name is : " + name.get(x) + " And distance from location is : " + String.valueOf(metars.get(x)));
+        }
+
+        insertionSort(m, n);
+
+    }
+
+    private void insertionSort(Double[] arr, String[] ar) {
+        for (int i = 1; i < arr.length; i++) {
+            Double valueToSort = arr[i];
+            String sValue = ar[i];
+            int j = i;
+            while (j > 0 && arr[j - 1] > valueToSort) {
+                arr[j] = arr[j - 1];
+                ar[j] = ar[j - 1];
+                j--;
+            }
+            arr[j] = valueToSort;
+            ar[j] = sValue;
+        }
+        n = ar;
+        m = arr;
+        //Toast.makeText(getApplicationContext(),n[0],Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -533,7 +689,17 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     }
 
     public class getRoute extends AsyncTask<String, String, String> {
-        private List<LatLng> latLngs = new ArrayList<LatLng>();
+        private ProgressDialog dialog = new ProgressDialog(Rider.this);
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.setMessage("Downloading route, please wait.");
+            dialog.setIndeterminate(false);
+            dialog.setCancelable(false);
+            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.show();
+        }
 
         @Override
         protected String doInBackground(String... strings) {
@@ -549,19 +715,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 while ((result = bufferedReader.readLine()) != null) {
                     buffer.append(result + "\n");
                 }
-                return buffer.toString();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String data) {
-            try {
-                List<Route> routes = new ArrayList<>();
+                String data = buffer.toString();
                 JSONObject jsonObject = new JSONObject(data);
                 JSONArray jsonArray = jsonObject.getJSONArray("routes");
                 for (int i = 0; i < jsonArray.length(); i++) {
@@ -581,25 +735,22 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     route.points = new Route().decodePolyLine(overviewPoly.getString("points"));
                     routes.add(route);
                 }
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(routes.get(0).startLocation, 14));
-                PolylineOptions polylineOptions = new PolylineOptions()
-                        .geodesic(true)
-                        .color(Color.BLUE)
-                        .width(10);
-                polylineOptions.add(routes.get(0).startLocation);
-                for (int i = 0; i < routes.get(0).points.size(); i++) {
-                    polylineOptions.add(routes.get(0).points.get(i));
-                }
-                Log.i("Distance", "Distance is : " + routes.get(0).getDistanceText() + " Duration is : " + routes.get(0).getDurationText());
-                polylineOptions.add(routes.get(0).endLocation);
-                for (int i = 0; i < polyLines.size(); i++) {
-                    polyLines.get(i).remove();
-                }
-                polyLines.clear();
-                polyLines.add(mMap.addPolyline(polylineOptions));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String data) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            openBottomSheet();
         }
     }
 
