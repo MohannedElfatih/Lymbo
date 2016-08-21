@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.gailardia.lymbo.MainActivity"
     android:background="@drawable/bg5">
     <RelativeLayout
@@ -59,7 +58,8 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:onClick="type"
-                    android:src="@drawable/choicecar" />
+                    android:src="@drawable/choicecar"
+                    android:contentDescription="@string/car" />
 
                 <ImageButton
                     android:id="@+id/amjad"
@@ -122,39 +122,8 @@
             </LinearLayout>
         </LinearLayout>
 
-        <com.mikhaellopez.circularimageview.CircularImageView
-            android:id="@id/selected"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:layout_alignParentLeft="false"
-            android:layout_alignParentStart="false"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center_horizontal"
-            android:foregroundGravity="center_horizontal"
-            android:src="@drawable/raksha"
-            android:visibility="invisible"
-            app:civ_border="false"
-            app:civ_shadow="true"
-            app:civ_shadow_color="#424242"
-            app:civ_shadow_radius="10"
-            android:alpha="0" />
-
-        <ImageView
-            android:id="@+id/imageButton11"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:onClick="finishsignup"
-            android:src="@drawable/next"
-            android:layout_marginRight="13dp"
-            android:layout_marginBottom="29dp" />
-
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_above="@id/imageButton11"
             android:layout_height="48dp"
             android:layout_gravity="center"
             android:layout_marginLeft="14dp"
