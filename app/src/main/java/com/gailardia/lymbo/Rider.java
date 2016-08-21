@@ -127,7 +127,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         } else {
             Log.i("Last Known Location", "Successful");
         }
-        //createFloatingAction();
+     //   createFloatingAction();
         autoCompleteListener();
         coordinatorLayoutView = findViewById(R.id.snackbarPosition);
         mGoogleApiClient = new GoogleApiClient
@@ -321,6 +321,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .build();
 
         SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
+
 
         ImageView itemIcon = new ImageView(this);
         itemIcon.setImageDrawable(getResources().getDrawable(R.drawable.car));

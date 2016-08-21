@@ -333,6 +333,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                 Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
             else
                 Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
+            dlogin log = new dlogin();
+
 
         }
     }
