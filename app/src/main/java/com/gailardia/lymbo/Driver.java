@@ -34,6 +34,12 @@ import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import self.philbrown.droidQuery.$;
+import self.philbrown.droidQuery.AjaxOptions;
+import self.philbrown.droidQuery.Function;
 
 public class Driver extends FragmentActivity implements OnMapReadyCallback, LocationListener {
 
@@ -62,9 +68,88 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         } else {
             Log.i("Last Known Location", "Unsuccessful");
         }
-
+        findRider();
     }
 
+    private void findRider() {
+        final Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            int timeSpent = 0;
+
+            @Override
+            public void run() {
+                $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/checkRequest.php")
+                        .type("POST")
+                        .data("{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"}")
+                        .context(Driver.this)
+                        .success(new Function() {
+
+                            @Override
+                            public void invoke($ droidQuery, Object... objects) {
+                                if (objects[0].toString().equalsIgnoreCase("Found Request")) {
+                                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(Driver.this);
+
+                                    // Setting Dialog Title
+                                    alertDialog.setTitle("Found a customer!");
+
+                                    // Setting Dialog Message
+                                    alertDialog.setMessage("Do you want to accept this customer?");
+
+
+                                    // On pressing Accept button
+                                    alertDialog.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            respond(0);
+                                            t.cancel();
+                                        }
+                                    });
+
+                                    // on pressing cancel button
+                                    alertDialog.setNegativeButton("Decline", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            respond(1);
+                                            dialog.cancel();
+                                        }
+                                    });
+
+                                    // Showing Alert Message
+                                    alertDialog.show();
+                                } else {
+                                    Log.i("ajaxDriver", "Time spent is : " + timeSpent);
+                                    timeSpent += 5;
+                                }
+                            }
+                        })
+                        .error(new Function() {
+                            @Override
+                            public void invoke($ $, Object... args) {
+                                Toast.makeText(Driver.this, "Couldn't find php", Toast.LENGTH_LONG).show();
+                            }
+                        }));
+            }
+        }, 0, 5000);
+    }
+
+    private void respond(int response) {
+        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/driverResponse.php")
+                .type("POST")
+                .data("{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"" + ",\"latitude\":\"" + location.getLatitude() + "\"" + ",\"longitude\":\"" + location.getLongitude() + ",\"response\":\"" + response + "\"}")
+                .context(Driver.this)
+                .success(new Function() {
+
+                    @Override
+                    public void invoke($ droidQuery, Object... objects) {
+                        Log.i("reponse", "Successful");
+
+                    }
+                })
+                .error(new Function() {
+                    @Override
+                    public void invoke($ $, Object... args) {
+                        Log.i("reponse", "Unsuccessful");
+                    }
+                }));
+    }
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
