@@ -1,9 +1,21 @@
 package com.gailardia.lymbo;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by Gailardia on 8/9/2016.
@@ -127,5 +139,77 @@ public class Route {
         }
 
         return decoded;
+    }
+
+    protected String synchronousCall(String url, String post) {
+        final MediaType JSON
+                = MediaType.parse("application/json; charset=utf-8");
+        String answer = "";
+        OkHttpClient client = new OkHttpClient();
+        Request request;
+        if (post.equals("")) {
+            request = new Request.Builder()
+                    .url(url)
+                    .build();
+        } else {
+            request = new Request.Builder()
+                    .url(url)
+                    .post(RequestBody.create(JSON, post))
+                    .build();
+        }
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                answer = "Failure to connect.";
+                throw new IOException("Unexpected code " + response);
+            }
+
+            Headers responseHeaders = response.headers();
+            for (int i = 0; i < responseHeaders.size(); i++) {
+                Log.i("Headers", responseHeaders.name(i) + ": " + responseHeaders.value(i));
+            }
+            answer = response.body().string();
+            Log.i("okHTTP", response.body().string());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return answer;
+    }
+
+    protected String asynchronousCall(String url, String post) {
+        final MediaType JSON
+                = MediaType.parse("application/json; charset=utf-8");
+        final String[] answer = {""};
+        OkHttpClient client = new OkHttpClient();
+        Request request;
+        if (post.equals("")) {
+            request = new Request.Builder()
+                    .url(url)
+                    .build();
+        } else {
+            request = new Request.Builder()
+                    .url(url)
+                    .post(RequestBody.create(JSON, post))
+                    .build();
+        }
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                answer[0] = "Failure to connect.";
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                Headers responseHeaders = response.headers();
+                for (int i = 0; i < responseHeaders.size(); i++) {
+                    Log.i("Headers", responseHeaders.name(i) + ": " + responseHeaders.value(i));
+                }
+                answer[0] = response.body().string();
+                Log.i("okHTTP", response.body().string());
+            }
+        });
+        return answer[0];
     }
 }

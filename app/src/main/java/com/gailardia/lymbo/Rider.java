@@ -12,6 +12,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -66,17 +67,35 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import self.philbrown.droidQuery.$;
 import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
-
     static String n[];
     static Double m[];
+    public int rejectStatus = 0;
+    public int driverRank = -1;
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
+    ExecutorService executor = Executors.newFixedThreadPool(8);
     String vehicleType = "";
     Location location;
     String provider;
@@ -103,31 +122,13 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             return;
         }
         provider = locationManager.getBestProvider(new Criteria(), false);
-        /*RelativeLayout mapLayout = (RelativeLayout) findViewById(R.id.relative);
-        mapLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
-            @Override
-            public void onGlobalLayout() {
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                ArrayList<Marker> markers = new ArrayList<Marker>();
-                markers.add(mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))));
-                markers.add(mMap.addMarker(new MarkerOptions().position(test).title("Test").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))));
-                for(Marker marker : markers){
-                    builder.include(marker.getPosition());
-                }
-                mMap.addMarker(new MarkerOptions().position(burj).title("Burj Khalifa").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
-                LatLngBounds bounds = builder.build();
-                int padding = 75;
-                CameraUpdate cameraUpdate= CameraUpdateFactory.newLatLngBounds(bounds, padding);
-                mMap.animateCamera(cameraUpdate);
-            }
-        });*/
         location = locationManager.getLastKnownLocation(provider);
         if (location == null) {
             Log.i("Last Known Location", "Unsuccessful");
         } else {
             Log.i("Last Known Location", "Successful");
         }
-     //   createFloatingAction();
+        //createFloatingAction();
         autoCompleteListener();
         coordinatorLayoutView = findViewById(R.id.snackbarPosition);
         mGoogleApiClient = new GoogleApiClient
@@ -169,9 +170,75 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 if (vehicleType.equalsIgnoreCase("")) {
                     Toast.makeText(Rider.this, "Please choose a vehicle type.", Toast.LENGTH_LONG).show();
                 } else {
-                    getDriverLocation(vehicleType, location.getLatitude(), location.getLongitude());
+                    final String[] params = {vehicleType, String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude())};
+                    $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/tst.php")
+                            .type("POST")
+                            .data("{\"type\":\"" + vehicleType + "\"" + ",\"latitude\":\"" + location.getLatitude() + "\"" + ",\"longitude\":\"" + location.getLongitude() + "\"}")
+                            .context(Rider.this)
+                            .async(false)
+                            .success(new Function() {
+                                @Override
+                                public void invoke($ droidQuery, Object... objects) {
+                                    System.out.println("success");
+                                    if ((objects[0]).toString().equalsIgnoreCase("No drivers")) {
+                                        Toast.makeText(Rider.this, "No drivers close :(", Toast.LENGTH_LONG).show();
+                                    } else {
+                                        try {
+                                            System.out.println("getArray");
+                                            JSONObject jsonObject;
+                                            JSONArray jsonArray = new JSONArray(objects[0].toString());
+                                            name = new ArrayList<>();
+                                            metars = new ArrayList<>();
+                                            for (int i = 0; i < jsonArray.length(); i++) {
+                                                jsonObject = (JSONObject) jsonArray.get(i);
+                                                name.add(jsonObject.getString("Dname"));
+                                                metars.add(jsonObject.getDouble("metar"));
+                                            }
+                                            Rider.n = new String[name.size()];
+                                            Rider.m = new Double[name.size()];
+                                            for (int x = 0; x < name.size(); x++) {
+                                                n[x] = name.get(x);
+                                                m[x] = metars.get(x);
+                                                Log.i("Arrays", "Driver name is : " + name.get(x) + " And distance from location is : " + String.valueOf(metars.get(x)));
+                                            }
+                                            System.out.println("insertion");
+                                            Double[] arr = m;
+                                            String[] ar = n;
+                                            for (int i = 1; i < arr.length; i++) {
+                                                Double valueToSort = arr[i];
+                                                String sValue = ar[i];
+                                                int j = i;
+                                                while (j > 0 && arr[j - 1] > valueToSort) {
+                                                    arr[j] = arr[j - 1];
+                                                    ar[j] = ar[j - 1];
+                                                    j--;
+                                                }
+                                                arr[j] = valueToSort;
+                                                ar[j] = sValue;
+                                            }
+                                            Rider.n = ar;
+                                            Rider.m = arr;
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            })
+                            .error(new Function() {
+                                @Override
+                                public void invoke($ $, Object... args) {
+                                    System.out.println("failed");
+                                }
+                            })
+                            .complete(new Function() {
+                                @Override
+                                public void invoke($ $, Object... objects) {
+                                    mBottomSheetDialog.dismiss();
+                                    System.out.println("Inside handler");
+                                    new GetDriversLocation().execute(params);
+                                }
+                            }));
                 }
-                mBottomSheetDialog.dismiss();
             }
         });
 
@@ -231,9 +298,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             switch (view.getId()) {
                 case R.id.car:
                     //Inform the user te button1 has been clicked
-                    car.setImageResource(R.drawable.redcar);
-                    amjad.setImageResource(R.drawable.amjad);
-                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car.setImageResource(R.drawable.carsheet);
+                    amjad.setImageResource(R.drawable.amjadchoice);
+                    tuktuk.setImageResource(R.drawable.tuktukchoice);
                     type = "car";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
                     text.setText("The price is: " + textprice + "SDG");
@@ -241,9 +308,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
                 case R.id.tuktuk:
                     //Inform the user the button1 has been clicked
-                    car.setImageResource(R.drawable.choicecar);
-                    amjad.setImageResource(R.drawable.amjad);
-                    tuktuk.setImageResource(R.drawable.redraksha);
+                    car.setImageResource(R.drawable.carchoice);
+                    amjad.setImageResource(R.drawable.amjadchoice);
+                    tuktuk.setImageResource(R.drawable.tuktuksheet);
                     type = "tuktuk";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
                     text.setText("The price is: " + textprice + " SDG");
@@ -251,9 +318,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
                 case R.id.amjad:
                     //Inform the user the button1 has been clicked
-                    car.setImageResource(R.drawable.choicecar);
-                    amjad.setImageResource(R.drawable.redamjad);
-                    tuktuk.setImageResource(R.drawable.tuktuk);
+                    car.setImageResource(R.drawable.carchoice);
+                    amjad.setImageResource(R.drawable.amjadsheet);
+                    tuktuk.setImageResource(R.drawable.tuktukchoice);
                     type = "amjad";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
                     text.setText("The price is: " + textprice + "SDG");
@@ -321,7 +388,6 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .build();
 
         SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
-
 
         ImageView itemIcon = new ImageView(this);
         itemIcon.setImageDrawable(getResources().getDrawable(R.drawable.car));
@@ -405,10 +471,10 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.embassypin);
                 break;
             case 36:
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.firestation);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.firestationpin);
                 break;
             case 41:
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.gasstationpoint);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.gasstationpin);
                 break;
             case 44:
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.gympin);
@@ -417,7 +483,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.doctorpin);
                 break;
             case 2:
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.markerairport);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.airportpin);
                 break;
             case 66:
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.museumpin);
@@ -441,7 +507,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.universitypin);
                 break;
             default:
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.atmpin);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.roadpin);
                 break;
         }
         return icon;
@@ -452,6 +518,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        onResume();
         mMap.setMyLocationEnabled(true);
         if (location != null) {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
@@ -493,7 +560,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     @Override
                     public void onClick(View view) {
                         String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(place.getLatLng().latitude), String.valueOf(place.getLatLng().longitude)};
-                        new getRoute().execute(params);
+                        new GetRoute().execute(params);
                         if (searchMarker != null) {
                             searchMarker.remove();
                         }
@@ -538,83 +605,26 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     @Override
                     public void onClick(View view) {
                         String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(latLng.latitude), String.valueOf(latLng.longitude)};
-                        new getRoute().execute(params);
+                        new GetRoute().execute(params);
                     }
                 })
                 .show();
     }
 
-    public void getDriverLocation(String type, Double latitude, Double longitude) {
-        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/tst.php")
-                .type("POST")
-                .data("{\"type\":\"" + type + "\"" + ",\"latitude\":\"" + latitude + "\"" + ",\"longitude\":\"" + longitude + "\"}")
-                .context(this)
-                .success(new Function() {
-
-                    @Override
-                    public void invoke($ droidQuery, Object... objects) {
-                        if ((objects[0]).toString().equalsIgnoreCase("No drivers")) {
-                            Toast.makeText(Rider.this, "No drivers close :(", Toast.LENGTH_LONG).show();
-                        } else {
-                            try {
-                                getArray(objects[0]);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                })
-                .error(new Function() {
-                    @Override
-                    public void invoke($ $, Object... args) {
-                    }
-                }));
-    }
-
-    public void getArray(Object o) throws JSONException {
-        JSONObject jsonObject;
-        JSONArray jsonArray = new JSONArray(o.toString());
-        name = new ArrayList<>();
-        metars = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            jsonObject = (JSONObject) jsonArray.get(i);
-            name.add(jsonObject.getString("Dname"));
-            metars.add(jsonObject.getDouble("metar"));
-
-        }
-        n = new String[name.size()];
-        m = new Double[name.size()];
-        for (int x = 0; x < name.size(); x++) {
-            n[x] = name.get(x);
-            m[x] = metars.get(x);
-            Log.i("Arrays", "Driver name is : " + name.get(x) + " And distance from location is : " + String.valueOf(metars.get(x)));
-        }
-
-        insertionSort(m, n);
-
-    }
-
-    private void insertionSort(Double[] arr, String[] ar) {
-        for (int i = 1; i < arr.length; i++) {
-            Double valueToSort = arr[i];
-            String sValue = ar[i];
-            int j = i;
-            while (j > 0 && arr[j - 1] > valueToSort) {
-                arr[j] = arr[j - 1];
-                ar[j] = ar[j - 1];
-                j--;
-            }
-            arr[j] = valueToSort;
-            ar[j] = sValue;
-        }
-        n = ar;
-        m = arr;
-        //Toast.makeText(getApplicationContext(),n[0],Toast.LENGTH_LONG).show();
-    }
-
     @Override
     public void onLocationChanged(Location location) {
-
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(provider, 400, 1, this);
+        this.location = location;
     }
 
     @Override
@@ -688,7 +698,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         Toast.makeText(Rider.this, "Connection to places database failed.", Toast.LENGTH_SHORT).show();
     }
 
-    public class getRoute extends AsyncTask<String, String, String> {
+    public class GetRoute extends AsyncTask<String, String, String> {
         private ProgressDialog dialog = new ProgressDialog(Rider.this);
 
         @Override
@@ -709,14 +719,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                         + strings[0] + "," + strings[1] + "&"
                         + "destination=" + strings[2] + "," + strings[3] + "&key"
                         + "AIzaSyDtYl3HYOjjLLbyEkISc4jiy9KG4rUDrms");
-                StringBuffer buffer = new StringBuffer();
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                while ((result = bufferedReader.readLine()) != null) {
-                    buffer.append(result + "\n");
-                }
-                String data = buffer.toString();
-                JSONObject jsonObject = new JSONObject(data);
+                JSONObject jsonObject = new JSONObject(new Route().synchronousCall(String.valueOf(url), ""));
                 JSONArray jsonArray = jsonObject.getJSONArray("routes");
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonRoute = jsonArray.getJSONObject(i);
@@ -735,8 +738,6 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     route.points = new Route().decodePolyLine(overviewPoly.getString("points"));
                     routes.add(route);
                 }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
@@ -754,22 +755,11 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         }
     }
 
-    public class getLocations extends AsyncTask<String, String, String> {
+    public class GetLocations extends AsyncTask<String, String, String> {
 
         @Override
         protected String doInBackground(String... strings) {
-            String result = "";
-            try {
-                URL url = new URL("http://lymbo.esy.es/locationsarray.php");
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                result = bufferedReader.readLine();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return result;
+            return new Route().synchronousCall("http://lymbo.esy.es/locationsarray.php", "");
         }
 
         @Override
@@ -826,6 +816,148 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 e.printStackTrace();
             }
             Log.i("Locationsaha", s);
+        }
+    }
+
+    public class GetDriversLocation extends AsyncTask<String, String, String> {
+        String[] test;
+        private ProgressDialog dialog = new ProgressDialog(Rider.this);
+        private ProgressDialog dialog2 = new ProgressDialog(Rider.this);
+
+        @Override
+        protected void onPreExecute() {
+            //Initialize progress dialog.
+            super.onPreExecute();
+            dialog.setMessage("Fetching Driver, Rest back and chill while we fetch your ride.");
+            dialog.setIndeterminate(false);
+            dialog.setCancelable(false);
+            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.show();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            try {
+                //repeat controls the loop
+                boolean repeat = true;
+                do {
+                    //Notify the next driver, and wait for response.
+                    final Future<Integer> future = executor.submit(new NotifyNextDriver());
+                    //initial rejectStatus for the current driver is 0.
+                    rejectStatus = 0;
+                    Log.i("rejectStatus", "RejectStatus in PostExecute is : " + String.valueOf(rejectStatus));
+                    int result;
+                    driverRank++;
+                    //Check if the Driver names array is done.
+                    if (driverRank < n.length) {
+                        result = future.get();
+                        Log.i("onPostExecute", "result = " + String.valueOf(result));
+                        if (result == 2) {
+                            //An error happened, do not repeat the loop.
+                            Toast.makeText(Rider.this, "An error happened", Toast.LENGTH_LONG).show();
+                            repeat = false;
+                        } else if (result == 1) {
+                            //Driver accepted the request, do not repeat the loop.
+                            Toast.makeText(Rider.this, "Driver Accepted", Toast.LENGTH_LONG).show();
+                            repeat = false;
+                        } else if (result == 0) {
+                            //Driver rejected request, or he already exists in table. notify next driver and repeat the loop.
+                            Log.i("Postexecute", "going to next driver");
+                            repeat = true;
+                        }
+                    } else {
+                        //if result is outside expected parameters, don't repeat loop.
+                        Log.i("onPostExecute", "Names array have finished.");
+                        Toast.makeText(Rider.this, "No driver accepted.", Toast.LENGTH_LONG).show();
+                        driverRank = -1;
+                        repeat = false;
+                    }
+                } while (repeat);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String data) {
+            //Close dialog after results.
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+        }
+    }
+
+    public class NotifyNextDriver implements Callable<Integer> {
+        @Override
+        public Integer call() throws Exception {
+            final int[] result = new int[1];
+            final int rank = driverRank;
+            final boolean[] repeat = {true};
+            //Insert request to RequestTable.
+            String response = new Route().synchronousCall("http://www.lymbo.esy.es/insertRequest.php", "{\"Dname\":\"" + n[rank] + "\"}");
+            if (response.equals("Failure to connect.")) {
+                Log.i("NotifyDriver", "Failure to connect");
+                repeat[0] = false;
+                result[0] = 2;
+            } else {
+                Log.i("Object Notify", response);
+                if (response.contains("Already exists")) {
+                    repeat[0] = false;
+                    result[0] = 0;
+                }
+                while (repeat[0]) {
+                    //Call timer and wait for respond after a delay.
+                    timer();
+                    Log.i("rejectStatus", "RejectStatus in notifyDriver run is : " + String.valueOf(rejectStatus));
+                    if (rejectStatus != 0) {
+                        //Get out of loop when rejectStatus has changed.
+                        repeat[0] = false;
+                    } else {
+                        Thread.sleep(7000);
+                    }
+                }
+                Log.i("rejectStatus", "RejectStatus in notifyDriver after loop is : " + String.valueOf(rejectStatus));
+                if (rejectStatus == 1) {
+                    //Driver has rejected the request.
+                    result[0] = 0;
+                } else if (rejectStatus == 2) {
+                    //Driver has accepted the request.
+                    result[0] = 1;
+                } else if (rejectStatus == 3) {
+                    //An error happened.
+                    Log.i("timer", "Timer error");
+                    result[0] = 2;
+                }
+            }
+            Log.i("result", "Result in notify driver before returning is : " + String.valueOf(result[0]));
+            return result[0];
+        }
+
+        protected void timer() {
+            String response = new Route().synchronousCall("http://www.lymbo.esy.es/checkRequestStatus.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+            if (response.equals("Failure to connect.")) {
+                Log.i("php", "Couldn't find php.");
+            } else {
+                Log.i("Object Timer", response);
+                if (response.contains("0")) {
+                    Log.i("timer", "Request hasn't been responded to.");
+                } else if (response.contains("1")) {
+                    rejectStatus = 1;
+                    Log.i("timer", "Request has been rejected.");
+                } else if (response.contains("2")) {
+                    rejectStatus = 2;
+                    Log.i("timer", "Request has been accepted");
+                } else {
+                    Log.i("Object Timer", response);
+                    Log.i("php", "Error in SQL.");
+                    rejectStatus = 3;
+                }
+            }
+            Log.i("rejectStatus", "RejectStatus in Timer is : " + String.valueOf(rejectStatus));
+            Log.i("Timer", "I was in timer method.");
         }
     }
 }

@@ -3,17 +3,14 @@ package com.gailardia.lymbo;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -23,10 +20,7 @@ import android.widget.Toast;
 
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
-import com.mikhaellopez.circularimageview.CircularImageView;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -48,16 +42,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dsignup);
-        type="";
-        CircularImageView pickImage = (CircularImageView) findViewById(R.id.selected);
-        pickImage.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, SELECT_PHOTO);
-            }
-        });
+        type = "";
     }
 
     public void Firstsignup(){
@@ -138,25 +123,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         startActivity(intent);
         finish();
     }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        CircularImageView selectphoto=(CircularImageView) findViewById(R.id.selected);
-        switch(requestCode) {
-            case SELECT_PHOTO:
-                if(resultCode == RESULT_OK){
-                    try {
-                        final Uri imageUri = imageReturnedIntent.getData();
-                        final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                         selectedImage = BitmapFactory.decodeStream(imageStream);
-                        selectphoto.setImageBitmap(selectedImage);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-        }
-    }
     public void type(View view) {
         type = "";
         ImageButton car = (ImageButton) findViewById(R.id.car);
@@ -178,7 +144,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
-                    animateCarChoice();
                     break;
                 case R.id.car2:
                     //Inform the user the button2 has been clicked
@@ -189,7 +154,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "car";
-                    animateCarChoice();
                     break;
                 case R.id.tuktuk:
                     //Inform the user the button1 has been clicked
@@ -200,7 +164,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#3289C7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
-                    unanimateCarChoice();
                     break;
                 case R.id.tuktuk2:
                     //Inform the user the button1 has been clicked
@@ -211,7 +174,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#3289C7"));
                     amjad2.setTextColor(Color.parseColor("#d7d7d7"));
                     type = "tuktuk";
-                    unanimateCarChoice();
                     break;
                 case R.id.amjad:
                     //Inform the user the button1 has been clicked
@@ -222,7 +184,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#3289C7"));
                     type = "amjad";
-                    unanimateCarChoice();
                     break;
                 case R.id.amjad2:
                     //Inform the user the button1 has been clicked
@@ -233,35 +194,8 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                     tuktuk2.setTextColor(Color.parseColor("#d7d7d7"));
                     amjad2.setTextColor(Color.parseColor("#3289C7"));
                     type = "amjad";
-                    unanimateCarChoice();
                     break;
             }
-        }
-    }
-
-    protected void animateCarChoice(){
-        LinearLayout linear = (LinearLayout) findViewById(R.id.linearLayout);
-        final CircularImageView selectImage = (CircularImageView) findViewById(R.id.selected);
-        if (selectImage.getVisibility() != View.VISIBLE) {
-            linear.animate().translationYBy(-400f).setDuration(500);
-            selectImage.animate().alpha(1f).setDuration(1100);
-            selectImage.setVisibility(View.VISIBLE);
-            return;
-        }
-    }
-    protected void unanimateCarChoice(){
-        LinearLayout linear = (LinearLayout) findViewById(R.id.linearLayout);
-        final CircularImageView selectImage = (CircularImageView) findViewById(R.id.selected);
-        if (selectImage.getVisibility() == View.VISIBLE) {
-            linear.animate().translationYBy(400f).setDuration(600);
-            selectImage.animate().alpha(0f).setDuration(300);
-            selectImage.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    selectImage.setVisibility(View.INVISIBLE);
-                }
-            }, 500);
-            return;
         }
     }
 
