@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.kosalgeek.asynctask.AsyncResponse;
@@ -31,15 +33,7 @@ import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
-import org.json.JSONException;
-
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import self.philbrown.droidQuery.$;
-import self.philbrown.droidQuery.AjaxOptions;
-import self.philbrown.droidQuery.Function;
 
 public class Driver extends FragmentActivity implements OnMapReadyCallback, LocationListener {
 
@@ -52,7 +46,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver);
-        //createFloatingAction();
+        createFloatingAction();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -68,87 +62,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         } else {
             Log.i("Last Known Location", "Unsuccessful");
         }
-        findRider();
-    }
 
-    private void findRider() {
-        final Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            int timeSpent = 0;
-
-            @Override
-            public void run() {
-                $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/checkRequest.php")
-                        .type("POST")
-                        .data("{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"}")
-                        .context(Driver.this)
-                        .success(new Function() {
-
-                            @Override
-                            public void invoke($ droidQuery, Object... objects) {
-                                if (objects[0].toString().equalsIgnoreCase("Found Request")) {
-                                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(Driver.this);
-
-                                    // Setting Dialog Title
-                                    alertDialog.setTitle("Found a customer!");
-
-                                    // Setting Dialog Message
-                                    alertDialog.setMessage("Do you want to accept this customer?");
-
-
-                                    // On pressing Accept button
-                                    alertDialog.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            respond(0);
-                                            t.cancel();
-                                        }
-                                    });
-
-                                    // on pressing cancel button
-                                    alertDialog.setNegativeButton("Decline", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            respond(1);
-                                            dialog.cancel();
-                                        }
-                                    });
-
-                                    // Showing Alert Message
-                                    alertDialog.show();
-                                } else {
-                                    Log.i("ajaxDriver", "Time spent is : " + timeSpent);
-                                    timeSpent += 5;
-                                }
-                            }
-                        })
-                        .error(new Function() {
-                            @Override
-                            public void invoke($ $, Object... args) {
-                                Toast.makeText(Driver.this, "Couldn't find php", Toast.LENGTH_LONG).show();
-                            }
-                        }));
-            }
-        }, 0, 5000);
-    }
-
-    private void respond(int response) {
-        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/driverResponse.php")
-                .type("POST")
-                .data("{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"" + ",\"latitude\":\"" + location.getLatitude() + "\"" + ",\"longitude\":\"" + location.getLongitude() + ",\"response\":\"" + response + "\"}")
-                .context(Driver.this)
-                .success(new Function() {
-
-                    @Override
-                    public void invoke($ droidQuery, Object... objects) {
-                        Log.i("reponse", "Successful");
-
-                    }
-                })
-                .error(new Function() {
-                    @Override
-                    public void invoke($ $, Object... args) {
-                        Log.i("reponse", "Unsuccessful");
-                    }
-                }));
     }
 
     @Override
@@ -243,7 +157,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         locationManager.removeUpdates(this);
     }
 
-    /*public void createFloatingAction() {
+    public void createFloatingAction() {
         final ImageView itemIcon4;
         SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
         final String restoredText = prefs.getString("username", null);
@@ -287,10 +201,21 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         itemIcon6.setImageDrawable(getResources().getDrawable(R.drawable.sat));
         final SubActionButton button6 = itemBuilder.setContentView(itemIcon6).build();
 
+        ImageView itemIcon7 = new ImageView(this);
+        itemIcon7.setImageDrawable(getResources().getDrawable(R.drawable.account2));
+        final SubActionButton button7 = itemBuilder.setContentView(itemIcon7).build();
 
+        ImageView itemIcon8 = new ImageView(this);
+        itemIcon8.setImageDrawable(getResources().getDrawable(R.drawable.signout));
+        final SubActionButton button8 = itemBuilder.setContentView(itemIcon8).build();
+
+        ImageView itemIcon9 = new ImageView(this);
+        itemIcon9.setImageDrawable(getResources().getDrawable(R.drawable.delete));
+        final SubActionButton button9 = itemBuilder.setContentView(itemIcon9).build();
 
 
         final FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
+                .addSubActionView(button7)
                 .addSubActionView(button1)
                 .addSubActionView(button2)
                 .attachTo(actionButton)
@@ -299,6 +224,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         final FloatingActionMenu actionMenu2 = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button3)
                 .addSubActionView(button4)
+                .setEndAngle(240)
                 .attachTo(button1)
                 .build();
 
@@ -306,20 +232,16 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 .addSubActionView(button5)
                 .addSubActionView(button6)
                 .attachTo(button2)
+                .setStartAngle(225)
                 .build();
 
-        actionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                actionMenu.toggle(true);
+        final FloatingActionMenu actionMenu4 = new FloatingActionMenu.Builder(this)
+                .addSubActionView(button9)
+                .addSubActionView(button8)
+                .attachTo(button7)
+                .setEndAngle(220)
+                .build();
 
-                if (!actionMenu.isOpen() && actionMenu2.isOpen()) {
-                    actionMenu.toggle(true);
-                    actionMenu2.toggle(true);
-                    actionMenu3.toggle(true);
-                }
-            }
-        });
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -331,6 +253,9 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 }else if(!actionMenu.isOpen()&& actionMenu3.isOpen()){
                     actionMenu.toggle(true);
                     actionMenu3.toggle(true);
+                }else if(!actionMenu.isOpen() && actionMenu4.isOpen()){
+                    actionMenu.toggle(true);
+                    actionMenu4.toggle(true);
                 }
             }
         });
@@ -342,6 +267,9 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 if (actionMenu3.isOpen()) {
                     actionMenu3.toggle(true);
                 }
+                if(actionMenu4.isOpen()){
+                    actionMenu4.toggle(true);
+                }
             }
 
         });
@@ -352,6 +280,9 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
                 if (actionMenu2.isOpen()) {
                     actionMenu2.toggle(true);
+                }
+                if(actionMenu4.isOpen()){
+                    actionMenu4.toggle(true);
                 }
             }
 
@@ -386,9 +317,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 });
                 readTask.execute("http://lymbo.esy.es/set_Online.php");
 
-
-
-
             }
 
         });
@@ -411,7 +339,117 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             }
 
         });
+        button7.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                actionMenu4.toggle(true);
 
-    }*/
+                if (actionMenu3.isOpen()) {
+                    actionMenu3.toggle(true);
+                }
+                if(actionMenu2.isOpen()){
+                    actionMenu2.toggle(true);
+                }
+            }
 
+        });
+
+        button8.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            signoutAlert();
+
+            }
+
+        });
+        button9.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+               deletAccountAlert();
+
+            }
+
+        });
+
+    }
+
+    protected void signoutAlert(){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
+        final String restoredText = prefs.getString("username", null);
+        final HashMap map=new HashMap();
+        map.put("username",restoredText);
+        final Intent intent = new Intent(this, choices.class);
+
+
+        alertDialog.setTitle("Confirm");
+
+        alertDialog.setMessage("Are you sure you want to sign out?");
+
+        alertDialog.setPositiveButton("Sign out", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog,int which) {
+                PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
+                    @Override
+                    public void processFinish(String s) {
+                        Toast.makeText(getApplicationContext(), "Signed out", Toast.LENGTH_LONG).show();
+                    }
+                });
+                readTask.execute("http://lymbo.esy.es/set_offline.php");
+                SharedPreferences settings = getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
+                settings.edit().clear().commit();
+
+                startActivity(intent);
+            }
+        });
+
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        alertDialog.show();
+    }
+    protected void deletAccountAlert(){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
+        final String restoredText = prefs.getString("username", null);
+        final HashMap map=new HashMap();
+        map.put("username",restoredText);
+        final Intent intent = new Intent(this, choices.class);
+
+
+        alertDialog.setTitle("Confirm");
+
+        alertDialog.setMessage("Are you sure you want to delete your account?");
+
+        alertDialog.setPositiveButton("Delete account", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog,int which) {
+                PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
+                    @Override
+                    public void processFinish(String s) {
+                        Toast.makeText(getApplicationContext(), "Account successfully deleted!", Toast.LENGTH_LONG).show();
+                    }
+                });
+                readTask.execute("http://lymbo.esy.es/Delete_account.php");
+                SharedPreferences settings = getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
+                settings.edit().clear().commit();
+
+                startActivity(intent);
+            }
+        });
+
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        alertDialog.show();
+    }
+    @Override
+    public void onBackPressed() {
+    }
 }
