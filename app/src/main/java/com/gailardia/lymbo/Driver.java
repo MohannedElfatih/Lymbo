@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -20,19 +21,28 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -75,7 +85,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         final Timer t = new Timer();
         t.schedule(new TimerTask() {
             int timeSpent = 0;
-
             @Override
             public void run() {
                 $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/checkRequest.php")
@@ -157,7 +166,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             return;
         }
         mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -537,4 +545,65 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     @Override
     public void onBackPressed() {
     }
+
+    /*try {
+        JSONArray responseJson = new JSONArray(response);
+        URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin="
+                + responseJson.get(0) + "," + responseJson.get(1) + "&"
+                + "destination=" + location.getLatitude() + "," + location.getLongitude() + "&key"
+                + "AIzaSyDtYl3HYOjjLLbyEkISc4jiy9KG4rUDrms");
+        JSONObject jsonObject = new JSONObject(new Route().synchronousCall(String.valueOf(url), ""));
+        JSONArray jsonArray = jsonObject.getJSONArray("routes");
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonRoute = jsonArray.getJSONObject(i);
+            Route route = new Route();
+            JSONObject overviewPoly = jsonRoute.getJSONObject("overview_polyline");
+            JSONArray legs = jsonRoute.getJSONArray("legs");
+            JSONObject leg = legs.getJSONObject(0);
+            route.distance = leg.getJSONObject("distance").getInt("value");
+            route.distanceText = leg.getJSONObject("distance").getString("text");
+            route.duration = leg.getJSONObject("duration").getInt("value");
+            route.durationText = leg.getJSONObject("duration").getString("text");
+            route.endAddress = leg.getString("end_address");
+            route.startAddress = leg.getString("start_address");
+            route.endLocation = new LatLng(leg.getJSONObject("end_location").getDouble("lat"), leg.getJSONObject("end_location").getDouble("lng"));
+            route.startLocation = new LatLng(leg.getJSONObject("start_location").getDouble("lat"), leg.getJSONObject("start_location").getDouble("lng"));
+            route.points = new Route().decodePolyLine(overviewPoly.getString("points"));
+            driverRoutes.add(route);
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    } catch (JSONException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+    @Override
+    protected void onPostExecute(String s) {
+        super.onPostExecute(s);
+        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        bounds.include(routes.get(routes.size() - 1).getStartLocation());
+        bounds.include(routes.get(routes.size() - 1).getEndLocation());
+        bounds.include(driverRoutes.get(driverRoutes.size() - 1).getStartLocation());
+        bounds.include(driverRoutes.get(driverRoutes.size() - 1).getEndLocation());
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .geodesic(true)
+                .color(Color.RED)
+                .width(10);
+        polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).startLocation);
+        for (int i = 0; i < driverRoutes.get(driverRoutes.size() - 1).points.size(); i++) {
+            polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).points.get(i));
+        }
+        Log.i("Distance", "Distance is : " + driverRoutes.get(driverRoutes.size() - 1).getDistanceText() + " Duration is : " + driverRoutes.get(driverRoutes.size() - 1).getDurationText());
+        polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).endLocation);
+        for (int i = 0; i < driverPolylines.size(); i++) {
+            driverPolylines.get(i).remove();
+        }
+        driverPolylines.clear();
+        driverPolylines.add(mMap.addPolyline(polylineOptions));
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
+        mMap.animateCamera(cameraUpdate);
+        dialog.cancel();
+    }*/
 }
