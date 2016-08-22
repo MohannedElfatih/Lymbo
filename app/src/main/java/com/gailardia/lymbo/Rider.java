@@ -78,6 +78,7 @@ import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
+    public static Location location;
     static String n[];
     static Double m[];
     public int rejectStatus = 0;
@@ -85,15 +86,17 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
     protected Marker driverMarker;
+    protected GoogleMap mMap;
     ExecutorService executor = Executors.newFixedThreadPool(8);
     String vehicleType = "";
-    Location location;
     String provider;
     View bottomsheet, driversheet;
     View coordinatorLayoutView;
     ArrayList<String> name;
     ArrayList<Double> metars;
-    private GoogleMap mMap;
+    Double getDriverdestLat, getDriverdestLong, getDrivercustLat, getDrivercustLong;
+    int getDriverPrice;
+    String getDriverType;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
     private Marker destinationMarker;
@@ -136,7 +139,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         TextView price = (TextView) bottomsheet.findViewById(R.id.price);
         TextView duration = (TextView) bottomsheet.findViewById(R.id.duration);
         TextView distance = (TextView) bottomsheet.findViewById(R.id.distance);
-        Log.wtf("ErrorsMan", String.valueOf(routes.size()));
+        Log.wtf("Route length", String.valueOf(routes.size()));
         duration.setText(routes.get(routes.size() - 1).durationText);
         distance.setText(routes.get(routes.size() - 1).distanceText);
         price.setText(" Choose vehicle type.");
@@ -148,7 +151,12 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 if (vehicleType.equalsIgnoreCase("")) {
                     Toast.makeText(Rider.this, "Please choose a vehicle type.", Toast.LENGTH_LONG).show();
                 } else {
-                    final String[] params = {vehicleType, String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude())};
+                    final String[] params = {vehicleType,
+                            String.valueOf(location.getLatitude()),
+                            String.valueOf(location.getLongitude()),
+                            String.valueOf(destinationMarker.getPosition().latitude),
+                            String.valueOf(destinationMarker.getPosition().longitude),
+                            String.valueOf(getDriverPrice)};
                     $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/tst.php")
                             .type("POST")
                             .data("{\"type\":\"" + vehicleType + "\"" + ",\"latitude\":\"" + location.getLatitude() + "\"" + ",\"longitude\":\"" + location.getLongitude() + "\"}")
@@ -281,6 +289,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     tuktuk.setImageResource(R.drawable.tuktukchoice);
                     type = "car";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    getDriverPrice = Integer.parseInt(textprice);
                     text.setText("The price is: " + textprice + "SDG");
                     break;
 
@@ -291,6 +300,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     tuktuk.setImageResource(R.drawable.tuktuksheet);
                     type = "tuktuk";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    getDriverPrice = Integer.parseInt(textprice);
                     text.setText("The price is: " + textprice + " SDG");
                     break;
 
@@ -301,6 +311,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     tuktuk.setImageResource(R.drawable.tuktukchoice);
                     type = "amjad";
                     textprice = String.valueOf(getPrice(type, routes.get(routes.size() - 1).distance));
+                    getDriverPrice = Integer.parseInt(textprice);
                     text.setText("The price is: " + textprice + "SDG");
                     break;
             }
@@ -805,7 +816,6 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     public class GetDriversLocation extends AsyncTask<String, String, String> {
         String[] test;
         private ProgressDialog dialog = new ProgressDialog(Rider.this);
-        private ProgressDialog dialog2 = new ProgressDialog(Rider.this);
 
         @Override
         protected void onPreExecute() {
@@ -832,6 +842,11 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     rejectStatus = 0;
                     Log.i("rejectStatus", "RejectStatus in PostExecute is : " + String.valueOf(rejectStatus));
                     int result;
+                    getDriverType = strings[0];
+                    getDrivercustLat = Double.valueOf(strings[1]);
+                    getDrivercustLong = Double.valueOf(strings[2]);
+                    getDriverdestLat = Double.valueOf(strings[3]);
+                    getDriverdestLong = Double.valueOf(strings[4]);
                     driverRank++;
                     //Check if the Driver names array is done.
                     if (driverRank < n.length) {
@@ -899,7 +914,14 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             final int rank = driverRank;
             final boolean[] repeat = {true};
             //Insert request to RequestTable.
-            String response = new Route().synchronousCall("http://www.lymbo.esy.es/insertRequest.php", "{\"Dname\":\"" + n[rank] + "\"}");
+            String response = new Route().synchronousCall("http://www.lymbo.esy.es/insertRequest.php",
+                    "{\"Dname\":\"" + n[driverRank] + "\""
+                            + ",\"type\":\"" + getDriverType + "\""
+                            + ",\"price\":\"" + getDriverPrice + "\""
+                            + ",\"destLatitude\":\"" + getDriverdestLat + "\""
+                            + ",\"destLongitude\":\"" + getDriverdestLong + "\""
+                            + ",\"custLatitude\":\"" + getDrivercustLat + "\""
+                            + ",\"custLongitude\":\"" + getDrivercustLong + "\"}");
             if (response.equals("Failure to connect.")) {
                 Log.i("NotifyDriver", "Failure to connect");
                 repeat[0] = false;

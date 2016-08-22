@@ -47,8 +47,6 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
         map.put("Dpassword",P);
         PostResponseAsyncTask task = new PostResponseAsyncTask(this,map);
         task.execute("http://lymbo.esy.es/signin.php");
-
-
     }
     public void finishlogin(){
         finish();
