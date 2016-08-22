@@ -1,39 +1,59 @@
 package com.gailardia.lymbo;
 
 import android.Manifest;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -42,9 +62,12 @@ import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
 public class Driver extends FragmentActivity implements OnMapReadyCallback, LocationListener {
-
+    public List<Polyline> polyLines = new ArrayList<Polyline>();
+    public List<Route> routes = new ArrayList<>();
+    View driverSheet;
     Location location;
     String provider;
+    int tripPrice;
     private GoogleMap mMap;
     private LocationManager locationManager;
 
@@ -75,10 +98,9 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         final Timer t = new Timer();
         t.schedule(new TimerTask() {
             int timeSpent = 0;
-
             @Override
             public void run() {
-                $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/checkRequest.php")
+                $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/getRequestDetails.php")
                         .type("POST")
                         .data("{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"}")
                         .context(Driver.this)
@@ -86,8 +108,17 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
                             @Override
                             public void invoke($ droidQuery, Object... objects) {
-                                if (objects[0].toString().equalsIgnoreCase("Found Request")) {
-                                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(Driver.this);
+                                if (!objects[0].toString().equalsIgnoreCase("No Request found") && !objects[0].toString().equalsIgnoreCase("No location")) {
+                                    try {
+                                        JSONArray responseJson = new JSONArray(objects[0]);
+                                        tripPrice = responseJson.getInt(5);
+                                        String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(0)), String.valueOf(responseJson.get(1))};
+                                        new GetRoute().execute(params);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                    /*AlertDialog.Builder alertDialog = new AlertDialog.Builder(Driver.this);
 
                                     // Setting Dialog Title
                                     alertDialog.setTitle("Found a customer!");
@@ -117,7 +148,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                                 } else {
                                     Log.i("ajaxDriver", "Time spent is : " + timeSpent);
                                     timeSpent += 5;
-                                }
+                                }*/
                             }
                         })
                         .error(new Function() {
@@ -128,6 +159,26 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                         }));
             }
         }, 0, 5000);
+    }
+
+    public void openDriverSheet() {
+        driverSheet = getLayoutInflater().inflate(R.layout.driver_sheet, null);
+        ImageButton accept = (ImageButton) driverSheet.findViewById(R.id.accept);
+        ImageButton cancel = (ImageButton) driverSheet.findViewById(R.id.cancel);
+        TextView price = (TextView) driverSheet.findViewById(R.id.price);
+        TextView duration = (TextView) driverSheet.findViewById(R.id.duration);
+        TextView distance = (TextView) driverSheet.findViewById(R.id.distance);
+        Log.wtf("Route length", String.valueOf(routes.size()));
+        duration.setText("Duration to customer : " + routes.get(routes.size() - 1).durationText);
+        distance.setText("Distance to customer : " + routes.get(routes.size() - 1).distanceText);
+        price.setText("Trip price is : " + tripPrice + " SDG");
+        final Dialog mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
+        mBottomSheetDialog.setContentView(driverSheet);
+        mBottomSheetDialog.setCancelable(true);
+        mBottomSheetDialog.setCanceledOnTouchOutside(false);
+        mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+        mBottomSheetDialog.show();
     }
 
     private void respond(int response) {
@@ -157,7 +208,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             return;
         }
         mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -537,4 +587,121 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     @Override
     public void onBackPressed() {
     }
+
+    public class GetRoute extends AsyncTask<String, String, String> {
+        private ProgressDialog dialog = new ProgressDialog(Driver.this);
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.setMessage("Downloading info, please wait.");
+            dialog.setIndeterminate(false);
+            dialog.setCancelable(false);
+            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.show();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = "";
+            try {
+                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin="
+                        + strings[0] + "," + strings[1] + "&"
+                        + "destination=" + strings[2] + "," + strings[3] + "&key"
+                        + "AIzaSyDtYl3HYOjjLLbyEkISc4jiy9KG4rUDrms");
+                JSONObject jsonObject = new JSONObject(new Route().synchronousCall(String.valueOf(url), ""));
+                JSONArray jsonArray = jsonObject.getJSONArray("routes");
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonRoute = jsonArray.getJSONObject(i);
+                    Route route = new Route();
+                    JSONObject overviewPoly = jsonRoute.getJSONObject("overview_polyline");
+                    JSONArray legs = jsonRoute.getJSONArray("legs");
+                    JSONObject leg = legs.getJSONObject(0);
+                    route.distance = leg.getJSONObject("distance").getInt("value");
+                    route.distanceText = leg.getJSONObject("distance").getString("text");
+                    route.duration = leg.getJSONObject("duration").getInt("value");
+                    route.durationText = leg.getJSONObject("duration").getString("text");
+                    route.endAddress = leg.getString("end_address");
+                    route.startAddress = leg.getString("start_address");
+                    route.endLocation = new LatLng(leg.getJSONObject("end_location").getDouble("lat"), leg.getJSONObject("end_location").getDouble("lng"));
+                    route.startLocation = new LatLng(leg.getJSONObject("start_location").getDouble("lat"), leg.getJSONObject("start_location").getDouble("lng"));
+                    route.points = new Route().decodePolyLine(overviewPoly.getString("points"));
+                    routes.add(route);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String data) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            openDriverSheet();
+        }
+    }
+    /*try {
+        JSONArray responseJson = new JSONArray(response);
+        URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin="
+                + responseJson.get(0) + "," + responseJson.get(1) + "&"
+                + "destination=" + location.getLatitude() + "," + location.getLongitude() + "&key"
+                + "AIzaSyDtYl3HYOjjLLbyEkISc4jiy9KG4rUDrms");
+        JSONObject jsonObject = new JSONObject(new Route().synchronousCall(String.valueOf(url), ""));
+        JSONArray jsonArray = jsonObject.getJSONArray("routes");
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonRoute = jsonArray.getJSONObject(i);
+            Route route = new Route();
+            JSONObject overviewPoly = jsonRoute.getJSONObject("overview_polyline");
+            JSONArray legs = jsonRoute.getJSONArray("legs");
+            JSONObject leg = legs.getJSONObject(0);
+            route.distance = leg.getJSONObject("distance").getInt("value");
+            route.distanceText = leg.getJSONObject("distance").getString("text");
+            route.duration = leg.getJSONObject("duration").getInt("value");
+            route.durationText = leg.getJSONObject("duration").getString("text");
+            route.endAddress = leg.getString("end_address");
+            route.startAddress = leg.getString("start_address");
+            route.endLocation = new LatLng(leg.getJSONObject("end_location").getDouble("lat"), leg.getJSONObject("end_location").getDouble("lng"));
+            route.startLocation = new LatLng(leg.getJSONObject("start_location").getDouble("lat"), leg.getJSONObject("start_location").getDouble("lng"));
+            route.points = new Route().decodePolyLine(overviewPoly.getString("points"));
+            driverRoutes.add(route);
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    } catch (JSONException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+    @Override
+    protected void onPostExecute(String s) {
+        super.onPostExecute(s);
+        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        bounds.include(routes.get(routes.size() - 1).getStartLocation());
+        bounds.include(routes.get(routes.size() - 1).getEndLocation());
+        bounds.include(driverRoutes.get(driverRoutes.size() - 1).getStartLocation());
+        bounds.include(driverRoutes.get(driverRoutes.size() - 1).getEndLocation());
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .geodesic(true)
+                .color(Color.RED)
+                .width(10);
+        polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).startLocation);
+        for (int i = 0; i < driverRoutes.get(driverRoutes.size() - 1).points.size(); i++) {
+            polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).points.get(i));
+        }
+        Log.i("Distance", "Distance is : " + driverRoutes.get(driverRoutes.size() - 1).getDistanceText() + " Duration is : " + driverRoutes.get(driverRoutes.size() - 1).getDurationText());
+        polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).endLocation);
+        for (int i = 0; i < driverPolylines.size(); i++) {
+            driverPolylines.get(i).remove();
+        }
+        driverPolylines.clear();
+        driverPolylines.add(mMap.addPolyline(polylineOptions));
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
+        mMap.animateCamera(cameraUpdate);
+        dialog.cancel();
+    }*/
 }
