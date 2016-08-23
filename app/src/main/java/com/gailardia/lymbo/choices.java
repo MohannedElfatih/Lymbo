@@ -34,6 +34,7 @@ public class choices extends AppCompatActivity {
     private android.app.Activity act;
     private Boolean exit = false;
     private int counter;
+    public dsignup signupM=new dsignup();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +127,7 @@ public class choices extends AppCompatActivity {
     }
 
     public void Dsignin(View view){
+        if(signupM.isOnline()) {
         /*SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
         if(shared.getBoolean("signed", false)){
             Intent intent = new Intent(this, Rider.class);
@@ -135,8 +137,13 @@ public class choices extends AppCompatActivity {
             Intent intent = new Intent(this, dlogin.class);
             startActivity(intent);
         }*/
-        Intent intent = new Intent(this, dlogin.class);
-        startActivity(intent);
+            Intent intent = new Intent(this, dlogin.class);
+            startActivity(intent);
+        }
+        else
+        {
+            Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -155,23 +162,28 @@ public class choices extends AppCompatActivity {
             }, 3 * 1000);
         }
     }
-    public void openMap(View view){
-        if (ContextCompat.checkSelfPermission(act,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Snackbar.make(view, "Please enable permission for application to work.", Snackbar.LENGTH_INDEFINITE)
-                    .setAction("Enable", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            ActivityCompat.requestPermissions(act,
-                                    permissionLocation,
-                                    REQUEST_PERMISSION);
-                        }
-                    })
-                    .show();
-        } else {
-            Intent intent = new Intent(this, Rider.class);
-            startActivity(intent);
+    public void openMap(View view) {
+        if (signupM.isOnline()) {
+            if (ContextCompat.checkSelfPermission(act,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Snackbar.make(view, "Please enable permission for application to work.", Snackbar.LENGTH_INDEFINITE)
+                        .setAction("Enable", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                ActivityCompat.requestPermissions(act,
+                                        permissionLocation,
+                                        REQUEST_PERMISSION);
+                            }
+                        })
+                        .show();
+            } else {
+                Intent intent = new Intent(this, Rider.class);
+                startActivity(intent);
+            }
+        }
+        else{
+            Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
         }
     }
 }
