@@ -11,12 +11,12 @@
         android:background="@drawable/bg5" >
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="140dp"
             android:orientation="vertical"
             android:paddingTop="20dp" >
@@ -32,11 +32,11 @@
 
         <LinearLayout
             android:id="@+id/choice"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="90dp"
             android:orientation="horizontal"
-            android:visibility="invisible"
+            android:visibility="visible"
             android:weightSum="1">
 
             <ImageView
@@ -49,12 +49,43 @@
 
             <ImageView
                 android:layout_width="60dp"
-                android:layout_height="103dp"
+                android:layout_height="90dp"
                 android:layout_marginLeft="70dp"
                 android:layout_weight="0.04"
                 android:onClick="Dsignin"
+                android:paddingTop="30dp"
                 android:src="@drawable/car"
                 android:visibility="visible" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal"
+            android:paddingTop="3dp"
+            android:weightSum="1">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_marginLeft="80dp"
+                android:paddingBottom="10dp"
+                android:paddingLeft="15dp"
+                android:text="Rider"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#87f1f1f1"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="60dp"
+                android:layout_height="103dp"
+                android:layout_marginLeft="70dp"
+                android:text="Driver"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#87f1f1f1" />
         </LinearLayout>
     </LinearLayout>
 
@@ -65,5 +96,6 @@
             android:layout_alignParentLeft="false"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="false"></android.support.design.widget.CoordinatorLayout>
+
     </RelativeLayout>
 </FrameLayout>

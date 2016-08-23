@@ -12,6 +12,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -130,6 +131,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this, this)
                 .build();
+
     }
 
     public void openBottomSheet() {
@@ -147,6 +149,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                        Uri.parse("http://maps.google.com/maps?daddr=15.565116,32.562952"));
+                startActivity(intent);
                 animateRoute();
                 if (vehicleType.equalsIgnoreCase("")) {
                     Toast.makeText(Rider.this, "Please choose a vehicle type.", Toast.LENGTH_LONG).show();
@@ -617,6 +622,15 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
+        Location destin = new Location(provider);
+        if (destinationMarker != null) {
+            destin.setLongitude(destinationMarker.getPosition().longitude);
+            destin.setLatitude(destinationMarker.getPosition().latitude);
+        }
+        if (location.distanceTo(destin) < 500) {
+            driverMarker.remove();
+            unanimateRoute();
+        }
         locationManager.requestLocationUpdates(provider, 400, 1, this);
         this.location = location;
     }
@@ -668,6 +682,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
     protected void onResume() {
         super.onResume();
+        Log.i("OnResume", "Hey it's me");
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }

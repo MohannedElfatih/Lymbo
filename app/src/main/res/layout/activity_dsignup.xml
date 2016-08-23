@@ -3,15 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.gailardia.lymbo.MainActivity"
-    android:background="@drawable/bg5">
+    android:background="@drawable/bg5"
+    tools:context="com.gailardia.lymbo.MainActivity">
     <RelativeLayout
+        android:id="@+id/scndSignup"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/scndSignup"
+        android:alpha="1"
         android:background="@drawable/bg5"
         android:visibility="gone"
-        android:alpha="1"
         >
         <LinearLayout
             android:id="@+id/linearLayout"
@@ -23,14 +23,14 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_above="@+id/linearLayout"
+                android:layout_alignEnd="@+id/linearLayout2"
+                android:layout_alignRight="@+id/linearLayout2"
+                android:fontFamily="@string/abc_action_bar_home_description"
                 android:text="Choose your vehicle type"
                 android:textAlignment="center"
                 android:textColor="#d7d7d7"
-                android:textSize="22sp"
-                android:layout_above="@+id/linearLayout"
-                android:layout_alignRight="@+id/linearLayout2"
-                android:layout_alignEnd="@+id/linearLayout2"
-                android:fontFamily="@string/abc_action_bar_home_description" />
+                android:textSize="22sp" />
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -57,9 +57,9 @@
                     android:layout_marginRight="0dp"
                     android:layout_weight="1"
                     android:background="@null"
+                    android:contentDescription="@string/car"
                     android:onClick="type"
-                    android:src="@drawable/choicecar"
-                    android:contentDescription="@string/car" />
+                    android:src="@drawable/choicecar" />
 
                 <ImageButton
                     android:id="@+id/amjad"
@@ -123,14 +123,14 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/linearLayout2"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_gravity="center"
-            android:layout_marginLeft="14dp"
             android:layout_centerHorizontal="true"
-            android:id="@+id/linearLayout2"
-            android:layout_marginRight="20dp"
-            android:layout_marginBottom="45dp">
+            android:layout_gravity="center"
+            android:layout_marginBottom="45dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginRight="20dp">
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -142,208 +142,210 @@
                 android:id="@+id/phone"
                 android:layout_width="match_parent"
                 android:layout_height="fill_parent"
+                android:layout_gravity="left"
                 android:background="@drawable/lymbo_edit_text_holo_dark"
+                android:elegantTextHeight="false"
+                android:gravity="bottom"
                 android:hint="Phone number"
                 android:inputType="phone"
                 android:paddingEnd="3dp"
                 android:paddingStart="6dp"
                 android:paddingTop="5dp"
                 android:textColor="#fdfdfd"
-                android:textColorHint="#9ff1f1f1"
-                android:gravity="bottom"
-                android:layout_gravity="left"
-                android:elegantTextHeight="false" />
+                android:textColorHint="#9ff1f1f1" />
         </LinearLayout>
     </RelativeLayout>
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/firstSignup"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/bg5"
-        android:id="@+id/firstSignup"
+        android:orientation="vertical"
         android:visibility="visible">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="150dp"
-            android:background="#00ffffff"
             android:layout_marginTop="0dp"
-            android:layout_weight="0">
+            android:layout_weight="0"
+            android:background="#00ffffff"
+            android:orientation="vertical">
 
             <ImageView
                 style="@style/Widget.AppCompat.Button.Borderless.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/logot2"
-                android:baselineAlignBottom="false" />
+                android:baselineAlignBottom="false"
+                android:src="@drawable/logot2" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
                 android:id="@+id/imageView2"
-                android:src="@drawable/avatar3"
-                android:layout_gravity="center_vertical" />
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/avatar3" />
 
             <EditText
+                android:id="@+id/name"
                 android:layout_width="match_parent"
                 android:layout_height="fill_parent"
-                android:inputType="text"
-                android:id="@+id/name"
-                android:hint="Username"
+                android:layout_marginRight="15dp"
                 android:background="@drawable/lymbo_edit_text_holo_dark"
-                android:paddingStart="6dp"
+                android:gravity="bottom"
+                android:hint="Username"
+                android:inputType="text"
+                android:paddingBottom="10dp"
+                android:paddingEnd="3dp"
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
-                android:paddingEnd="3dp"
-                android:textColorHint="#9ff1f1f1"
+                android:paddingStart="6dp"
                 android:paddingTop="5dp"
-                android:paddingBottom="10dp"
                 android:textColor="#fdfdfd"
-                android:layout_marginRight="15dp"
-                android:gravity="bottom" />
+                android:textColorHint="#9ff1f1f1" />
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:src="@drawable/locked3"
-                android:layout_gravity="center_vertical" />
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/locked3" />
 
             <EditText
+                android:id="@+id/password1"
                 android:layout_width="match_parent"
                 android:layout_height="fill_parent"
-                android:inputType="textPassword"
-                android:id="@+id/password1"
-                android:hint="Password"
+                android:layout_marginRight="15dp"
                 android:background="@drawable/lymbo_edit_text_holo_dark"
-                android:paddingStart="6dp"
+                android:gravity="bottom"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:paddingBottom="10dp"
+                android:paddingEnd="3dp"
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
-                android:paddingEnd="3dp"
-                android:gravity="bottom"
-                android:textColorHint="#9ff1f1f1"
+                android:paddingStart="6dp"
                 android:paddingTop="5dp"
-                android:paddingBottom="10dp"
                 android:textColor="#fdfdfd"
-                android:layout_marginRight="15dp" />
+                android:textColorHint="#9ff1f1f1" />
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
 
             <EditText
+                android:id="@+id/password2"
                 android:layout_width="match_parent"
                 android:layout_height="fill_parent"
-                android:inputType="textPassword"
-                android:id="@+id/password2"
-                android:hint="Confirm Password"
-                android:background="@drawable/lymbo_edit_text_holo_dark"
-                android:paddingStart="6dp"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
-                android:paddingEnd="3dp"
-                android:textColorHint="#9ff1f1f1"
-                android:paddingTop="5dp"
-                android:paddingBottom="10dp"
-                android:textColor="#fdfdfd"
                 android:layout_marginLeft="64dp"
                 android:layout_marginRight="15dp"
-                android:gravity="bottom" />
+                android:background="@drawable/lymbo_edit_text_holo_dark"
+                android:gravity="bottom"
+                android:hint="Confirm Password"
+                android:inputType="textPassword"
+                android:paddingBottom="10dp"
+                android:paddingEnd="3dp"
+                android:paddingLeft="0dp"
+                android:paddingRight="0dp"
+                android:paddingStart="6dp"
+                android:paddingTop="5dp"
+                android:textColor="#fdfdfd"
+                android:textColorHint="#9ff1f1f1" />
 
         </LinearLayout>
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="48dp"
             android:layout_gravity="center"
-            android:weightSum="1"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
+            android:weightSum="1">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:layout_weight="0.2"
-                android:src="@drawable/names"
                 android:layout_gravity="center_vertical"
-                android:paddingLeft="3dp" />
+                android:layout_weight="0.2"
+                android:paddingLeft="3dp"
+                android:src="@drawable/names" />
 
             <EditText
-                android:layout_width="150dp"
-                android:layout_height="fill_parent"
                 android:id="@+id/firstName"
-                android:hint="First Name"
-                android:layout_weight="0.4"
-                android:paddingStart="6dp"
-                android:paddingLeft="0dp"
-                android:paddingEnd="3dp"
-                android:background="@drawable/lymbo_edit_text_holo_dark"
-                android:textColorHint="#9ff1f1f1"
-                android:paddingTop="5dp"
-                android:paddingBottom="10dp"
-                android:textColor="#fdfdfd"
-                android:layout_marginRight="7dp"
-                android:gravity="bottom" />
-
-            <EditText
                 android:layout_width="150dp"
                 android:layout_height="fill_parent"
-                android:id="@+id/lastName"
-                android:hint="Last Name"
+                android:layout_marginRight="7dp"
                 android:layout_weight="0.4"
-                android:paddingStart="6dp"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
-                android:paddingEnd="3dp"
                 android:background="@drawable/lymbo_edit_text_holo_dark"
                 android:gravity="bottom"
-                android:textColorHint="#9ff1f1f1"
-                android:paddingTop="5dp"
+                android:hint="First Name"
                 android:paddingBottom="10dp"
+                android:paddingEnd="3dp"
+                android:paddingLeft="0dp"
+                android:paddingStart="6dp"
+                android:paddingTop="5dp"
+                android:singleLine="true"
                 android:textColor="#fdfdfd"
-                android:layout_marginRight="15dp" />
+                android:textColorHint="#9ff1f1f1" />
+
+            <EditText
+                android:id="@+id/lastName"
+                android:layout_width="150dp"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="15dp"
+                android:layout_weight="0.4"
+                android:background="@drawable/lymbo_edit_text_holo_dark"
+                android:gravity="bottom"
+                android:hint="Last Name"
+                android:paddingBottom="10dp"
+                android:paddingEnd="3dp"
+                android:paddingLeft="0dp"
+                android:paddingRight="0dp"
+                android:paddingStart="6dp"
+                android:paddingTop="5dp"
+                android:singleLine="true"
+                android:textColor="#fdfdfd"
+                android:textColorHint="#9ff1f1f1" />
         </LinearLayout>
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:weightSum="1"
             android:layout_gravity="right"
+            android:layout_marginTop="20dp"
+            android:layout_weight="1"
             android:gravity="right"
-            android:layout_weight="1">
+            android:orientation="horizontal"
+            android:weightSum="1">
 
             <ImageButton
-            android:background="@null"
-                android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:onClick="Scndsignup"
-            android:src="@drawable/next"
-            android:adjustViewBounds="false"
-            android:baselineAlignBottom="false"
+                android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+                android:layout_marginBottom="29dp"
             android:layout_marginRight="13dp"
-            android:layout_marginBottom="29dp" />
+                android:adjustViewBounds="false"
+                android:background="@null"
+                android:baselineAlignBottom="false"
+                android:onClick="Scndsignup"
+                android:src="@drawable/next" />
 
         </LinearLayout>
 

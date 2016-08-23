@@ -2,6 +2,9 @@ package com.gailardia.lymbo;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -15,6 +18,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
@@ -33,9 +40,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -48,6 +57,7 @@ import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.net.URL;
@@ -56,6 +66,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import self.philbrown.droidQuery.$;
 import self.philbrown.droidQuery.AjaxOptions;
@@ -68,8 +79,12 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     Location location;
     String provider;
     int tripPrice;
+    Marker destinationMarker;
+    int lastRequestId;
+    private JSONArray responseJson;
     private GoogleMap mMap;
     private LocationManager locationManager;
+    private boolean isInForeground = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +95,16 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        Intent intent = new Intent(getApplicationContext(), Driver.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 1, intent, 0);
+        Notification notification = new Notification.Builder(getApplicationContext())
+                .setContentTitle("Request arrived")
+                .setContentText("Check request details?")
+                .setSmallIcon(R.drawable.human)
+                .setContentIntent(pendingIntent)
+                .build();
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notification);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -98,65 +123,30 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         final Timer t = new Timer();
         t.schedule(new TimerTask() {
             int timeSpent = 0;
+
             @Override
             public void run() {
-                $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/getRequestDetails.php")
-                        .type("POST")
-                        .data("{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"}")
-                        .context(Driver.this)
-                        .success(new Function() {
-
-                            @Override
-                            public void invoke($ droidQuery, Object... objects) {
-                                if (!objects[0].toString().equalsIgnoreCase("No Request found") && !objects[0].toString().equalsIgnoreCase("No location")) {
-                                    try {
-                                        JSONArray responseJson = new JSONArray(objects[0]);
-                                        tripPrice = responseJson.getInt(5);
-                                        String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(0)), String.valueOf(responseJson.get(1))};
-                                        new GetRoute().execute(params);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                    /*AlertDialog.Builder alertDialog = new AlertDialog.Builder(Driver.this);
-
-                                    // Setting Dialog Title
-                                    alertDialog.setTitle("Found a customer!");
-
-                                    // Setting Dialog Message
-                                    alertDialog.setMessage("Do you want to accept this customer?");
-
-
-                                    // On pressing Accept button
-                                    alertDialog.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            respond(0);
-                                            t.cancel();
-                                        }
-                                    });
-
-                                    // on pressing cancel button
-                                    alertDialog.setNegativeButton("Decline", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            respond(1);
-                                            dialog.cancel();
-                                        }
-                                    });
-
-                                    // Showing Alert Message
-                                    alertDialog.show();
-                                } else {
-                                    Log.i("ajaxDriver", "Time spent is : " + timeSpent);
-                                    timeSpent += 5;
-                                }*/
-                            }
-                        })
-                        .error(new Function() {
-                            @Override
-                            public void invoke($ $, Object... args) {
-                                Toast.makeText(Driver.this, "Couldn't find php", Toast.LENGTH_LONG).show();
-                            }
-                        }));
+                String response = new Route().synchronousCall("http://www.lymbo.esy.es/getRequestDetails.php", "{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"}");
+                Log.i("reponse", response);
+                if (!response.equalsIgnoreCase("No Request found") && !response.toString().equalsIgnoreCase("No location")) {
+                    try {
+                        responseJson = new JSONArray(response);
+                        if (responseJson.getInt(6) == lastRequestId) {
+                            Log.i("lastRequest", "Same requestId");
+                        } else {
+                            Looper.prepare();
+                            t.cancel();
+                            tripPrice = responseJson.getInt(5);
+                            String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(2)), String.valueOf(responseJson.get(3)), String.valueOf(1)};
+                            new GetRoute().execute(params);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Log.i("ajaxDriver", "Time spent is : " + timeSpent);
+                    timeSpent += 5;
+                }
             }
         }, 0, 5000);
     }
@@ -168,10 +158,11 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         TextView price = (TextView) driverSheet.findViewById(R.id.price);
         TextView duration = (TextView) driverSheet.findViewById(R.id.duration);
         TextView distance = (TextView) driverSheet.findViewById(R.id.distance);
+        final TextView countDown = (TextView) driverSheet.findViewById(R.id.countDownTimer);
         Log.wtf("Route length", String.valueOf(routes.size()));
-        duration.setText("Duration to customer : " + routes.get(routes.size() - 1).durationText);
-        distance.setText("Distance to customer : " + routes.get(routes.size() - 1).distanceText);
-        price.setText("Trip price is : " + tripPrice + " SDG");
+        duration.setText("Duration to destination : " + routes.get(routes.size() - 1).durationText);
+        distance.setText("Distance to destination : " + routes.get(routes.size() - 1).distanceText);
+        price.setText("Trip price : " + tripPrice + " SDG");
         final Dialog mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
         mBottomSheetDialog.setContentView(driverSheet);
         mBottomSheetDialog.setCancelable(true);
@@ -179,34 +170,123 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
         mBottomSheetDialog.show();
+        final CountDownTimer countDownTimer = new CountDownTimer(15000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                //TextView countDown = (TextView) driverSheet.findViewById(R.id.countDownTimer);
+                Log.i("timer", String.valueOf(millisUntilFinished));
+                int show = (int) TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished);
+                countDown.setText(String.valueOf(show));
+            }
+
+            @Override
+            public void onFinish() {
+                mBottomSheetDialog.cancel();
+                try {
+                    lastRequestId = responseJson.getInt(6);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                respond(1);
+                findRider();
+            }
+        }.start();
+        accept.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    lastRequestId = responseJson.getInt(6);
+                    mBottomSheetDialog.cancel();
+                    countDownTimer.cancel();
+                    respond(2);
+                    String[] params = new String[]{String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(0)), String.valueOf(responseJson.get(1)), String.valueOf(2)};
+                    new GetRoute().execute(params);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    lastRequestId = responseJson.getInt(6);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                respond(1);
+                countDownTimer.cancel();
+                mBottomSheetDialog.cancel();
+                findRider();
+            }
+        });
+    }
+
+    protected void unanimateRoute() {
+        for (int i = 0; i < polyLines.size(); i++) {
+            polyLines.get(i).remove();
+        }
+        polyLines.clear();
+        destinationMarker.remove();
+    }
+
+    protected void destinationMarker(final LatLng latLng) {
+        if (destinationMarker == null) {
+            destinationMarker = mMap.addMarker(new MarkerOptions()
+                    .title("Destination")
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                    .position(latLng));
+        } else {
+            destinationMarker.remove();
+            destinationMarker = mMap.addMarker(new MarkerOptions()
+                    .title("Destination")
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
+                    .draggable(true)
+                    .position(latLng));
+        }
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+    }
+
+    protected void animateRoute() {
+        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        Log.i("route", String.valueOf(routes.size()));
+        bounds.include(routes.get(routes.size() - 1).getStartLocation());
+        bounds.include(routes.get(routes.size() - 1).getEndLocation());
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .geodesic(true)
+                .color(Color.BLUE)
+                .width(10);
+        polylineOptions.add(routes.get(routes.size() - 1).startLocation);
+        for (int i = 0; i < routes.get(routes.size() - 1).points.size(); i++) {
+            polylineOptions.add(routes.get(routes.size() - 1).points.get(i));
+        }
+        Log.i("Distance", "Distance is : " + routes.get(routes.size() - 1).getDistanceText() + " Duration is : " + routes.get(routes.size() - 1).getDurationText());
+        polylineOptions.add(routes.get(routes.size() - 1).endLocation);
+        for (int i = 0; i < polyLines.size(); i++) {
+            polyLines.get(i).remove();
+        }
+        polyLines.clear();
+        polyLines.add(mMap.addPolyline(polylineOptions));
+        //destinationMarker(routes.get(routes.size() - 1).getEndLocation());
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
+        mMap.animateCamera(cameraUpdate);
     }
 
     private void respond(int response) {
-        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/driverResponse.php")
-                .type("POST")
-                .data("{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"" + ",\"latitude\":\"" + location.getLatitude() + "\"" + ",\"longitude\":\"" + location.getLongitude() + ",\"response\":\"" + response + "\"}")
-                .context(Driver.this)
-                .success(new Function() {
-
-                    @Override
-                    public void invoke($ droidQuery, Object... objects) {
-                        Log.i("reponse", "Successful");
-
-                    }
-                })
-                .error(new Function() {
-                    @Override
-                    public void invoke($ $, Object... args) {
-                        Log.i("reponse", "Unsuccessful");
-                    }
-                }));
+        new Route().asynchronousCall("http://www.lymbo.esy.es/driverResponse.php", "{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\""
+                + ",\"latitude\":\"" + location.getLatitude() + "\""
+                + ",\"longitude\":\"" + location.getLongitude()
+                + ",\"response\":\"" + response + "\"}");
     }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        onResume();
         mMap.setMyLocationEnabled(true);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
@@ -216,7 +296,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             @Override
             public boolean onMyLocationButtonClick() {
                 boolean gpsStatus = locationManager.isProviderEnabled(locationManager.GPS_PROVIDER);
-                if(!gpsStatus){
+                if (!gpsStatus) {
                     alert();
                     return true;
                 } else {
@@ -228,6 +308,27 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
     @Override
     public void onLocationChanged(Location location) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Location destin = new Location(provider);
+        if (!routes.isEmpty()) {
+            destin.setLongitude(routes.get(routes.size() - 1).getEndLocation().longitude);
+            destin.setLatitude(routes.get(routes.size() - 1).getEndLocation().latitude);
+        }
+        if (location.distanceTo(destin) < 500) {
+            //unanimateRoute();
+            //routes.clear();
+        }
+        locationManager.requestLocationUpdates(provider, 400, 1, this);
+        this.location = location;
 
     }
 
@@ -246,7 +347,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         alert();
     }
 
-    protected void alert(){
+    protected void alert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
         // Setting Dialog Title
@@ -260,7 +361,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
         // On pressing Settings button
         alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
+            public void onClick(DialogInterface dialog, int which) {
                 startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             }
         });
@@ -278,14 +379,17 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
     protected void onResume() {
         super.onResume();
+        isInForeground = false;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        provider = locationManager.getBestProvider(new Criteria(), false);
         locationManager.requestLocationUpdates(provider, 400, 1, this);
     }
 
     protected void onPause() {
         super.onPause();
+        isInForeground = true;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -296,11 +400,8 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         final ImageView itemIcon4;
         SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
         final String restoredText = prefs.getString("username", null);
-        final HashMap map=new HashMap();
-        map.put("username",restoredText);
-
-
-
+        final HashMap map = new HashMap();
+        map.put("username", restoredText);
 
 
         ImageView icon = new ImageView(this); // Create an icon
@@ -382,13 +483,13 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             public void onClick(View view) {
                 actionMenu.toggle(true);
 
-                if (!actionMenu.isOpen() && actionMenu2.isOpen() ) {
+                if (!actionMenu.isOpen() && actionMenu2.isOpen()) {
                     actionMenu.toggle(true);
                     actionMenu2.toggle(true);
-                }else if(!actionMenu.isOpen()&& actionMenu3.isOpen()){
+                } else if (!actionMenu.isOpen() && actionMenu3.isOpen()) {
                     actionMenu.toggle(true);
                     actionMenu3.toggle(true);
-                }else if(!actionMenu.isOpen() && actionMenu4.isOpen()){
+                } else if (!actionMenu.isOpen() && actionMenu4.isOpen()) {
                     actionMenu.toggle(true);
                     actionMenu4.toggle(true);
                 }
@@ -402,7 +503,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 if (actionMenu3.isOpen()) {
                     actionMenu3.toggle(true);
                 }
-                if(actionMenu4.isOpen()){
+                if (actionMenu4.isOpen()) {
                     actionMenu4.toggle(true);
                 }
             }
@@ -416,7 +517,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 if (actionMenu2.isOpen()) {
                     actionMenu2.toggle(true);
                 }
-                if(actionMenu4.isOpen()){
+                if (actionMenu4.isOpen()) {
                     actionMenu4.toggle(true);
                 }
             }
@@ -482,7 +583,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 if (actionMenu3.isOpen()) {
                     actionMenu3.toggle(true);
                 }
-                if(actionMenu2.isOpen()){
+                if (actionMenu2.isOpen()) {
                     actionMenu2.toggle(true);
                 }
             }
@@ -493,7 +594,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             @Override
             public void onClick(View v) {
 
-            signoutAlert();
+                signoutAlert();
 
             }
 
@@ -502,7 +603,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             @Override
             public void onClick(View v) {
 
-               deletAccountAlert();
+                deletAccountAlert();
 
             }
 
@@ -510,12 +611,12 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
     }
 
-    protected void signoutAlert(){
+    protected void signoutAlert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
         final String restoredText = prefs.getString("username", null);
-        final HashMap map=new HashMap();
-        map.put("username",restoredText);
+        final HashMap map = new HashMap();
+        map.put("username", restoredText);
         final Intent intent = new Intent(this, choices.class);
 
 
@@ -524,7 +625,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         alertDialog.setMessage("Are you sure you want to sign out?");
 
         alertDialog.setPositiveButton("Sign out", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
+            public void onClick(DialogInterface dialog, int which) {
                 PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
                     @Override
                     public void processFinish(String s) {
@@ -547,12 +648,13 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
         alertDialog.show();
     }
-    protected void deletAccountAlert(){
+
+    protected void deletAccountAlert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
         final String restoredText = prefs.getString("username", null);
-        final HashMap map=new HashMap();
-        map.put("username",restoredText);
+        final HashMap map = new HashMap();
+        map.put("username", restoredText);
         final Intent intent = new Intent(this, choices.class);
 
 
@@ -561,7 +663,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         alertDialog.setMessage("Are you sure you want to delete your account?");
 
         alertDialog.setPositiveButton("Delete account", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog,int which) {
+            public void onClick(DialogInterface dialog, int which) {
                 PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
                     @Override
                     public void processFinish(String s) {
@@ -584,6 +686,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
         alertDialog.show();
     }
+
     @Override
     public void onBackPressed() {
     }
@@ -594,6 +697,8 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            Log.i("routes", "reached preExecute");
+            routes.clear();
             dialog.setMessage("Downloading info, please wait.");
             dialog.setIndeterminate(false);
             dialog.setCancelable(false);
@@ -633,15 +738,21 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return null;
+            return strings[strings.length - 1];
         }
 
         @Override
         protected void onPostExecute(String data) {
+            Log.i("routes", "reached after Execute");
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-            openDriverSheet();
+            if (data.contains("1")) {
+                openDriverSheet();
+            }
+            if (data.contains("2")) {
+                animateRoute();
+            }
         }
     }
     /*try {
