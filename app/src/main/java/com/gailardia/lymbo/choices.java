@@ -3,8 +3,11 @@ package com.gailardia.lymbo;
 import android.*;
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -127,17 +130,8 @@ public class choices extends AppCompatActivity {
     }
 
     public void Dsignin(View view){
-        if(signupM.isOnline()) {
-        /*SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
-        if(shared.getBoolean("signed", false)){
-            Intent intent = new Intent(this, Rider.class);
-            startActivity(intent);
-
-        } else {
-            Intent intent = new Intent(this, dlogin.class);
-            startActivity(intent);
-        }*/
-            Intent intent = new Intent(this, dlogin.class);
+        Intent intent = new Intent(this, dlogin.class);
+        if(isOnline()) {
             startActivity(intent);
         }
         else
@@ -162,8 +156,20 @@ public class choices extends AppCompatActivity {
             }, 3 * 1000);
         }
     }
+
+    public boolean isOnline() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        }
+
+        return false;
+    }
+
     public void openMap(View view) {
-        if (signupM.isOnline()) {
+        if (isOnline()) {
             if (ContextCompat.checkSelfPermission(act,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) {

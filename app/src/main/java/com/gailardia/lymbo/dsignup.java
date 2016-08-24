@@ -215,7 +215,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         final HashMap post = new HashMap();
         post.put("Dname", Dname);
         post.put("Dpassword", Dpassword1);
-        post.put("DIMEI",DIMEI);
         post.put("phone",Dphone);
         post.put("type",type);
         post.put("firstName", firstName.getText().toString());
