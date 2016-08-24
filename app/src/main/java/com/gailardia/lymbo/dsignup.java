@@ -206,15 +206,11 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         EditText phone=(EditText)findViewById(R.id.phone);
         EditText firstName = (EditText)findViewById(R.id.firstName);
         EditText lastName = (EditText)findViewById(R.id.lastName);
-        TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
 
         Dname=name.getText().toString();
         Dpassword1=password1.getText().toString();
         Dpassword2=password2.getText().toString();
         Dphone=phone.getText().toString();
-
-        //String image=getStringImage(selectedImage);
-        DIMEI="00971503468518";
 
         final HashMap post = new HashMap();
         post.put("Dname", Dname);
