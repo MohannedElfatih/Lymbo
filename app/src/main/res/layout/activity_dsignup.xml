@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:alpha="1"
         android:background="@drawable/bg5"
-        android:visibility="gone"
+        android:visibility="invisible"
         >
         <LinearLayout
             android:id="@+id/linearLayout"
@@ -19,6 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
+            android:layout_marginBottom="25dp"
             android:orientation="vertical">
             <TextView
                 android:layout_width="fill_parent"
@@ -26,6 +27,7 @@
                 android:layout_above="@+id/linearLayout"
                 android:layout_alignEnd="@+id/linearLayout2"
                 android:layout_alignRight="@+id/linearLayout2"
+                android:layout_marginBottom="15dp"
                 android:fontFamily="@string/abc_action_bar_home_description"
                 android:text="Choose your vehicle type"
                 android:textAlignment="center"
@@ -126,6 +128,7 @@
             android:id="@+id/linearLayout2"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:layout_below="@id/linearLayout"
             android:layout_centerHorizontal="true"
             android:layout_gravity="center"
             android:layout_marginBottom="45dp"
@@ -154,6 +157,21 @@
                 android:textColor="#fdfdfd"
                 android:textColorHint="#9ff1f1f1" />
         </LinearLayout>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="29dp"
+            android:layout_marginRight="13dp"
+            android:adjustViewBounds="false"
+            android:background="@null"
+            android:baselineAlignBottom="false"
+            android:onClick="finishsignup"
+            android:src="@drawable/next" />
     </RelativeLayout>
     <LinearLayout
         android:id="@+id/firstSignup"

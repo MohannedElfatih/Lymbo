@@ -81,6 +81,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     int tripPrice;
     Marker destinationMarker;
     int lastRequestId;
+    View coordinatorLayoutView;
     private JSONArray responseJson;
     private GoogleMap mMap;
     private LocationManager locationManager;
@@ -91,6 +92,14 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver);
         createFloatingAction();
+        coordinatorLayoutView = findViewById(R.id.snackbarPosition);
+        Snackbar.make(coordinatorLayoutView, "Searching for requests.", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Ok", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                })
+                .show();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -406,11 +415,10 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
         ImageView icon = new ImageView(this); // Create an icon
         icon.setImageDrawable(getResources().getDrawable(R.drawable.menu));
-
         final FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
                 .setContentView(icon)
                 .build();
-
+        actionButton.animate().translationYBy(1000f).setDuration(1000);
         final SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
 
 
