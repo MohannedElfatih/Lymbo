@@ -83,6 +83,7 @@ import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
 public class Driver extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+    Snackbar snackbar;
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
     View driverSheet;
@@ -96,6 +97,8 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     private GoogleMap mMap;
     private LocationManager locationManager;
     private boolean isInForeground = false;
+    Dialog mBottomSheetDialog;
+    FloatingActionButton actionButton;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -148,12 +151,12 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver);
-        createFloatingAction();
         coordinatorLayoutView = findViewById(R.id.snackbarPosition);
-        Snackbar.make(coordinatorLayoutView, "Searching for requests.", Snackbar.LENGTH_INDEFINITE)
-                .setAction("Ok", new View.OnClickListener() {
+        snackbar = Snackbar.make(coordinatorLayoutView, "Searching for requests.", Snackbar.LENGTH_INDEFINITE);
+        snackbar.setAction("Ok", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        createFloatingAction();
                     }
                 })
                 .show();
@@ -195,7 +198,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         duration.setText("Duration to destination : " + routes.get(routes.size() - 1).durationText);
         distance.setText("Distance to destination : " + routes.get(routes.size() - 1).distanceText);
         price.setText("Trip price : " + tripPrice + " SDG");
-        final Dialog mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
+        mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
         mBottomSheetDialog.setContentView(driverSheet);
         mBottomSheetDialog.setCancelable(true);
         mBottomSheetDialog.setCanceledOnTouchOutside(false);
@@ -444,7 +447,14 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
     protected void onPause() {
         super.onPause();
-        findRider();
+        if(mBottomSheetDialog != null){
+            if(!mBottomSheetDialog.isShowing()){
+                findRider();
+            }
+        } else {
+            findRider();
+        }
+
         isInForeground = true;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -468,14 +478,11 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         final String restoredText = prefs.getString("username", null);
         final HashMap map = new HashMap();
         map.put("username", restoredText);
-
-
         ImageView icon = new ImageView(this); // Create an icon
         icon.setImageDrawable(getResources().getDrawable(R.drawable.menu));
-        final FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
+        actionButton = new FloatingActionButton.Builder(this)
                 .setContentView(icon)
                 .build();
-        actionButton.animate().translationYBy(1000f).setDuration(1000);
         final SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
 
 
