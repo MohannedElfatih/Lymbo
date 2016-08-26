@@ -31,7 +31,7 @@ import self.philbrown.droidQuery.Function;
 
 public class dsignup extends AppCompatActivity implements AsyncResponse {
     private final int SELECT_PHOTO = 1;
-    RelativeLayout scnd;
+    LinearLayout scnd;
     LinearLayout first;
     int carType=0;
     String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
@@ -46,7 +46,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     }
 
     public void Firstsignup(){
-        RelativeLayout scnd=(RelativeLayout) findViewById(R.id.scndSignup);
+        LinearLayout scnd=(LinearLayout) findViewById(R.id.scndSignup);
         LinearLayout first=(LinearLayout) findViewById(R.id.firstSignup);
         scnd.setVisibility(View.INVISIBLE);
         first.setVisibility(View.VISIBLE);
@@ -86,7 +86,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                                          if (((String) objects[0]).equalsIgnoreCase("false")) {
                                              Toast.makeText(dsignup.this, "Username is used :(", Toast.LENGTH_LONG).show();
                                          } else if (((String) objects[0]).equalsIgnoreCase("true")) {
-                                             scnd = (RelativeLayout) findViewById(R.id.scndSignup);
+                                             scnd = (LinearLayout) findViewById(R.id.scndSignup);
                                              first = (LinearLayout) findViewById(R.id.firstSignup);
                                              first.animate().translationXBy(-1000f).setDuration(700);
                                              scnd.setAlpha(1f);

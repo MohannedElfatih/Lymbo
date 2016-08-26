@@ -178,7 +178,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(DriverTimerService.TRANSACTION_DONE);
         registerReceiver(broadcastReceiver, intentFilter);
-        //findRider();
+        findRider();
     }
 
     private void findRider() {
