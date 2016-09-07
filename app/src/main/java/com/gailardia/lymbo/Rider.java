@@ -1,5 +1,6 @@
 package com.gailardia.lymbo;
 
+import android.*;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -18,6 +19,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
@@ -38,6 +40,7 @@ import java.net.URL;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
@@ -575,7 +578,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             return;
         }
         Location destin = new Location(provider);
-        if (destinationMarker != null) {
+        /*if (destinationMarker != null) {
             destin.setLongitude(destinationMarker.getPosition().longitude);
             destin.setLatitude(destinationMarker.getPosition().latitude);
             if (location.distanceTo(destin) < 500) {
@@ -584,7 +587,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     unanimateRoute();
                 }
             }
-        }
+        }*/
         locationManager.requestLocationUpdates(provider, 400, 1, this);
         this.location = location;
     }
@@ -655,6 +658,26 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
     @Override
     public void processFinish(String s) {
+    }
+
+    public void onConnected(@Nullable Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLastLocation != null) {
+            location.setLatitude(mLastLocation.getLatitude());
+            location.setLongitude(mLastLocation.getLongitude());
+            onMapReady(mMap);
+        }
     }
 
     @Override
@@ -828,28 +851,32 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     getDriverdestLong = Double.valueOf(strings[4]);
                     driverRank++;
                     //Check if the Driver names array is done.
-                    if (driverRank < n.length) {
-                        result = future.get();
-                        Log.i("onPostExecute", "result = " + String.valueOf(result));
-                        answer = result;
-                        if (result == 2) {
-                            //An error happened, do not repeat the loop.
+                    if(n.length < 0){
+                        Thread.sleep(5000);
+                    } else {
+                        if (driverRank < n.length) {
+                            result = future.get();
+                            Log.i("onPostExecute", "result = " + String.valueOf(result));
+                            answer = result;
+                            if (result == 2) {
+                                //An error happened, do not repeat the loop.
+                                driverRank = -1;
+                                repeat = false;
+                            } else if (result == 1) {
+                                //Driver accepted the request, do not repeat the loop.
+                                repeat = false;
+                            } else if (result == 0) {
+                                //Driver rejected request, or he already exists in table. notify next driver and repeat the loop.
+                                Log.i("Postexecute", "going to next driver");
+                                repeat = true;
+                            }
+                        } else {
+                            //if result is outside expected parameters, don't repeat loop.
+                            Log.i("onPostExecute", "Names array have finished.");
+                            answer = 3;
                             driverRank = -1;
                             repeat = false;
-                        } else if (result == 1) {
-                            //Driver accepted the request, do not repeat the loop.
-                            repeat = false;
-                        } else if (result == 0) {
-                            //Driver rejected request, or he already exists in table. notify next driver and repeat the loop.
-                            Log.i("Postexecute", "going to next driver");
-                            repeat = true;
                         }
-                    } else {
-                        //if result is outside expected parameters, don't repeat loop.
-                        Log.i("onPostExecute", "Names array have finished.");
-                        answer = 3;
-                        driverRank = -1;
-                        repeat = false;
                     }
                 } while (repeat);
             } catch (InterruptedException e) {
@@ -881,6 +908,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 //if result is outside expected parameters, don't repeat loop.
                 Log.i("onPostExecute", "Names array have finished.");
                 Toast.makeText(Rider.this, "No driver accepted.", Toast.LENGTH_LONG).show();
+                unanimateRoute();
                 driverRank = -1;
             }
         }
