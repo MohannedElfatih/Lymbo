@@ -1,14 +1,19 @@
 package com.gailardia.lymbo;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Dialog;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -16,11 +21,16 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -73,6 +83,7 @@ import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
 public class Driver extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+    Snackbar snackbar;
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
     View driverSheet;
@@ -86,17 +97,66 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     private GoogleMap mMap;
     private LocationManager locationManager;
     private boolean isInForeground = false;
+    Dialog mBottomSheetDialog;
+    FloatingActionButton actionButton;
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e("service", "Received intent");
+            String response = intent.getStringExtra("response");
+            try {
+                responseJson = new JSONArray(response);
+            if (responseJson.getInt(6) == lastRequestId) {
+                Log.i("lastRequest", "Same requestId");
+                findRider();
+            } else {
+                Toast.makeText(getApplicationContext(), "Found a customer.", Toast.LENGTH_SHORT).show();
+                ringtone();
+                PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
+                PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
+                wakeLock.acquire();
+                KeyguardManager keyguardManager = (KeyguardManager) getApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
+                KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock("TAG");
+                keyguardLock.disableKeyguard();
+                if (Build.VERSION.SDK_INT >= 11) {
+                    ActivityManager am = (ActivityManager) getSystemService(Activity.ACTIVITY_SERVICE);
+                    List<ActivityManager.RunningTaskInfo> rt = am.getRunningTasks(Integer.MAX_VALUE);
+
+                    for (int i = 0; i < rt.size(); i++)
+                    {
+                        // bring to front
+                        if (rt.get(i).baseActivity.toShortString().indexOf("com.gailardia.lymbo") > -1) {
+                            Intent not = new Intent(getApplicationContext(), Driver.class);
+                            Notification notification = new Notification.Builder(getApplicationContext())
+                                    .setContentTitle("Request arrived")
+                                    .setSmallIcon(R.drawable.human)
+                                    .build();
+                            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                            notificationManager.notify(1, notification);
+                            am.moveTaskToFront(rt.get(i).id, ActivityManager.MOVE_TASK_WITH_HOME);
+                        }
+                    }
+                }
+                tripPrice = responseJson.getInt(5);
+                String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(2)), String.valueOf(responseJson.get(3)), String.valueOf(1)};
+                new GetRoute().execute(params);
+            }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver);
-        createFloatingAction();
         coordinatorLayoutView = findViewById(R.id.snackbarPosition);
-        Snackbar.make(coordinatorLayoutView, "Searching for requests.", Snackbar.LENGTH_INDEFINITE)
-                .setAction("Ok", new View.OnClickListener() {
+        snackbar = Snackbar.make(coordinatorLayoutView, "Searching for requests.", Snackbar.LENGTH_INDEFINITE);
+        snackbar.setAction("Ok", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        createFloatingAction();
                     }
                 })
                 .show();
@@ -104,16 +164,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        Intent intent = new Intent(getApplicationContext(), Driver.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 1, intent, 0);
-        Notification notification = new Notification.Builder(getApplicationContext())
-                .setContentTitle("Request arrived")
-                .setContentText("Check request details?")
-                .setSmallIcon(R.drawable.human)
-                .setContentIntent(pendingIntent)
-                .build();
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(1, notification);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -125,39 +175,15 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         } else {
             Log.i("Last Known Location", "Unsuccessful");
         }
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(DriverTimerService.TRANSACTION_DONE);
+        registerReceiver(broadcastReceiver, intentFilter);
         findRider();
     }
 
     private void findRider() {
-        final Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            int timeSpent = 0;
-
-            @Override
-            public void run() {
-                String response = new Route().synchronousCall("http://www.lymbo.esy.es/getRequestDetails.php", "{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"}");
-                Log.i("reponse", response);
-                if (!response.equalsIgnoreCase("No Request found") && !response.toString().equalsIgnoreCase("No location")) {
-                    try {
-                        responseJson = new JSONArray(response);
-                        if (responseJson.getInt(6) == lastRequestId) {
-                            Log.i("lastRequest", "Same requestId");
-                        } else {
-                            Looper.prepare();
-                            t.cancel();
-                            tripPrice = responseJson.getInt(5);
-                            String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(2)), String.valueOf(responseJson.get(3)), String.valueOf(1)};
-                            new GetRoute().execute(params);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    Log.i("ajaxDriver", "Time spent is : " + timeSpent);
-                    timeSpent += 5;
-                }
-            }
-        }, 0, 5000);
+        Intent intent = new Intent(this, DriverTimerService.class);
+        startService(intent);
     }
 
     public void openDriverSheet() {
@@ -172,7 +198,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         duration.setText("Duration to destination : " + routes.get(routes.size() - 1).durationText);
         distance.setText("Distance to destination : " + routes.get(routes.size() - 1).distanceText);
         price.setText("Trip price : " + tripPrice + " SDG");
-        final Dialog mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
+        mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
         mBottomSheetDialog.setContentView(driverSheet);
         mBottomSheetDialog.setCancelable(true);
         mBottomSheetDialog.setCanceledOnTouchOutside(false);
@@ -205,6 +231,8 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             public void onClick(View view) {
                 try {
                     lastRequestId = responseJson.getInt(6);
+                    Intent intent = new Intent(Driver.this, DriverTimerService.class);
+                    stopService(intent);
                     mBottomSheetDialog.cancel();
                     countDownTimer.cancel();
                     respond(2);
@@ -292,15 +320,19 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         onResume();
         mMap.setMyLocationEnabled(true);
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        if (location != null) {
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .bearing(90)
+                    .target(new LatLng(location.getLatitude(), location.getLongitude()))
+                    .zoom(15)
+                    .build();
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        }
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
@@ -333,8 +365,17 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             destin.setLatitude(routes.get(routes.size() - 1).getEndLocation().latitude);
         }
         if (location.distanceTo(destin) < 500) {
-            //unanimateRoute();
-            //routes.clear();
+            unanimateRoute();
+            routes.clear();
+            Intent intent = null;
+            try {
+                intent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://maps.google.com/maps?daddr="
+                                + responseJson.get(2) + "," + responseJson.get(3)));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            startActivity(intent);
         }
         locationManager.requestLocationUpdates(provider, 400, 1, this);
         this.location = location;
@@ -396,13 +437,39 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         locationManager.requestLocationUpdates(provider, 400, 1, this);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent intent = new Intent(this, DriverTimerService.class);
+        stopService(intent);
+        unregisterReceiver(broadcastReceiver);
+    }
+
     protected void onPause() {
         super.onPause();
+        if(mBottomSheetDialog != null){
+            if(!mBottomSheetDialog.isShowing()){
+                findRider();
+            }
+        } else {
+            findRider();
+        }
+
         isInForeground = true;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         locationManager.removeUpdates(this);
+    }
+
+    public void ringtone(){
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void createFloatingAction() {
@@ -411,14 +478,11 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         final String restoredText = prefs.getString("username", null);
         final HashMap map = new HashMap();
         map.put("username", restoredText);
-
-
         ImageView icon = new ImageView(this); // Create an icon
         icon.setImageDrawable(getResources().getDrawable(R.drawable.menu));
-        final FloatingActionButton actionButton = new FloatingActionButton.Builder(this)
+        actionButton = new FloatingActionButton.Builder(this)
                 .setContentView(icon)
                 .build();
-        actionButton.animate().translationYBy(1000f).setDuration(1000);
         final SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
 
 

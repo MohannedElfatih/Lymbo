@@ -1,24 +1,27 @@
 package com.gailardia.lymbo;
 
-import android.*;
-import android.Manifest;
-import android.app.Activity;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -41,6 +44,7 @@ public class choices extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choices);
         coordinatorLayoutView = findViewById(R.id.snackbarPosition);
+        printnum();
         if(Build.VERSION.SDK_INT >= 23){
             counter = 0;
             requestPermission(choices.this, coordinatorLayoutView);
@@ -127,17 +131,8 @@ public class choices extends AppCompatActivity {
     }
 
     public void Dsignin(View view){
-        if(signupM.isOnline()) {
-        /*SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
-        if(shared.getBoolean("signed", false)){
-            Intent intent = new Intent(this, Rider.class);
-            startActivity(intent);
-
-        } else {
-            Intent intent = new Intent(this, dlogin.class);
-            startActivity(intent);
-        }*/
-            Intent intent = new Intent(this, dlogin.class);
+        Intent intent = new Intent(this, dlogin.class);
+        if(isOnline()) {
             startActivity(intent);
         }
         else
@@ -162,8 +157,20 @@ public class choices extends AppCompatActivity {
             }, 3 * 1000);
         }
     }
+
+    public boolean isOnline() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        }
+
+        return false;
+    }
+
     public void openMap(View view) {
-        if (signupM.isOnline()) {
+        if (isOnline()) {
             if (ContextCompat.checkSelfPermission(act,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -184,6 +191,22 @@ public class choices extends AppCompatActivity {
         }
         else{
             Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
+        }
+    }
+    public void printnum()
+    {
+        AccountManager am = AccountManager.get(this);
+        Account[] accounts = am.getAccounts();
+
+        for (Account ac : accounts) {
+            String acname = ac.name;
+            String actype = ac.type;
+            // Take your time to look at all available accounts
+            System.out.println("Accounts : " + acname + ", " + actype);
+            if(actype.equals("com.whatsapp")){
+                String phoneNumber = ac.name;
+                Toast.makeText(choices.this,phoneNumber,Toast.LENGTH_LONG).show();
+            }
         }
     }
 }
