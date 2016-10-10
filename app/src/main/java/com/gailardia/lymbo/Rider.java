@@ -1,7 +1,10 @@
 package com.gailardia.lymbo;
 
+<<<<<<< HEAD
 import android.*;
 import android.annotation.TargetApi;
+=======
+>>>>>>> refs/remotes/origin/master
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -13,30 +16,30 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
+import android.net.ParseException;
 import android.os.AsyncTask;
-import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.net.URL;
-
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
@@ -47,32 +50,32 @@ import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.kosalgeek.asynctask.AsyncResponse;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
-import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
-import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.kosalgeek.asynctask.AsyncResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -142,7 +145,30 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .enableAutoManage(this, this)
                 .build();
     }
+    public int hours(){
+        String url ="http://www.timeapi.org/utc/now";
+        final int[] hour = new int[1];
+        new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String result) {
+                        try {
 
+
+                            String hr=String.valueOf(result.charAt(11))+String.valueOf(result.charAt(12));
+                            hour[0] =Integer.parseInt(hr);
+                            Toast.makeText(Rider.this,String.valueOf(hour[0]),Toast.LENGTH_LONG).show();
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+            }
+        });
+        return hour[0];
+    }
     public void openBottomSheet() {
         bottomsheet = getLayoutInflater().inflate(R.layout.bottom_sheet, null);
         ImageButton accept = (ImageButton) bottomsheet.findViewById(R.id.accept);
@@ -335,48 +361,56 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     public int getPrice(String type, int distance) {
         //The method takes the type or vehicle and the distance which should be provided by Mohanned later
         int GenehperKilo = 0, price = 0;
-
-        //Genehperkilo int is  the price that the vehicle takes per kilometer, could be adjusted to meters if you guys want to
-        Calendar calendar = Calendar.getInstance();
-        //Calender is the class that gets the time from the machine, could be adjusted later if we could get time from internet
-        TextView text = (TextView) bottomsheet.findViewById(R.id.price);
-        int current_hour = calendar.get(Calendar.HOUR_OF_DAY);
-        //Calender.HOUR_OF_DAY gets the time in the 24 hour format
+        boolean less=false;
+        int current_hour=hours();
         if (type.equalsIgnoreCase("car")) {
-            GenehperKilo = 20;
-            // Each vehicle has an initial Genehperkilo value that can be increased or decreased depending on the time
-            //In these if clauses are the times specified for me by Omran, at each time the Genehperkilo for a vehicle changes depending on the trafic state
-            // time and how Genehperkilo increase or decrease can be adjusted later to things we see fit
-
-            if (current_hour >= 0 && current_hour < 13) {
-
-                GenehperKilo += 2;
-            } else if (current_hour >= 13 && current_hour < 19) {
-                GenehperKilo += 4;
-            } else if (current_hour >= 19 && current_hour <= 23) {
-                GenehperKilo += 6;
+            if(distance<3000){
+                price=25;
+                less=true;
             }
-        } else if (type.equalsIgnoreCase("tuktuk")) {
-            GenehperKilo = 10;
-            if (current_hour >= 0 && current_hour < 18) {
-                GenehperKilo += 2;
-            } else if (current_hour >= 18 && current_hour < 23) {
-                GenehperKilo += 6;
-            }
-        } else if (type.equalsIgnoreCase("amjad")) {
-            //          text.setText("amjad clicked!!");
-            GenehperKilo = 25;
-            if (current_hour >= 0 && current_hour < 13) {
-                GenehperKilo += 2;
-            } else if (current_hour >= 13 && current_hour < 19) {
-                GenehperKilo += 4;
-            } else if (current_hour >= 19 && current_hour <= 23) {
-                GenehperKilo += 6;
+            else {
+                if (current_hour >= 0 && current_hour < 13) {
+                    GenehperKilo = 10;
+                } else if (current_hour >= 13 && current_hour < 19) {
+                    GenehperKilo = 11;
+                } else if (current_hour >= 19 && current_hour <= 23) {
+                    GenehperKilo = 10;
+                }
             }
         }
-        price = GenehperKilo * distance;
+        else if (type.equalsIgnoreCase("tuktuk")) {
+            if(distance<1000){
+                price=5;
+                less=true;
+            }
+            else {
+                if (current_hour >= 0 && current_hour < 18) {
+                    GenehperKilo = 7;
+                } else if (current_hour >= 18 && current_hour < 23) {
+                    GenehperKilo = 6;
+                }
+            }
+        }
+        else if (type.equalsIgnoreCase("amjad")) {
+            if(distance<3000){
+                price=25;
+                less=true;
+            }
+            else {
+                if (current_hour >= 0 && current_hour < 13) {
+                    GenehperKilo = 4;
+                } else if (current_hour >= 13 && current_hour < 19) {
+                    GenehperKilo = 5;
+                } else if (current_hour >= 19 && current_hour <= 23) {
+                    GenehperKilo = 5;
+                }
+            }
+        }
+        if(less) {
+            price = GenehperKilo * (distance / 1000);
+        }
         // In the end the total price gets generated by multipying the Genehperkilo and the distance specified for us by Mohanned
-        return price / 1000;
+        return price;
         // And don't forget to embrace my amazing programming skills and please like and subscribe!!!!!
     }
 
