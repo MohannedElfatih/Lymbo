@@ -26,16 +26,24 @@ android {
 }
 
 dependencies {
+<<<<<<< HEAD
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:multidex:1.0.1'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.google.android.gms:play-services:9.0.2'
     compile 'com.google.firebase:firebase-ads:9.0.2'
+=======
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+>>>>>>> refs/remotes/origin/omran
     compile files('libs/GenAsync.jar')
-    compile 'com.android.support:design:23.2.1'
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.google.android.gms:play-services:9.2.0'
+    compile 'com.android.support:design:23.4.0'
     compile 'com.oguzdev:CircularFloatingActionMenu:1.0.2'
-    compile 'com.android.support:cardview-v7:23.0.+'
+    compile 'com.android.support:cardview-v7:23.4.0'
     compile 'com.mcxiaoke.volley:library:1.0.19'
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.0-beta1'
+
 }
 

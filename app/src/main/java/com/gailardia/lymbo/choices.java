@@ -44,7 +44,6 @@ public class choices extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choices);
         coordinatorLayoutView = findViewById(R.id.snackbarPosition);
-        printnum();
         if(Build.VERSION.SDK_INT >= 23){
             counter = 0;
             requestPermission(choices.this, coordinatorLayoutView);
@@ -193,20 +192,5 @@ public class choices extends AppCompatActivity {
             Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
         }
     }
-    public void printnum()
-    {
-        AccountManager am = AccountManager.get(this);
-        Account[] accounts = am.getAccounts();
 
-        for (Account ac : accounts) {
-            String acname = ac.name;
-            String actype = ac.type;
-            // Take your time to look at all available accounts
-            System.out.println("Accounts : " + acname + ", " + actype);
-            if(actype.equals("com.whatsapp")){
-                String phoneNumber = ac.name;
-                Toast.makeText(choices.this,phoneNumber,Toast.LENGTH_LONG).show();
-            }
-        }
-    }
 }

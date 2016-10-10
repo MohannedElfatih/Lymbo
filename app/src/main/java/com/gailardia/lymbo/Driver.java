@@ -42,10 +42,14 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -97,7 +101,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     public List<Route> routes = new ArrayList<>();
     View driverSheet;
     Location location;
-    String provider;
+    String provider,report;
     int tripPrice;
     Marker destinationMarker;
     int lastRequestId;
@@ -109,7 +113,14 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     private GoogleApiClient mGoogleApiClient;
     Dialog mBottomSheetDialog;
     FloatingActionButton actionButton;
+<<<<<<< HEAD
     int counter = 0;
+=======
+    private PopupWindow popup;
+    private RelativeLayout rel;
+    private RadioGroup radio;
+
+>>>>>>> refs/remotes/origin/omran
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -187,7 +198,59 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             }
         }
     };
+    public void openpop() {
+        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.85);
+        int height = (int)(getResources().getDisplayMetrics().heightPixels*0.90);
+        rel= (RelativeLayout) findViewById(R.id.relativeD);
+        View container =  getLayoutInflater().inflate(R.layout.pop_driver, null);
+        popup=new PopupWindow(container,width,height,true);
+        popup.showAtLocation(rel, Gravity.CENTER,0,0);
+        popup.setOutsideTouchable(false);
+        Button close=(Button) container.findViewById(R.id.closepopD);
+        Button submit = (Button) container.findViewById(R.id.submitD);
+        radio = (RadioGroup) container.findViewById(R.id.rad);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch(radio.getCheckedRadioButtonId()){
+                    case R.id.priceD:
+                        report ="priceD";
+                        break;
+                    case R.id.farD:
+                        report = "farD";
+                        break;
+                    case R.id.personalD:
+                        report = "personalD";
+                        break;
+                    case R.id.carErrorD:
+                        report = "carErrorD";
+                        break;
+                }
+                $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/report.php")
+                        .type("POST")
+                        .data("{\"type\":\"" + report + "\"}")
+                        .success(new Function() {
+                            @Override
+                            public void invoke($ droidQuery, Object... objects) {
+                                Toast.makeText(getApplicationContext(),"Thank you",Toast.LENGTH_LONG).show();
+                            }
+                        })
+                        .error(new Function() {
+                            @Override
+                            public void invoke($ $, Object... args) {
+                            }
+                        }));
+                popup.dismiss();
+            }
+        });
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popup.dismiss();
+            }
+        });
 
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -303,6 +366,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 new Respond().execute(String.valueOf(1));
                 countDownTimer.cancel();
                 mBottomSheetDialog.cancel();
+<<<<<<< HEAD
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -310,6 +374,10 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                     }
                 }, 5000);
 
+=======
+                openpop();
+                findRider();
+>>>>>>> refs/remotes/origin/omran
             }
         });
     }
