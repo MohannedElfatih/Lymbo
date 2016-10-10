@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/popD"
+    android:alpha=".90"
+    android:weightSum="2"
+    android:background="@null">
+
+    <android.support.v7.widget.CardView
+        android:layout_marginBottom="0dp"
+        android:foregroundGravity="center_vertical|center_horizontal|center"
+        app:cardBackgroundColor="#EEEEEE"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="7dp"
+        app:contentPadding="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_weight="2"
+        android:layout_margin="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical|fill_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:text="Why did you cancel the requast?"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#22313F"
+                android:textSize="16sp"
+                android:paddingLeft="5dp"
+                android:paddingBottom="3dp" />
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/shap"
+                android:layout_weight="1"
+                android:checkedButton="@+id/personalD"
+                android:paddingRight="0dp"
+                android:padding="5dip"
+                android:elevation="0dp"
+                android:id="@+id/rad">
+
+                <RadioButton
+                    android:text=" Expensive price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#EEEEEE"
+                    android:layout_weight="1"
+                    android:textColor="#22313F"
+                    android:id="@+id/priceD"
+                    android:textSize="14sp"
+                    android:paddingBottom="0dp" />
+
+                <RadioButton
+                    android:text="car issue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/carErrorD"
+                    android:background="#EEEEEE"
+                    android:layout_weight="1"
+                    android:textColor="#22313F"
+                    android:textSize="14sp"
+                    android:paddingBottom="0dp" />
+
+                <RadioButton
+                    android:text="Personal issue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/personalD"
+                    android:background="#EEEEEE"
+                    android:layout_weight="1"
+                    android:checked="false"
+                    android:textColor="#22313F"
+                    android:textSize="14sp"
+                    android:paddingBottom="0dp" />
+
+                <RadioButton
+                    android:text="customer distance is too far"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/farD"
+                    android:background="#EEEEEE"
+                    android:layout_weight="1"
+                    android:textColor="#22313F"
+                    android:textSize="14sp"
+                    android:paddingBottom="0dp" />
+
+            </RadioGroup>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:weightSum="2"
+                android:paddingTop="4dp"
+                android:layout_marginTop="2dp"
+                android:paddingBottom="0dp">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <Button
+                        android:id="@+id/submitD"
+                        android:background="@drawable/checked"
+                        android:textColor="#22313F"
+                        android:textSize="16sp"
+                        android:layout_weight="0"
+                        android:gravity="center_vertical|center_horizontal|center"
+                        android:foregroundGravity="center_horizontal|center"
+                        android:layout_marginStart="50dp"
+                        android:layout_width="59dp"
+                        android:layout_height="59dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    >
+
+                    <Button
+                        android:id="@+id/closepopD"
+                        android:background="@drawable/unchecked"
+                        android:layout_marginEnd="0dp"
+                        android:layout_marginLeft="0dp"
+                        android:layout_width="59dp"
+                        android:layout_height="59dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

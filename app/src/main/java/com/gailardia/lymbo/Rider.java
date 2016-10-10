@@ -1,5 +1,6 @@
 package com.gailardia.lymbo;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -12,9 +13,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ParseException;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -23,17 +26,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
@@ -63,12 +71,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -92,17 +96,20 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     ExecutorService executor = Executors.newFixedThreadPool(8);
     String vehicleType = "";
     String provider;
-    View bottomsheet, driversheet;
+    View bottomsheet;
     View coordinatorLayoutView;
     ArrayList<String> name;
     ArrayList<Double> metars;
     Double getDriverdestLat, getDriverdestLong, getDrivercustLat, getDrivercustLong;
     int getDriverPrice;
-    String getDriverType;
+    String getDriverType,report;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
     private Marker destinationMarker;
     private Marker searchMarker;
+    private PopupWindow popup;
+    private RelativeLayout rel;
+    private RadioGroup radio;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +119,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapLayout);
         mapFragment.getMapAsync(this);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         provider = locationManager.getBestProvider(new Criteria(), false);
@@ -131,12 +138,67 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     }
                 })
                 .show();
+        // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
         mGoogleApiClient = new GoogleApiClient
                 .Builder(this)
                 .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this, this)
-                .build();
+                .addApi(AppIndex.API).build();
+    }
+    public void openpop() {
+        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.85);
+        int height = (int)(getResources().getDisplayMetrics().heightPixels*0.90);
+        rel= (RelativeLayout) findViewById(R.id.relative);
+        View container =  getLayoutInflater().inflate(R.layout.pop, null);
+        popup=new PopupWindow(container,width,height,true);
+        popup.showAtLocation(rel, Gravity.CENTER,0,0);
+        popup.setOutsideTouchable(false);
+        Button close=(Button) container.findViewById(R.id.closepop);
+        Button submit = (Button) container.findViewById(R.id.submit);
+        radio = (RadioGroup) container.findViewById(R.id.rad);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch(radio.getCheckedRadioButtonId()){
+                    case R.id.priceR:
+                        report ="priceR";
+                        break;
+                    case R.id.far:
+                        report = "farR";
+                        break;
+                    case R.id.personal:
+                        report = "personalR";
+                        break;
+                    case R.id.rideR:
+                        report = "driverR";
+                        break;
+                }
+                $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/report.php")
+                        .type("POST")
+                        .data("{\"type\":\"" + report + "\"}")
+                        .success(new Function() {
+                            @Override
+                            public void invoke($ droidQuery, Object... objects) {
+                                Toast.makeText(getApplicationContext(),"Thank you",Toast.LENGTH_LONG).show();
+                            }
+                        })
+                        .error(new Function() {
+                            @Override
+                            public void invoke($ $, Object... args) {
+                            }
+                        }));
+                popup.dismiss();
+            }
+        });
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popup.dismiss();
+            }
+        });
+
     }
     public int hours(){
         String url ="http://www.timeapi.org/utc/now";
@@ -262,6 +324,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                openpop();
                 unanimateRoute();
                 mBottomSheetDialog.cancel();
             }
@@ -363,11 +426,11 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             }
             else {
                 if (current_hour >= 0 && current_hour < 13) {
-                    GenehperKilo = 10;
+                    GenehperKilo = 8;
                 } else if (current_hour >= 13 && current_hour < 19) {
-                    GenehperKilo = 11;
-                } else if (current_hour >= 19 && current_hour <= 23) {
                     GenehperKilo = 10;
+                } else if (current_hour >= 19 && current_hour <= 23) {
+                    GenehperKilo = 9;
                 }
             }
         }
@@ -391,15 +454,15 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             }
             else {
                 if (current_hour >= 0 && current_hour < 13) {
-                    GenehperKilo = 4;
+                    GenehperKilo = 5;
                 } else if (current_hour >= 13 && current_hour < 19) {
-                    GenehperKilo = 5;
+                    GenehperKilo = 6;
                 } else if (current_hour >= 19 && current_hour <= 23) {
-                    GenehperKilo = 5;
+                    GenehperKilo = 6;
                 }
             }
         }
-        if(less) {
+        if(!less) {
             price = GenehperKilo * (distance / 1000);
         }
         // In the end the total price gets generated by multipying the Genehperkilo and the distance specified for us by Mohanned
@@ -491,7 +554,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         onResume();
@@ -594,7 +657,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
     @Override
     public void onLocationChanged(Location location) {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -649,7 +712,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         // On pressing Settings button
         alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             }
         });
 
@@ -668,7 +731,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     protected void onResume() {
         super.onResume();
         Log.i("OnResume", "Hey it's me");
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         provider = locationManager.getBestProvider(new Criteria(), false);
@@ -677,7 +740,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
     protected void onPause() {
         super.onPause();
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         locationManager.removeUpdates(this);
@@ -699,6 +762,42 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 new driverMarker().execute();
             }
         }, 5000);
+    }
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("Rider Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        mGoogleApiClient.connect();
+        AppIndex.AppIndexApi.start(mGoogleApiClient, getIndexApiAction());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(mGoogleApiClient, getIndexApiAction());
+        mGoogleApiClient.disconnect();
     }
 
     public class GetRoute extends AsyncTask<String, String, String> {
