@@ -14,7 +14,7 @@
         <android.support.v4.view.PagerTabStrip
             android:layout_width="wrap_content"
             android:layout_height="100dp"
-            android:background="#2C3E50"
+            android:background="#e62117"
             android:id="@+id/tab_strip"
             android:focusableInTouchMode="false">
         </android.support.v4.view.PagerTabStrip>
