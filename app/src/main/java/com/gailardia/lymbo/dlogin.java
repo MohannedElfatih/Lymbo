@@ -14,10 +14,6 @@ import com.kosalgeek.asynctask.PostResponseAsyncTask;
 
 import java.util.HashMap;
 
-import self.philbrown.droidQuery.$;
-import self.philbrown.droidQuery.AjaxOptions;
-import self.philbrown.droidQuery.Function;
-
 public class dlogin extends AppCompatActivity implements AsyncResponse {
     String U;
     String P;

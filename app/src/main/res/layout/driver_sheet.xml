@@ -34,7 +34,6 @@
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:id="@+id/inner1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
@@ -42,7 +41,6 @@
                     android:weightSum="1">
 
                     <ImageView
-                        android:id="@+id/distanceImage"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center_vertical"
@@ -61,7 +59,6 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/inner2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="15dp"
@@ -71,7 +68,6 @@
                     android:weightSum="1">
 
                     <ImageView
-                        android:id="@+id/priceImage"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center_vertical"
@@ -91,14 +87,12 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/inner3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:weightSum="1">
 
                     <ImageView
-                        android:id="@+id/durationImage"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center_vertical"

@@ -1,8 +1,7 @@
 package com.gailardia.lymbo;
 
-import android.*;
-import android.Manifest;
-import android.app.Activity;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,16 +11,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -44,6 +44,7 @@ public class choices extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choices);
         coordinatorLayoutView = findViewById(R.id.snackbarPosition);
+        printnum();
         if(Build.VERSION.SDK_INT >= 23){
             counter = 0;
             requestPermission(choices.this, coordinatorLayoutView);
@@ -190,6 +191,22 @@ public class choices extends AppCompatActivity {
         }
         else{
             Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
+        }
+    }
+    public void printnum()
+    {
+        AccountManager am = AccountManager.get(this);
+        Account[] accounts = am.getAccounts();
+
+        for (Account ac : accounts) {
+            String acname = ac.name;
+            String actype = ac.type;
+            // Take your time to look at all available accounts
+            System.out.println("Accounts : " + acname + ", " + actype);
+            if(actype.equals("com.whatsapp")){
+                String phoneNumber = ac.name;
+                Toast.makeText(choices.this,phoneNumber,Toast.LENGTH_LONG).show();
+            }
         }
     }
 }
