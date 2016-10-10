@@ -113,14 +113,12 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     private GoogleApiClient mGoogleApiClient;
     Dialog mBottomSheetDialog;
     FloatingActionButton actionButton;
-<<<<<<< HEAD
     int counter = 0;
-=======
+
     private PopupWindow popup;
     private RelativeLayout rel;
     private RadioGroup radio;
 
->>>>>>> refs/remotes/origin/omran
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -366,18 +364,14 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 new Respond().execute(String.valueOf(1));
                 countDownTimer.cancel();
                 mBottomSheetDialog.cancel();
-<<<<<<< HEAD
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         findRider();
                     }
                 }, 5000);
-
-=======
                 openpop();
                 findRider();
->>>>>>> refs/remotes/origin/omran
             }
         });
     }
