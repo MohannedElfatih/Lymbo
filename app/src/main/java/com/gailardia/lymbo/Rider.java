@@ -200,30 +200,6 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         });
 
     }
-    public int hours(){
-        String url ="http://www.timeapi.org/utc/now";
-        final int[] hour = new int[1];
-        new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String result) {
-                        try {
-
-
-                            String hr=String.valueOf(result.charAt(11))+String.valueOf(result.charAt(12));
-                            hour[0] =Integer.parseInt(hr);
-                            Toast.makeText(Rider.this,String.valueOf(hour[0]),Toast.LENGTH_LONG).show();
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-            }
-        });
-        return hour[0];
-    }
     public void openBottomSheet() {
         bottomsheet = getLayoutInflater().inflate(R.layout.bottom_sheet, null);
         ImageButton accept = (ImageButton) bottomsheet.findViewById(R.id.accept);
