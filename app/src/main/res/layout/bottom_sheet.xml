@@ -178,9 +178,10 @@
                     android:layout_height="64dp"
                     android:layout_gravity="center_horizontal|bottom"
                     android:layout_marginRight="50dp"
-                    android:background="@drawable/checked"
+                    android:background="@drawable/notchecked"
                     android:fontFamily="@string/accept"
-                    android:src="@drawable/checked" />
+                    android:src="@drawable/notchecked"
+                    android:elevation="0dp" />
 
                 <ImageButton
                     android:id="@+id/cancel"
