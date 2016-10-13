@@ -169,7 +169,6 @@ public class Route {
                 Log.i("Headers", responseHeaders.name(i) + ": " + responseHeaders.value(i));
             }
             answer = response.body().string();
-            Log.i("okHTTP", response.body().string());
         } catch (IOException e) {
             e.printStackTrace();
         }

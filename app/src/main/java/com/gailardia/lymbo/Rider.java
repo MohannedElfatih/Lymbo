@@ -1,14 +1,8 @@
 package com.gailardia.lymbo;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 import android.*;
 import android.annotation.TargetApi;
-=======
->>>>>>> refs/remotes/origin/master
-=======
 import android.Manifest;
->>>>>>> refs/remotes/origin/omran
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -35,6 +29,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -95,6 +91,10 @@ import self.philbrown.droidQuery.Function;
 
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
     public static Location location;
+    protected GetRoute getRoute;
+    protected NotifyNextDriver notifyNextDriver;
+    protected GetDriversLocation getDriversLocation;
+    protected Future<Integer> future;
     static String n[];
     static Double m[];
     public int rejectStatus = 0;
@@ -111,8 +111,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     ArrayList<String> name;
     ArrayList<Double> metars;
     Double getDriverdestLat, getDriverdestLong, getDrivercustLat, getDrivercustLong;
-    int getDriverPrice;
-    String getDriverType,report;
+    int getDriverPrice, change;
+    String getDriverType, report;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
     private Marker destinationMarker;
@@ -157,23 +157,24 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .enableAutoManage(this, this)
                 .addApi(AppIndex.API).build();
     }
+
     public void openpop() {
-        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.85);
-        int height = (int)(getResources().getDisplayMetrics().heightPixels*0.90);
-        rel= (RelativeLayout) findViewById(R.id.relative);
-        View container =  getLayoutInflater().inflate(R.layout.pop, null);
-        popup=new PopupWindow(container,width,height,true);
-        popup.showAtLocation(rel, Gravity.CENTER,0,0);
+        int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
+        int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
+        rel = (RelativeLayout) findViewById(R.id.relative);
+        View container = getLayoutInflater().inflate(R.layout.pop, null);
+        popup = new PopupWindow(container, width, height, true);
+        popup.showAtLocation(rel, Gravity.CENTER, 0, 0);
         popup.setOutsideTouchable(false);
-        Button close=(Button) container.findViewById(R.id.closepop);
+        Button close = (Button) container.findViewById(R.id.closepop);
         Button submit = (Button) container.findViewById(R.id.submit);
         radio = (RadioGroup) container.findViewById(R.id.rad);
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch(radio.getCheckedRadioButtonId()){
+                switch (radio.getCheckedRadioButtonId()) {
                     case R.id.priceR:
-                        report ="priceR";
+                        report = "priceR";
                         break;
                     case R.id.far:
                         report = "farR";
@@ -191,7 +192,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                         .success(new Function() {
                             @Override
                             public void invoke($ droidQuery, Object... objects) {
-                                Toast.makeText(getApplicationContext(),"Thank you",Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Thank you", Toast.LENGTH_LONG).show();
                             }
                         })
                         .error(new Function() {
@@ -210,8 +211,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         });
 
     }
-    public int hours(){
-        String url ="http://www.timeapi.org/utc/now";
+
+    public int hours() {
+        String url = "http://www.timeapi.org/utc/now";
         final int[] hour = new int[1];
         new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
@@ -220,9 +222,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                         try {
 
 
-                            String hr=String.valueOf(result.charAt(11))+String.valueOf(result.charAt(12));
-                            hour[0] =Integer.parseInt(hr);
-                            Toast.makeText(Rider.this,String.valueOf(hour[0]),Toast.LENGTH_LONG).show();
+                            String hr = String.valueOf(result.charAt(11)) + String.valueOf(result.charAt(12));
+                            hour[0] = Integer.parseInt(hr);
+                            Toast.makeText(Rider.this, String.valueOf(hour[0]), Toast.LENGTH_LONG).show();
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
@@ -234,7 +236,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         });
         return hour[0];
     }
+
     public void openBottomSheet() {
+        change = 0;
         bottomsheet = getLayoutInflater().inflate(R.layout.bottom_sheet, null);
         ImageButton accept = (ImageButton) bottomsheet.findViewById(R.id.accept);
         ImageButton cancel = (ImageButton) bottomsheet.findViewById(R.id.cancel);
@@ -246,6 +250,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         distance.setText(routes.get(routes.size() - 1).distanceText);
         price.setText(" Choose vehicle type.");
         final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
+        mBottomSheetDialog.setCanceledOnTouchOutside(false);
+        mBottomSheetDialog.onBackPressed();
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -270,6 +276,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                                     System.out.println("success");
                                     if ((objects[0]).toString().equalsIgnoreCase("No drivers")) {
                                         Toast.makeText(Rider.this, "No drivers close :(", Toast.LENGTH_LONG).show();
+                                        unanimateRoute();
+                                        destinationMarker.remove();
                                     } else {
                                         try {
                                             System.out.println("getArray");
@@ -323,8 +331,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                                 @Override
                                 public void invoke($ $, Object... objects) {
                                     mBottomSheetDialog.dismiss();
-                                    System.out.println("Inside handler");
-                                    new GetDriversLocation().execute(params);
+                                    if (n != null) {
+                                        new GetDriversLocation().execute(params);
+                                    }
                                 }
                             }));
                 }
@@ -384,7 +393,37 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         ImageButton tuktuk = (ImageButton) bottomsheet.findViewById(R.id.tuktuk);
         ImageButton amjad = (ImageButton) bottomsheet.findViewById(R.id.amjad);
         TextView text = (TextView) bottomsheet.findViewById(R.id.price);
+        final ImageButton accept = (ImageButton) bottomsheet.findViewById(R.id.accept);
+        Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
+        final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
+        accept.setTag(R.drawable.notchecked);
+        outAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+            // Other callback methods omitted for clarity.
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            public void onAnimationEnd(Animation animation) {
+
+                // Modify the resource of the ImageButton
+                accept.setImageResource(R.drawable.checked);
+                // Create the new Animation to apply to the ImageButton.
+                accept.startAnimation(inAnimation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                animation.cancel();
+            }
+        });
         if (car != null && tuktuk != null && amjad != null) {
+            if (change == 0) {
+                System.out.println(change);
+                accept.startAnimation(outAnimation);
+                change = 1;
+            }
             switch (view.getId()) {
                 case R.id.car:
                     //Inform the user te button1 has been clicked
@@ -427,14 +466,13 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     public int getPrice(String type, int distance) {
         //The method takes the type or vehicle and the distance which should be provided by Mohanned later
         int GenehperKilo = 0, price = 0;
-        boolean less=false;
-        int current_hour=hours();
+        boolean less = false;
+        int current_hour = hours();
         if (type.equalsIgnoreCase("car")) {
-            if(distance<3000){
-                price=25;
-                less=true;
-            }
-            else {
+            if (distance < 3000) {
+                price = 25;
+                less = true;
+            } else {
                 if (current_hour >= 0 && current_hour < 13) {
                     GenehperKilo = 8;
                 } else if (current_hour >= 13 && current_hour < 19) {
@@ -443,26 +481,22 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     GenehperKilo = 9;
                 }
             }
-        }
-        else if (type.equalsIgnoreCase("tuktuk")) {
-            if(distance<1000){
-                price=5;
-                less=true;
-            }
-            else {
+        } else if (type.equalsIgnoreCase("tuktuk")) {
+            if (distance < 1000) {
+                price = 5;
+                less = true;
+            } else {
                 if (current_hour >= 0 && current_hour < 18) {
                     GenehperKilo = 7;
                 } else if (current_hour >= 18 && current_hour < 23) {
                     GenehperKilo = 6;
                 }
             }
-        }
-        else if (type.equalsIgnoreCase("amjad")) {
-            if(distance<3000){
-                price=25;
-                less=true;
-            }
-            else {
+        } else if (type.equalsIgnoreCase("amjad")) {
+            if (distance < 3000) {
+                price = 25;
+                less = true;
+            } else {
                 if (current_hour >= 0 && current_hour < 13) {
                     GenehperKilo = 5;
                 } else if (current_hour >= 13 && current_hour < 19) {
@@ -472,7 +506,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 }
             }
         }
-        if(!less) {
+        if (!less) {
             price = GenehperKilo * (distance / 1000);
         }
         // In the end the total price gets generated by multipying the Genehperkilo and the distance specified for us by Mohanned
@@ -614,7 +648,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     @Override
                     public void onClick(View view) {
                         String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(place.getLatLng().latitude), String.valueOf(place.getLatLng().longitude)};
-                        new GetRoute().execute(params);
+                        getRoute = (GetRoute) new GetRoute().execute(params);
                         if (searchMarker != null) {
                             searchMarker.remove();
                         }
@@ -659,7 +693,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     @Override
                     public void onClick(View view) {
                         String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(latLng.latitude), String.valueOf(latLng.longitude)};
-                        new GetRoute().execute(params);
+                        getRoute = (GetRoute) new GetRoute().execute(params);
                     }
                 })
                 .show();
@@ -837,10 +871,16 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Downloading route, please wait.");
+            dialog.setCancelable(true);
             dialog.setIndeterminate(false);
             dialog.setCancelable(false);
             dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             dialog.show();
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
         }
 
         @Override
@@ -887,83 +927,37 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         }
     }
 
-    public class GetLocations extends AsyncTask<String, String, String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
-            return new Route().synchronousCall("http://lymbo.esy.es/locationsarray.php", "");
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            try {
-                JSONObject jsonObject;
-                JSONArray jsonArray = new JSONArray(s);
-                ArrayList<LatLng> latLng = new ArrayList<LatLng>();
-                ArrayList<Integer> carTypes = new ArrayList<>();
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    jsonObject = (JSONObject) jsonArray.get(i);
-                    latLng.add(new LatLng(jsonObject.getDouble("latitude"), jsonObject.getDouble("longitude")));
-                    switch (jsonObject.getString("type")) {
-                        case "car":
-                            carTypes.add(1);
-                            break;
-                        case "amjad":
-                            carTypes.add(2);
-                            break;
-                        case "tuktuk":
-                            carTypes.add(3);
-                            break;
-                    }
-                    Log.i("hala", String.valueOf(latLng.get(i).latitude));
-                    Log.i("hala", String.valueOf(latLng.get(i).longitude));
-                }
-                for (int i = 0; i < latLng.size(); i++) {
-                    switch (carTypes.get(i)) {
-                        case 1:
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(latLng.get(i))
-                                    .draggable(false)
-                                    .title("Driver" + i)
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.carmarker)));
-                            break;
-                        case 2:
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(latLng.get(i))
-                                    .draggable(false)
-                                    .title("Driver" + i)
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.amjadmarker)));
-                            break;
-                        case 3:
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(latLng.get(i))
-                                    .draggable(false)
-                                    .title("Driver" + i)
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.tuktukmarker)));
-                            break;
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            Log.i("Locationsaha", s);
-        }
-    }
-
     public class GetDriversLocation extends AsyncTask<String, String, String> {
-        String[] test;
-        private ProgressDialog dialog = new ProgressDialog(Rider.this);
+        private ProgressDialog dialog;
 
         @Override
         protected void onPreExecute() {
+            dialog = new ProgressDialog(Rider.this);
             //Initialize progress dialog.
             super.onPreExecute();
             dialog.setTitle("Fetching Driver");
             dialog.setMessage("Rest back and chill while we fetch your ride.");
             dialog.setIndeterminate(false);
-            dialog.setCancelable(false);
             dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.onBackPressed();
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    cancel(true);
+                    if (future != null) {
+                        future.cancel(true);
+                    }
+                    if (driverRank > -1) {
+                        new Route().asynchronousCall("http://www.lymbo.esy.es/cancelRequest.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+                        driverRank = -1;
+                        unanimateRoute();
+                        destinationMarker.remove();
+                    }
+                    dialog.cancel();
+                    dialog.dismiss();
+                }
+            });
             dialog.show();
         }
 
@@ -975,7 +969,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 boolean repeat = true;
                 do {
                     //Notify the next driver, and wait for response.
-                    final Future<Integer> future = executor.submit(new NotifyNextDriver());
+                    future = executor.submit(new NotifyNextDriver());
                     //initial rejectStatus for the current driver is 0.
                     rejectStatus = 0;
                     Log.i("rejectStatus", "RejectStatus in PostExecute is : " + String.valueOf(rejectStatus));
@@ -987,32 +981,28 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     getDriverdestLong = Double.valueOf(strings[4]);
                     driverRank++;
                     //Check if the Driver names array is done.
-                    if(n.length < 0){
-                        Thread.sleep(5000);
-                    } else {
-                        if (driverRank < n.length) {
-                            result = future.get();
-                            Log.i("onPostExecute", "result = " + String.valueOf(result));
-                            answer = result;
-                            if (result == 2) {
-                                //An error happened, do not repeat the loop.
-                                driverRank = -1;
-                                repeat = false;
-                            } else if (result == 1) {
-                                //Driver accepted the request, do not repeat the loop.
-                                repeat = false;
-                            } else if (result == 0) {
-                                //Driver rejected request, or he already exists in table. notify next driver and repeat the loop.
-                                Log.i("Postexecute", "going to next driver");
-                                repeat = true;
-                            }
-                        } else {
-                            //if result is outside expected parameters, don't repeat loop.
-                            Log.i("onPostExecute", "Names array have finished.");
-                            answer = 3;
+                    if (driverRank < n.length) {
+                        result = future.get();
+                        Log.i("onPostExecute", "result = " + String.valueOf(result));
+                        answer = result;
+                        if (result == 2) {
+                            //An error happened, do not repeat the loop.
                             driverRank = -1;
                             repeat = false;
+                        } else if (result == 1) {
+                            //Driver accepted the request, do not repeat the loop.
+                            repeat = false;
+                        } else if (result == 0) {
+                            //Driver rejected request, or he already exists in table. notify next driver and repeat the loop.
+                            Log.i("Postexecute", "going to next driver");
+                            repeat = true;
                         }
+                    } else {
+                        //if result is outside expected parameters, don't repeat loop.
+                        Log.i("onPostExecute", "Names array have finished.");
+                        answer = 3;
+                        driverRank = -1;
+                        repeat = false;
                     }
                 } while (repeat);
             } catch (InterruptedException e) {
@@ -1042,7 +1032,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 Log.i("Postexecute", "going to next driver");
             } else if (data.contains("3")) {
                 //if result is outside expected parameters, don't repeat loop.
-                Log.i("onPostExecute", "Names array have finished.");
+                Log.i("onPostExecute", "Names array have finished");
                 Toast.makeText(Rider.this, "No driver accepted.", Toast.LENGTH_LONG).show();
                 unanimateRoute();
                 driverRank = -1;
@@ -1054,8 +1044,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         @Override
         public Integer call() throws Exception {
             final int[] result = new int[1];
-            final int rank = driverRank;
             final boolean[] repeat = {true};
+            Log.i("NotifyNextDriver", "Am in NotifyNextDriver");
             //Insert request to RequestTable.
             String response = new Route().synchronousCall("http://www.lymbo.esy.es/insertRequest.php",
                     "{\"Dname\":\"" + n[driverRank] + "\""
@@ -1065,6 +1055,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                             + ",\"destLongitude\":\"" + getDriverdestLong + "\""
                             + ",\"custLatitude\":\"" + getDrivercustLat + "\""
                             + ",\"custLongitude\":\"" + getDrivercustLong + "\"}");
+            Log.i("NotifyNextDriver", "After synchronous call");
             if (response.equals("Failure to connect.")) {
                 Log.i("NotifyDriver", "Failure to connect");
                 repeat[0] = false;
