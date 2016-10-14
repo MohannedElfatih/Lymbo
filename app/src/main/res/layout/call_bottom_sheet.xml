@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:background="#BDBDBD"
+    android:orientation="vertical"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:foregroundGravity="center"
+        android:background="#323232"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="Call"
+                android:layout_height="wrap_content"
+                android:id="@+id/callButton"
+                android:background="@drawable/ripple_effect"
+                android:layout_toRightOf="@+id/call"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textStyle="normal|bold"
+                android:textSize="15sp"
+                android:clickable="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="35dp"
+                android:textColor="#64DD17"
+                android:layout_width="35dp" />
+
+            <TextView
+                android:text="Call Ahmed Ibrahim?"
+                android:id="@+id/call"
+                android:textSize="15sp"
+                android:textColor="@android:color/white"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="20dp"
+                android:layout_height="wrap_content"
+                android:layout_width="185dp"
+                android:layout_marginTop="15dp" />
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/cancel"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textStyle="normal|bold"
+                android:textSize="14sp"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="30dp"
+                android:id="@+id/cancelRequest"
+                android:layout_toEndOf="@id/callButton"
+                android:text="Cancel"
+                android:textColor="#DD2C00"
+                android:layout_width="70dp" />
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>
