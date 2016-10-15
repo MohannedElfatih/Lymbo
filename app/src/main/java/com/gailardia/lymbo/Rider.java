@@ -1,5 +1,8 @@
 package com.gailardia.lymbo;
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/origin/Ali
 import android.*;
 import android.annotation.TargetApi;
 import android.Manifest;

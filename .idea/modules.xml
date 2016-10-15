@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/GenAsync/GenAsync.iml" filepath="$PROJECT_DIR$/GenAsync/GenAsync.iml" />
       <module fileurl="file://$PROJECT_DIR$/LymboFinal.iml" filepath="$PROJECT_DIR$/LymboFinal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LymboXD.iml" filepath="$PROJECT_DIR$/LymboXD.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

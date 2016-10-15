@@ -19,6 +19,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -39,9 +40,12 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -53,6 +57,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -95,13 +100,19 @@ import self.philbrown.droidQuery.$;
 import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
+import static android.R.attr.pivotX;
+import static android.R.attr.pivotY;
+
 public class Driver extends FragmentActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
     Snackbar snackbar;
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
     View driverSheet;
+    View popedit;
+    View container;
     Location location;
-    String provider,report;
+    String type = "";
+    String provider, report;
     int tripPrice;
     Marker destinationMarker;
     int lastRequestId;
@@ -114,6 +125,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     Dialog mBottomSheetDialog;
     FloatingActionButton actionButton;
     int counter = 0;
+    Intent i;
 
     private PopupWindow popup;
     private RelativeLayout rel;
@@ -128,8 +140,14 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             String response = intent.getStringExtra("response");
             Log.i("Response", response);
             try {
+<<<<<<< HEAD
                 if (response.contains("no")) {
                     Log.i("Response in broadcast", response);
+=======
+                responseJson = new JSONArray(response);
+                if (responseJson == null) {
+                    Toast.makeText(Driver.this, "startAgain()", Toast.LENGTH_SHORT).show();
+>>>>>>> refs/remotes/origin/Ali
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -205,23 +223,24 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             }
         }
     };
+
     public void openpop() {
-        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.85);
-        int height = (int)(getResources().getDisplayMetrics().heightPixels*0.90);
-        rel= (RelativeLayout) findViewById(R.id.relativeD);
-        View container =  getLayoutInflater().inflate(R.layout.pop_driver, null);
-        popup=new PopupWindow(container,width,height,true);
-        popup.showAtLocation(rel, Gravity.CENTER,0,0);
+        int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
+        int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
+        rel = (RelativeLayout) findViewById(R.id.relativeD);
+        View container = getLayoutInflater().inflate(R.layout.pop_driver, null);
+        popup = new PopupWindow(container, width, height, true);
+        popup.showAtLocation(rel, Gravity.CENTER, 0, 0);
         popup.setOutsideTouchable(false);
-        Button close=(Button) container.findViewById(R.id.closepopD);
+        Button close = (Button) container.findViewById(R.id.closepopD);
         Button submit = (Button) container.findViewById(R.id.submitD);
         radio = (RadioGroup) container.findViewById(R.id.rad);
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch(radio.getCheckedRadioButtonId()){
+                switch (radio.getCheckedRadioButtonId()) {
                     case R.id.priceD:
-                        report ="priceD";
+                        report = "priceD";
                         break;
                     case R.id.farD:
                         report = "farD";
@@ -239,7 +258,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                         .success(new Function() {
                             @Override
                             public void invoke($ droidQuery, Object... objects) {
-                                Toast.makeText(getApplicationContext(),"Thank you",Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Thank you", Toast.LENGTH_LONG).show();
                             }
                         })
                         .error(new Function() {
@@ -258,6 +277,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         });
 
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -299,7 +319,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     }
 
     private void findRider() {
-        Intent i = new Intent(Driver.this, DriverTimerService.class);
+        i = new Intent(Driver.this, DriverTimerService.class);
         //i.setComponent(new ComponentName("com.gailardia.lymbo", "DriverTimerService.java"));
         startService(i);
     }
@@ -603,59 +623,50 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     }
 
     public void createFloatingAction() {
+        final boolean[] change = {true};
         final ImageView itemIcon4;
         SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
         final String restoredText = prefs.getString("username", null);
         final HashMap map = new HashMap();
         map.put("username", restoredText);
-        ImageView icon = new ImageView(this); // Create an icon
-        icon.setImageDrawable(getResources().getDrawable(R.drawable.menu));
         actionButton = new FloatingActionButton.Builder(this)
-                .setContentView(icon)
                 .build();
+        actionButton.setBackground(getResources().getDrawable(R.drawable.newmenu));
         final SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
 
 
         final ImageView itemIcon = new ImageView(this);
-        itemIcon.setImageDrawable(getResources().getDrawable(R.drawable.online));
         final SubActionButton button1 = itemBuilder.setContentView(itemIcon).build();
-        final ImageView itemIcon2 = new ImageView(this);
-        itemIcon2.setImageDrawable(getResources().getDrawable(R.drawable.map));
-        final SubActionButton button2 = itemBuilder.setContentView(itemIcon2).build();
-
+        button1.setBackground(getResources().getDrawable(R.drawable.powergreen));
         final ImageView itemIcon3 = new ImageView(this);
-        itemIcon3.setImageDrawable(getResources().getDrawable(R.drawable.online));
         SubActionButton button3 = itemBuilder.setContentView(itemIcon3).build();
+        button3.setBackground(getResources().getDrawable(R.drawable.powergreen));
 
         itemIcon4 = new ImageView(this);
-        itemIcon4.setImageDrawable(getResources().getDrawable(R.drawable.busy));
         SubActionButton button4 = itemBuilder.setContentView(itemIcon4).build();
+        button4.setBackground(getResources().getDrawable(R.drawable.powerred));
 
-        ImageView itemIcon5 = new ImageView(this);
-        itemIcon5.setImageDrawable(getResources().getDrawable(R.drawable.map));
-        SubActionButton button5 = itemBuilder.setContentView(itemIcon5).build();
-
-        ImageView itemIcon6 = new ImageView(this);
-        itemIcon6.setImageDrawable(getResources().getDrawable(R.drawable.sat));
-        final SubActionButton button6 = itemBuilder.setContentView(itemIcon6).build();
 
         ImageView itemIcon7 = new ImageView(this);
-        itemIcon7.setImageDrawable(getResources().getDrawable(R.drawable.account2));
         final SubActionButton button7 = itemBuilder.setContentView(itemIcon7).build();
+        button7.setBackground(getResources().getDrawable(R.drawable.profileblue));
 
         ImageView itemIcon8 = new ImageView(this);
-        itemIcon8.setImageDrawable(getResources().getDrawable(R.drawable.signout));
         final SubActionButton button8 = itemBuilder.setContentView(itemIcon8).build();
+        button8.setBackground(getResources().getDrawable(R.drawable.logoutblue));
 
         ImageView itemIcon9 = new ImageView(this);
-        itemIcon9.setImageDrawable(getResources().getDrawable(R.drawable.delete));
         final SubActionButton button9 = itemBuilder.setContentView(itemIcon9).build();
+        button9.setBackground(getResources().getDrawable(R.drawable.deletered));
+
+        ImageView itemIcon10 = new ImageView(this);
+        final SubActionButton button10 = itemBuilder.setContentView(itemIcon10).build();
+        button10.setBackground(getResources().getDrawable(R.drawable.editprofileblue));
 
 
         final FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button7)
                 .addSubActionView(button1)
-                .addSubActionView(button2)
                 .attachTo(actionButton)
                 .build();
 
@@ -666,18 +677,13 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 .attachTo(button1)
                 .build();
 
-        final FloatingActionMenu actionMenu3 = new FloatingActionMenu.Builder(this)
-                .addSubActionView(button5)
-                .addSubActionView(button6)
-                .attachTo(button2)
-                .setStartAngle(225)
-                .build();
 
         final FloatingActionMenu actionMenu4 = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button9)
                 .addSubActionView(button8)
+                .addSubActionView(button10)
                 .attachTo(button7)
-                .setEndAngle(220)
+                .setEndAngle(260)
                 .build();
 
         actionButton.setOnClickListener(new View.OnClickListener() {
@@ -688,12 +694,20 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 if (!actionMenu.isOpen() && actionMenu2.isOpen()) {
                     actionMenu.toggle(true);
                     actionMenu2.toggle(true);
-                } else if (!actionMenu.isOpen() && actionMenu3.isOpen()) {
-                    actionMenu.toggle(true);
-                    actionMenu3.toggle(true);
                 } else if (!actionMenu.isOpen() && actionMenu4.isOpen()) {
                     actionMenu.toggle(true);
                     actionMenu4.toggle(true);
+                } else if (!actionMenu.isOpen() && actionMenu4.isOpen()) {
+                    actionMenu.toggle(true);
+                    actionMenu4.toggle(true);
+                }
+                if(change[0]){
+                    actionButton.animate().rotation(45.0f).setDuration(500);
+                    change[0] = false;
+                }
+                else {
+                    actionButton.animate().rotation(0.0f).setDuration(500);
+                    change[0] = true;
                 }
             }
         });
@@ -702,34 +716,19 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             public void onClick(View view) {
                 actionMenu2.toggle(true);
 
-                if (actionMenu3.isOpen()) {
-                    actionMenu3.toggle(true);
-                }
+
                 if (actionMenu4.isOpen()) {
                     actionMenu4.toggle(true);
                 }
             }
 
         });
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                actionMenu3.toggle(true);
 
-                if (actionMenu2.isOpen()) {
-                    actionMenu2.toggle(true);
-                }
-                if (actionMenu4.isOpen()) {
-                    actionMenu4.toggle(true);
-                }
-            }
-
-        });
 
         button4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                itemIcon.setImageDrawable(getResources().getDrawable(R.drawable.busy));
+                button1.setBackground(getResources().getDrawable(R.drawable.powerred));
                 actionMenu2.toggle(true);
                 PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
                     @Override
@@ -745,7 +744,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                itemIcon.setImageDrawable(getResources().getDrawable(R.drawable.online));
+                button1.setBackground(getResources().getDrawable(R.drawable.powergreen));
                 actionMenu2.toggle(true);
                 PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
                     @Override
@@ -758,33 +757,12 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             }
 
         });
-        button6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                itemIcon2.setImageDrawable(getResources().getDrawable(R.drawable.sat));
-                actionMenu3.toggle(true);
 
-                Toast.makeText(getApplicationContext(), "You are now on satellite map view", Toast.LENGTH_LONG).show();
-            }
-
-        });
-        button5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                itemIcon2.setImageDrawable(getResources().getDrawable(R.drawable.map));
-                actionMenu3.toggle(true);
-                Toast.makeText(getApplicationContext(), "You are now on normal map view", Toast.LENGTH_LONG).show();
-            }
-
-        });
         button7.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 actionMenu4.toggle(true);
 
-                if (actionMenu3.isOpen()) {
-                    actionMenu3.toggle(true);
-                }
                 if (actionMenu2.isOpen()) {
                     actionMenu2.toggle(true);
                 }
@@ -810,6 +788,17 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             }
 
         });
+
+        button10.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                edit_pop();
+
+            }
+
+        });
+
 
     }
 
@@ -1012,6 +1001,95 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
         }
     }
+
+    public void edit_pop() {
+        int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
+        int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
+        rel = (RelativeLayout) findViewById(R.id.relativeD);
+        container = getLayoutInflater().inflate(R.layout.edit_profile, null);
+        Button cancel = (Button) container.findViewById(R.id.closeedit);
+
+        popup = new PopupWindow(container, width, height, true);
+        popup.showAtLocation(rel, Gravity.CENTER, 0, 0);
+        popup.setOutsideTouchable(false);
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            popup.dismiss();
+            }
+
+        });
+
+
+    }
+
+    public void typechange(View view) {
+        final HashMap map = new HashMap();
+
+        ImageButton car = (ImageButton) container.findViewById(R.id.car1);
+        ImageButton tuktuk = (ImageButton) container.findViewById(R.id.tuktuk1);
+        ImageButton amjad = (ImageButton) container.findViewById(R.id.amjad1);
+        final EditText phone = (EditText) container.findViewById(R.id.newphone);
+        Button submit = (Button) container.findViewById(R.id.editsubmit);
+
+
+        type = "";
+        if (car != null && tuktuk != null && amjad != null) {
+            switch (view.getId()) {
+
+                case R.id.car1:
+                    //Inform the user te button1 has been clicked
+                    car.setImageResource(R.drawable.carsheet);
+                    amjad.setImageResource(R.drawable.amjadchoice);
+                    tuktuk.setImageResource(R.drawable.tuktukchoice);
+
+                    type = "car";
+                    break;
+
+                case R.id.tuktuk1:
+                    car.setImageResource(R.drawable.carchoice);
+                    amjad.setImageResource(R.drawable.amjadchoice);
+                    tuktuk.setImageResource(R.drawable.tuktuksheet);
+
+                    type = "tuktuk";
+                    break;
+                case R.id.amjad1:
+                    //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.carchoice);
+                    amjad.setImageResource(R.drawable.amjadsheet);
+                    tuktuk.setImageResource(R.drawable.tuktukchoice);
+                    type = "amjad";
+                    break;
+
+            }
+        }
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String new_phone = String.valueOf(phone.getText());
+                map.put("phonenum", new_phone);
+                map.put("newtype", type);
+                SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
+                final String restoredText = prefs.getString("username", null);
+                map.put("username", restoredText);
+                PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
+                    @Override
+                    public void processFinish(String s) {
+                        Toast.makeText(getApplicationContext(), "Account successfully updated!", Toast.LENGTH_LONG).show();
+                    }
+                });
+                readTask.execute("http://www.lymbo.esy.es/edit_profile.php");
+                popup.dismiss();
+
+
+            }
+
+        });
+
+    }
+}
+
     /*try {
         JSONArray responseJson = new JSONArray(response);
         URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin="
@@ -1072,4 +1150,4 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         mMap.animateCamera(cameraUpdate);
         dialog.cancel();
     }*/
-}
+
