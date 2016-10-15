@@ -1,16 +1,12 @@
 package com.gailardia.lymbo;
-<<<<<<< HEAD
 
-=======
->>>>>>> refs/remotes/origin/Ali
-import android.*;
-import android.annotation.TargetApi;
 import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Criteria;
@@ -22,6 +18,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -35,6 +32,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -94,7 +92,7 @@ import self.philbrown.droidQuery.Function;
 
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
     public static Location location;
-    protected boolean driverMarkerIsRunning = false;
+    protected boolean driverMarkerIsRunning = false, showPhonePop = true;
     protected Handler handler = new Handler();
     protected Runnable runnable;
     static String n[];
@@ -115,7 +113,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     ArrayList<String> name;
     ArrayList<Double> metars;
     Double getDriverdestLat, getDriverdestLong, getDrivercustLat, getDrivercustLong;
-    int getDriverPrice, change, getDriverPhone;
+    int getDriverPrice;
+    int change;
+    Double getDriverPhone;
     String getDriverType, getDriverFirstName, getDriverLastName, report;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
@@ -160,6 +160,68 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this, this)
                 .addApi(AppIndex.API).build();
+    }
+
+    public void customerPhone() {
+        if (showPhonePop) {
+            final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
+            int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
+            change = 0;
+            RelativeLayout relPhone = (RelativeLayout) findViewById(R.id.relative);
+            final View container = getLayoutInflater().inflate(R.layout.customer_number_pop, null);
+            final Button submit = (Button) container.findViewById(R.id.customerNumberSubmit);
+            popup = new PopupWindow(container, width, height, true);
+            popup.showAtLocation(relPhone, Gravity.CENTER, 0, 0);
+            final Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
+            final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
+            outAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+                // Other callback methods omitted for clarity.
+
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+
+                public void onAnimationEnd(Animation animation) {
+
+                    // Modify the resource of the ImageButton
+                    submit.setBackground(getResources().getDrawable(R.drawable.checked));
+                    // Create the new Animation to apply to the ImageButton.
+                    submit.startAnimation(inAnimation);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    animation.cancel();
+                }
+            });
+            final EditText phone = (EditText) container.findViewById(R.id.customerPhoneNumber);
+            phone.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (change == 0) {
+                        System.out.println(change);
+                        submit.startAnimation(outAnimation);
+                        change = 1;
+                    }
+                }
+            });
+            popup.setOutsideTouchable(false);
+            submit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String newPhone = String.valueOf(phone.getText());
+                    shared.edit().putString("phoneNum", newPhone).apply();
+                    Log.i("Customer Number", shared.getString("phoneNum", "Unavailable"));
+                    showPhonePop = false;
+                    popup.dismiss();
+                    openBottomSheet();
+                }
+            });
+        } else {
+            openBottomSheet();
+        }
     }
 
     public void openpop() {
@@ -918,7 +980,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-            openBottomSheet();
+            customerPhone();
         }
     }
 
@@ -1043,6 +1105,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     public class NotifyNextDriver implements Callable<Integer> {
         @Override
         public Integer call() throws Exception {
+            SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             final int[] result = new int[1];
             final boolean[] repeat = {true};
             Log.i("NotifyNextDriver", "Am in NotifyNextDriver");
@@ -1054,7 +1117,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                             + ",\"destLatitude\":\"" + getDriverdestLat + "\""
                             + ",\"destLongitude\":\"" + getDriverdestLong + "\""
                             + ",\"custLatitude\":\"" + getDrivercustLat + "\""
-                            + ",\"custLongitude\":\"" + getDrivercustLong + "\"}");
+                            + ",\"custLongitude\":\"" + getDrivercustLong + "\""
+                            + ",\"custPhone\":\"" + shared.getString("phoneNum", "Unavailable") + "\"}");
             Log.i("NotifyNextDriver", "After synchronous call");
             if (response.equals("Failure to connect.")) {
                 Log.i("NotifyDriver", "Failure to connect");
@@ -1142,7 +1206,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 JSONArray responseJson = new JSONArray(driverInfo);
                 getDriverFirstName = responseJson.getString(0);
                 getDriverLastName = responseJson.getString(1);
-                getDriverPhone = Integer.valueOf(responseJson.getInt(2));
+                getDriverPhone = Double.valueOf(responseJson.getInt(2));
             } catch (JSONException e) {
                 e.printStackTrace();
             }

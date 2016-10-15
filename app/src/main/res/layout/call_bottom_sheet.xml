@@ -55,7 +55,8 @@
                 android:layout_marginLeft="30dp"
                 android:id="@+id/cancelRequest"
                 android:layout_toEndOf="@id/callButton"
-                android:text="Cancel"
+                android:text="Cancel Request"
+                android:gravity="center"
                 android:textColor="#DD2C00"
                 android:layout_width="70dp" />
         </RelativeLayout>
