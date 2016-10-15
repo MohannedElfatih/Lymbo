@@ -1,6 +1,7 @@
 package com.gailardia.lymbo;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -57,7 +58,7 @@ public class DriverTimerService extends Service {
         @Override
         protected String doInBackground(String... strings) {
 
-            String response = new Route().synchronousCall("http://www.lymbo.esy.es/getRequestDetails.php", "{\"Dname\":\"" + "a" + "\"}");
+            String response = new Route().synchronousCall("http://www.lymbo.esy.es/getRequestDetails.php", "{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"");
             Log.i("reponse", response);
             Log.i("timer", String.valueOf(time++));
             return response;

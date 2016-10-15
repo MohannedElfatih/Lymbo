@@ -1,14 +1,7 @@
 package com.gailardia.lymbo;
-
-<<<<<<< HEAD
-<<<<<<< HEAD
 import android.*;
 import android.annotation.TargetApi;
-=======
->>>>>>> refs/remotes/origin/master
-=======
 import android.Manifest;
->>>>>>> refs/remotes/origin/omran
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
