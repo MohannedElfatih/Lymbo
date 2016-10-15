@@ -1,5 +1,7 @@
 package com.gailardia.lymbo;
 
+import android.*;
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
@@ -31,7 +33,8 @@ public class choices extends AppCompatActivity {
     protected static final int REQUEST_PERMISSION = 10;
     final String[] permissionLocation = new String[]{
             android.Manifest.permission.ACCESS_FINE_LOCATION,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION};
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.CALL_PHONE};
     boolean check = false;
     View coordinatorLayoutView;
     private android.app.Activity act;
@@ -53,9 +56,6 @@ public class choices extends AppCompatActivity {
 
     protected boolean requestPermission(final android.app.Activity choices, View view) {
         act = choices;
-        final String[] permissionLocation = new String[]{
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION};
         if (ContextCompat.checkSelfPermission(act, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             check = true;
             return check;
@@ -65,16 +65,19 @@ public class choices extends AppCompatActivity {
                     != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(act,
                         android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-                    Snackbar.make(view, "Please enable permission for application to work.", Snackbar.LENGTH_INDEFINITE)
-                            .setAction("Enable", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    ActivityCompat.requestPermissions(act,
-                                            permissionLocation,
-                                            REQUEST_PERMISSION);
-                                }
-                            })
-                            .show();
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(act,
+                            Manifest.permission.CALL_PHONE)) {
+                        Snackbar.make(view, "Please enable permission for application to work.", Snackbar.LENGTH_INDEFINITE)
+                                .setAction("Enable", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        ActivityCompat.requestPermissions(act,
+                                                permissionLocation,
+                                                REQUEST_PERMISSION);
+                                    }
+                                })
+                                .show();
+                    }
                 } else {
                     ActivityCompat.requestPermissions(act,
                             permissionLocation,

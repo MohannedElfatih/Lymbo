@@ -122,74 +122,83 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            counter +=1;
+            counter += 1;
             Log.i("Counter", "counter is : " + String.valueOf(counter));
             Log.e("service", "Received intent");
             String response = intent.getStringExtra("response");
             Log.i("Response", response);
             try {
-                responseJson = new JSONArray(response);
-                if(responseJson == null){
-                    Toast.makeText(Driver.this, "startAgain()", Toast.LENGTH_SHORT).show();
-                    Log.i("fucker", "startAgain()");
+                if (response.contains("no")) {
+                    Log.i("Response in broadcast", response);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             findRider();
                         }
                     }, 10000);
-                } else if (responseJson.getInt(6) == lastRequestId || response.equals("no")) {
-                    Log.i("Response", response);
-                    Log.i("lastRequest", "Same requestId");
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            findRider();
-                        }
-                    }, 1000);
                 } else {
-                    Toast.makeText(getApplicationContext(), "Found a customer.", Toast.LENGTH_SHORT).show();
-                    ringtone();
-                    PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
-                    PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
-                    wakeLock.acquire();
-                    KeyguardManager keyguardManager = (KeyguardManager) getApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
-                    KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock("TAG");
-                    keyguardLock.disableKeyguard();
-                    if (Build.VERSION.SDK_INT >= 11) {
-                        ActivityManager am = (ActivityManager) getSystemService(Activity.ACTIVITY_SERVICE);
-                        List<ActivityManager.RunningTaskInfo> rt = am.getRunningTasks(Integer.MAX_VALUE);
+                    responseJson = new JSONArray(response);
+                    if (responseJson == null) {
+                        Toast.makeText(Driver.this, "startAgain()", Toast.LENGTH_SHORT).show();
+                        Log.i("ServiceTimer", "startAgain()");
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                findRider();
+                            }
+                        }, 10000);
+                    } else if (responseJson.getInt(6) == lastRequestId) {
+                        Log.i("lastRequest", "Same requestId");
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                findRider();
+                            }
+                        }, 1000);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Found a customer.", Toast.LENGTH_SHORT).show();
+                        ringtone();
+                        PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
+                        PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
+                        wakeLock.acquire();
+                        KeyguardManager keyguardManager = (KeyguardManager) getApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
+                        KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock("TAG");
+                        keyguardLock.disableKeyguard();
+                        if (Build.VERSION.SDK_INT >= 11) {
+                            ActivityManager am = (ActivityManager) getSystemService(Activity.ACTIVITY_SERVICE);
+                            List<ActivityManager.RunningTaskInfo> rt = am.getRunningTasks(Integer.MAX_VALUE);
 
-                        for (int i = 0; i < rt.size(); i++) {
-                            // bring to front
-                            if (rt.get(i).baseActivity.toShortString().indexOf("com.gailardia.lymbo") > -1) {
-                                Intent not = new Intent(getApplicationContext(), Driver.class);
-                                Notification notification = new Notification.Builder(getApplicationContext())
-                                        .setContentTitle("Request arrived")
-                                        .setSmallIcon(R.drawable.human)
-                                        .build();
-                                NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                                notificationManager.notify(1, notification);
-                                am.moveTaskToFront(rt.get(i).id, ActivityManager.MOVE_TASK_WITH_HOME);
+                            for (int i = 0; i < rt.size(); i++) {
+                                // bring to front
+                                if (rt.get(i).baseActivity.toShortString().indexOf("com.gailardia.lymbo") > -1) {
+                                    Intent not = new Intent(getApplicationContext(), Driver.class);
+                                    Notification notification = new Notification.Builder(getApplicationContext())
+                                            .setContentTitle("Request arrived")
+                                            .setSmallIcon(R.drawable.human)
+                                            .build();
+                                    NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                                    notificationManager.notify(1, notification);
+                                    am.moveTaskToFront(rt.get(i).id, ActivityManager.MOVE_TASK_WITH_HOME);
+                                }
                             }
                         }
-                    }
-                    tripPrice = responseJson.getInt(5);
-                    if (location == null) {
-                        if (ActivityCompat.checkSelfPermission(Driver.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(Driver.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            // TODO: Consider calling
-                            //    ActivityCompat#requestPermissions
-                            // here to request the missing permissions, and then overriding
-                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                            //                                          int[] grantResults)
-                            // to handle the case where the user grants the permission. See the documentation
-                            // for ActivityCompat#requestPermissions for more details.
-                            return;
+                        tripPrice = responseJson.getInt(5);
+                        if (location == null) {
+                            if (ActivityCompat.checkSelfPermission(Driver.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(Driver.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                // TODO: Consider calling
+                                //    ActivityCompat#requestPermissions
+                                // here to request the missing permissions, and then overriding
+                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                //                                          int[] grantResults)
+                                // to handle the case where the user grants the permission. See the documentation
+                                // for ActivityCompat#requestPermissions for more details.
+                                return;
+                            }
+                            location = locationManager.getLastKnownLocation(provider);
                         }
-                        location = locationManager.getLastKnownLocation(provider);
+                        String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(2)), String.valueOf(responseJson.get(3)), String.valueOf(1)};
+                        new GetRoute().execute(params);
                     }
-                    String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(2)), String.valueOf(responseJson.get(3)), String.valueOf(1)};
-                    new GetRoute().execute(params);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

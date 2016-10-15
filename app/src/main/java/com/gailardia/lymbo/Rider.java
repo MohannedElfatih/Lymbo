@@ -91,28 +91,29 @@ import self.philbrown.droidQuery.Function;
 
 public class Rider extends AppCompatActivity implements OnMapReadyCallback, LocationListener, AsyncResponse, GoogleApiClient.OnConnectionFailedListener {
     public static Location location;
-    protected GetRoute getRoute;
-    protected NotifyNextDriver notifyNextDriver;
-    protected GetDriversLocation getDriversLocation;
-    protected Future<Integer> future;
+    protected boolean driverMarkerIsRunning = false;
+    protected Handler handler = new Handler();
+    protected Runnable runnable;
     static String n[];
     static Double m[];
     public int rejectStatus = 0;
     public int driverRank = -1;
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
+    protected GetRoute getRoute;
+    protected DriverMarker driverMarkerTimer;
+    protected Future<Integer> future;
     protected Marker driverMarker;
     protected GoogleMap mMap;
     ExecutorService executor = Executors.newFixedThreadPool(8);
     String vehicleType = "";
     String provider;
-    View bottomsheet;
-    View coordinatorLayoutView;
+    View bottomsheet, coordinatorLayoutView, callSheet;
     ArrayList<String> name;
     ArrayList<Double> metars;
     Double getDriverdestLat, getDriverdestLong, getDrivercustLat, getDrivercustLong;
-    int getDriverPrice, change;
-    String getDriverType, report;
+    int getDriverPrice, change, getDriverPhone;
+    String getDriverType, getDriverFirstName, getDriverLastName, report;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
     private Marker destinationMarker;
@@ -330,7 +331,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                             .complete(new Function() {
                                 @Override
                                 public void invoke($ $, Object... objects) {
-                                    mBottomSheetDialog.dismiss();
+                                    mBottomSheetDialog.cancel();
                                     if (n != null) {
                                         new GetDriversLocation().execute(params);
                                     }
@@ -819,15 +820,6 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         Toast.makeText(Rider.this, "Connection to places database failed.", Toast.LENGTH_SHORT).show();
     }
 
-    protected void driverMarkerTimer() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                new driverMarker().execute();
-            }
-        }, 5000);
-    }
-
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -945,20 +937,25 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 @Override
                 public void onCancel(DialogInterface dialog) {
                     cancel(true);
-                    if (future != null) {
-                        future.cancel(true);
-                    }
-                    if (driverRank > -1) {
-                        new Route().asynchronousCall("http://www.lymbo.esy.es/cancelRequest.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
-                        driverRank = -1;
-                        unanimateRoute();
-                        destinationMarker.remove();
-                    }
-                    dialog.cancel();
-                    dialog.dismiss();
                 }
             });
             dialog.show();
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            if (future != null) {
+                future.cancel(true);
+            }
+            if (driverRank > -1) {
+                new Route().asynchronousCall("http://www.lymbo.esy.es/cancelRequest.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+                driverRank = -1;
+                unanimateRoute();
+                destinationMarker.remove();
+            }
+            dialog.cancel();
+            dialog.dismiss();
         }
 
         @Override
@@ -1136,6 +1133,16 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
         @Override
         protected String doInBackground(String... strings) {
+            String driverInfo = new Route().synchronousCall("http://www.lymbo.esy.es/driverNumber.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+            try {
+                Log.i("DriverNumber", driverInfo);
+                JSONArray responseJson = new JSONArray(driverInfo);
+                getDriverFirstName = responseJson.getString(0);
+                getDriverLastName = responseJson.getString(1);
+                getDriverPhone = Integer.valueOf(responseJson.getInt(2));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             String response = new Route().synchronousCall("http://www.lymbo.esy.es/driverAccept.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
             Log.i("DriverAccept", response);
             while (response.contains("No location")) {
@@ -1144,7 +1151,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                response = new Route().asynchronousCall("http://www.lymbo.esy.es/driverAccept.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+                response = new Route().synchronousCall("http://www.lymbo.esy.es/driverAccept.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
             }
             Log.i("DriverAccept", response);
             return response;
@@ -1156,11 +1163,84 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             if (dialog.isShowing()) {
                 dialog.cancel();
             }
-            driverMarkerTimer();
+            openCallSheet();
+            driverMarkerTimer = (DriverMarker) new DriverMarker().execute();
+        }
+
+        public void openCallSheet() {
+            callSheet = getLayoutInflater().inflate(R.layout.call_bottom_sheet, null);
+            final Dialog callSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
+            TextView call = (TextView) callSheet.findViewById(R.id.call);
+            TextView callButton = (TextView) callSheet.findViewById(R.id.callButton);
+            callButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Intent.ACTION_DIAL);
+                    intent.setData(Uri.parse("tel:" + String.valueOf(getDriverPhone)));
+                    try {
+                        startActivity(intent);
+                    } catch (android.content.ActivityNotFoundException ex) {
+                        Log.i("Call Activity", "Activity not found");
+                    }
+                    callSheetDialog.cancel();
+                }
+            });
+            TextView cancel = (TextView) callSheet.findViewById(R.id.cancelRequest);
+            cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    handler.removeCallbacks(runnable);
+                    driverMarkerTimer.cancel(true);
+                    cancel(true);
+                    callSheetDialog.cancel();
+                    if (driverRank > -1) {
+                        String response = new Route().asynchronousCall("http://www.lymbo.esy.es/cancelRequestOnAccept.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+                        Log.i("OnCancelled", response);
+                        driverRank = -1;
+                        unanimateRoute();
+                        if (driverMarker != null) {
+                            driverMarker.remove();
+                        }
+                        if (destinationMarker != null) {
+                            destinationMarker.remove();
+                        }
+                    }
+                }
+            });
+            call.setText("Call " + getDriverFirstName + " " + getDriverLastName + "?");
+            callSheetDialog.setContentView(callSheet);
+            callSheetDialog.setCancelable(false);
+            callSheetDialog.setCanceledOnTouchOutside(false);
+            callSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            callSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+            callSheetDialog.show();
         }
     }
 
-    public class driverMarker extends AsyncTask<String, String, String> {
+    public class DriverMarker extends AsyncTask<String, String, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            driverMarkerIsRunning = true;
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            cancel(true);
+            if (driverRank > -1) {
+                String response = new Route().synchronousCall("http://www.lymbo.esy.es/cancelRequestOnAccept.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+                Log.i("OnCancelled", response);
+                driverRank = -1;
+                unanimateRoute();
+                if (driverMarker != null) {
+                    driverMarker.remove();
+                }
+                if (destinationMarker != null) {
+                    destinationMarker.remove();
+                }
+            }
+        }
 
         @Override
         protected String doInBackground(String... strings) {
@@ -1172,6 +1252,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         protected void onPostExecute(String response) {
             try {
                 JSONArray responseJson = new JSONArray(response);
+                Log.i("DriverMarker", response);
                 driverMarker = mMap.addMarker(new MarkerOptions()
                         .title("Driver location")
                         .position(new LatLng(Double.valueOf(responseJson.getString(0)), Double.valueOf(responseJson.getString(1))))
@@ -1185,18 +1266,25 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 Location destin = new Location(location);
                 destin.setLatitude(driverMarker.getPosition().latitude);
                 destin.setLongitude(driverMarker.getPosition().longitude);
-                if (location.distanceTo(destin) < 500) {
+                /*if (location.distanceTo(destin) < 500) {
                     driverMarker.remove();
                     bounds = new LatLngBounds.Builder();
                     bounds.include(destinationMarker.getPosition());
                     bounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
                     cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
                     mMap.animateCamera(cameraUpdate);
-                }
+                }*/
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            driverMarkerTimer();
+            driverMarkerIsRunning = false;
+            runnable = new Runnable() {
+                @Override
+                public void run() {
+                    driverMarkerTimer = (DriverMarker) new DriverMarker().execute();
+                }
+            };
+            handler.postDelayed(runnable, 8000);
         }
     }
 }
