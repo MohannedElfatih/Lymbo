@@ -1,7 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:background="#BDBDBD"
     android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
-</LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:foregroundGravity="center"
+        android:background="#323232"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="5dp">
+
+                <ImageButton
+                    android:text="Call"
+                    android:layout_height="32dp"
+                    android:id="@+id/callCustomerIcon"
+                    android:background="@drawable/ripple_effect"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textStyle="normal|bold"
+                    android:textSize="15sp"
+                    android:clickable="true"
+                    android:layout_centerVertical="true"
+                    android:textColor="#8BC34A"
+                    android:layout_marginLeft="30dp"
+                    android:layout_width="32dp"
+                    android:src="@drawable/callcustomericon" />
+
+                <ImageButton
+                    android:text="Reached Customer?"
+                    android:id="@+id/reachedIcon"
+                    android:layout_height="32dp"
+                    android:layout_width="32dp"
+                    android:clickable="true"
+                    android:layout_marginStart="100dp"
+                    android:layout_marginLeft="100dp"
+                    android:src="@drawable/reachedicon"
+                    android:layout_alignTop="@+id/callCustomerIcon"
+                    android:layout_toRightOf="@+id/callCustomerIcon"
+                    android:layout_toEndOf="@+id/callCustomerIcon"
+                    android:background="@drawable/ripple_effect" />
+
+                <ImageButton
+                    android:layout_height="32dp"
+                    android:id="@+id/navigateToCustomerIcon"
+                    android:gravity="center"
+                    android:layout_width="32dp"
+                    android:clickable="true"
+                    android:layout_alignTop="@+id/reachedIcon"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="40dp"
+                    android:layout_marginEnd="40dp"
+                    android:src="@drawable/navigationicon"
+                    android:background="@drawable/ripple_effect" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp">
+
+                <TextView
+                    android:text="Call"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/callCustomer"
+                    android:background="@drawable/ripple_effect"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textStyle="normal|bold"
+                    android:textSize="8sp"
+                    android:clickable="true"
+                    android:layout_centerVertical="true"
+                    android:textColor="#8BC34A"
+                    android:layout_width="35dp"
+                    android:layout_marginLeft="38dp" />
+
+                <TextView
+                    android:text="Reached Customer"
+                    android:id="@+id/reached"
+                    android:layout_toRightOf="@id/callCustomer"
+                    android:layout_centerVertical="true"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginRight="78dp"
+                    android:textColor="#FAFAFA"
+                    android:textSize="8sp"
+                    android:clickable="true" />
+
+                <TextView
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/reached"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textStyle="normal|bold"
+                    android:textSize="8sp"
+                    android:layout_centerVertical="true"
+                    android:id="@+id/navigateToCustomer"
+                    android:text="Navigate"
+                    android:gravity="center"
+                    android:textColor="#A1887F"
+                    android:layout_width="wrap_content"
+                    android:clickable="true" />
+            </RelativeLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+</RelativeLayout>

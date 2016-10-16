@@ -778,16 +778,6 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             return;
         }
         Location destin = new Location(provider);
-        /*if (destinationMarker != null) {
-            destin.setLongitude(destinationMarker.getPosition().longitude);
-            destin.setLatitude(destinationMarker.getPosition().latitude);
-            if (location.distanceTo(destin) < 500) {
-                if (driverMarker != null) {
-                    driverMarker.remove();
-                    unanimateRoute();
-                }
-            }
-        }*/
         locationManager.requestLocationUpdates(provider, 400, 1, this);
         this.location = location;
     }

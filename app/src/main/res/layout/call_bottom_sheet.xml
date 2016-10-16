@@ -58,7 +58,8 @@
                 android:text="Cancel Request"
                 android:gravity="center"
                 android:textColor="#DD2C00"
-                android:layout_width="70dp" />
+                android:layout_width="70dp"
+                android:layout_marginRight="15dp" />
         </RelativeLayout>
     </RelativeLayout>
 </RelativeLayout>

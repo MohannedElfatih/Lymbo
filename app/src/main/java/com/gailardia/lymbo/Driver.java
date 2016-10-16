@@ -91,6 +91,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
     protected boolean inRequest = false;
+    private Dialog callSheetDialog = null;
     Snackbar snackbar;
     View driverSheet;
     View popedit;
@@ -100,8 +101,9 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     String provider, report;
     int tripPrice;
     Marker destinationMarker;
-    int lastRequestId, custNum;
-    View coordinatorLayoutView;
+    int lastRequestId;
+    double custNum;
+    View coordinatorLayoutView, callSheet = null;
     Dialog mBottomSheetDialog;
     FloatingActionButton actionButton;
     int counter = 0;
@@ -131,6 +133,10 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                             @Override
                             public void run() {
                                 inRequest = false;
+                                unanimateRoute();
+                                if (callSheetDialog != null) {
+                                    callSheetDialog.cancel();
+                                }
                                 ringtone();
                                 PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
                                 PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
@@ -150,7 +156,19 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                                         }
                                     }
                                 }
-                                Snackbar.make(coordinatorLayoutView, "Customer has cancelled request.", Snackbar.LENGTH_LONG).show();
+                                if (actionButton != null) {
+                                    actionButton.setClickable(false);
+                                    actionButton.setAlpha(0);
+                                }
+                                Snackbar.make(coordinatorLayoutView, "Customer has cancelled request.", Snackbar.LENGTH_LONG).setAction("Ok", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        if (actionButton != null) {
+                                            actionButton.setClickable(true);
+                                            actionButton.setAlpha(1);
+                                        }
+                                    }
+                                }).show();
                                 findRider();
                             }
                         }, 10000);
@@ -186,6 +204,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                             }
                         }, 1000);
                     } else {
+                        custNum = responseJson.getDouble(7);
                         Toast.makeText(getApplicationContext(), "Found a customer.", Toast.LENGTH_SHORT).show();
                         ringtone();
                         PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
@@ -333,10 +352,92 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     private void findRider() {
         if (inRequest) {
             i = new Intent(Driver.this, DriverTimerCancelRequest.class);
+            if (callSheet == null) {
+                openCallSheet();
+            }
         } else {
             i = new Intent(Driver.this, DriverTimerService.class);
         }
         startService(i);
+    }
+
+    public void openCallSheet() {
+        if (actionButton != null) {
+            actionButton.setClickable(false);
+            actionButton.setAlpha(0);
+        }
+        callSheet = getLayoutInflater().inflate(R.layout.driver_options, null);
+        callSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
+        ImageButton reached = (ImageButton) callSheet.findViewById(R.id.reachedIcon);
+        ImageButton callButton = (ImageButton) callSheet.findViewById(R.id.callCustomerIcon);
+        ImageButton navigate = (ImageButton) callSheet.findViewById(R.id.navigateToCustomerIcon);
+        callButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + String.valueOf(custNum)));
+                try {
+                    startActivity(intent);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Log.i("Call Activity", "Activity not found");
+                }
+            }
+        });
+        reached.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = null;
+                try {
+                    intent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://maps.google.com/maps?daddr="
+                                    + responseJson.get(2) + "," + responseJson.get(3)));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                startActivity(intent);
+                callSheetDialog.cancel();
+                if (actionButton != null) {
+                    actionButton.setClickable(true);
+                    actionButton.setAlpha(1);
+                }
+                if (actionButton != null) {
+                    actionButton.setClickable(false);
+                    actionButton.setAlpha(0);
+                }
+                Snackbar.make(coordinatorLayoutView, "Ready for your next customer?", Snackbar.LENGTH_INDEFINITE).setAction("Yes", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (actionButton != null) {
+                            actionButton.setClickable(true);
+                            actionButton.setAlpha(1);
+                        }
+                        stopServices();
+                        inRequest = false;
+                        findRider();
+                    }
+                }).show();
+            }
+        });
+        navigate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = null;
+                try {
+                    intent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://maps.google.com/maps?daddr="
+                                    + responseJson.get(0) + "," + responseJson.get(1)));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                startActivity(intent);
+            }
+        });
+        callSheetDialog.setContentView(callSheet);
+        callSheetDialog.setCancelable(false);
+        callSheetDialog.setCanceledOnTouchOutside(false);
+        callSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        callSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+        callSheetDialog.show();
     }
 
     private void stopServices() {
@@ -536,19 +637,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         if (!routes.isEmpty()) {
             destin.setLongitude(routes.get(routes.size() - 1).getEndLocation().longitude);
             destin.setLatitude(routes.get(routes.size() - 1).getEndLocation().latitude);
-        }
-        if (location.distanceTo(destin) < 500) {
-            unanimateRoute();
-            routes.clear();
-            Intent intent = null;
-            try {
-                intent = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://maps.google.com/maps?daddr="
-                                + responseJson.get(2) + "," + responseJson.get(3)));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            startActivity(intent);
         }
         locationManager.requestLocationUpdates(provider, 400, 1, this);
         this.location = location;
