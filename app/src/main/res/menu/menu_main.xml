@@ -1,10 +1,14 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <!-- Search, should appear as action button -->
-    <item android:id="@+id/share"
-        android:title="share"
-        android:showAsAction="ifRoom"
-        />
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- "Mark Favorite", should appear as action button if possible -->
+    <item
+        android:id="@+id/action_favorite"
+        android:icon="@drawable/logout"
+        android:title="@string/log_out"
+        android:showAsAction="always"/>
+
+    <!-- Settings, should always be in the overflow -->
 
 
 </menu>

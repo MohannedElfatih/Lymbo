@@ -3,6 +3,11 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="chartOrange">#ff7c29</color>
+    <color name="chartBlue">#006bb8</color>
+    <color name="chartGreen">#22313F</color>
+    <color name="WHITE">#FFFFFF</color>
+
 
     <color name="black_overlay">#66000000</color>
 </resources>

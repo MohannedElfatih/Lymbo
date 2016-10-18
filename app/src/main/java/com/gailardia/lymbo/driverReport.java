@@ -1,6 +1,7 @@
 package com.gailardia.lymbo;
 
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -42,14 +44,29 @@ public class driverReport extends Fragment {
         farD=shared.getFloat("farD",0.0f);
         personalD=shared.getFloat("personalD",0.0f);
         carErrorD=shared.getFloat("carErrorD",0.0f);
-        entries.add(new PieEntry(priceD, "cheep price"));
-        entries.add(new PieEntry(farD, "Far customer"));
-        entries.add(new PieEntry(personalD, "Personal issue"));
+        entries.add(new PieEntry(priceD, "price"));
+        entries.add(new PieEntry(farD, "distance"));
+        entries.add(new PieEntry(personalD, "Personal"));
         entries.add(new PieEntry(carErrorD, "Car error"));
-        PieDataSet set = new PieDataSet(entries, "Election Results");
-        set.setColors(ColorTemplate.VORDIPLOM_COLORS);
+        PieDataSet set = new PieDataSet(entries, "Results");
+        set.setColors(ColorTemplate.PASTEL_COLORS);
         PieData data = new PieData(set);
         pieChart.setData(data);
+        data.setValueTextSize(10);
+        data.setValueTextColor(R.color.chartBlue);
+        data.setValueFormatter(new com.github.mikephil.charting.formatter.PercentFormatter());
+        pieChart.setEntryLabelTextSize(0);
+        pieChart.setUsePercentValues(true);
+        pieChart.setDescription("Driver report statistics");
+        pieChart.setDescriptionTextSize(15.0f);
+        pieChart.setUsePercentValues(true);
+        pieChart.setHoleRadius(0.0f);
+        pieChart.setTransparentCircleAlpha(1);
+        pieChart.getLegend().setEnabled(true);
+        pieChart.getLegend().setPosition(Legend.LegendPosition.RIGHT_OF_CHART_CENTER);
+        pieChart.getLegend().setTextSize(16.0f);
+
         pieChart.invalidate();
+
     }
 }

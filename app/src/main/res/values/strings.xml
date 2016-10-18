@@ -1,14 +1,16 @@
 <resources>
     <string name="app_name">t6</string>
 
-    <string name="title_activity_choices">choices</string>
+    <string name="title_activity_choices">Log out</string>
+    <string name="log_out">Log out</string>
+
 
     <!-- Strings related to login -->
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_driver">Map</string>
     <string name="car">car</string>
 
-    <string name="title_activity_admin">admin</string>
+    <string name="title_activity_admin">Lymbo</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>
