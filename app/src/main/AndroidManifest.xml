@@ -60,10 +60,14 @@
             android:label="@string/title_activity_maps" />
         <activity
             android:name=".Rider"
-            android:label="@string/title_activity_driver" />
+            android:label="@string/title_activity_driver"
+            android:windowSoftInputMode="adjustPan" />
 
         <service
             android:name=".DriverTimerService"
+            android:exported="false" />
+        <service
+            android:name=".DriverTimerCancelRequest"
             android:exported="false" />
         <!--
  ATTENTION: This was auto-generated to add Google Play services to your project for

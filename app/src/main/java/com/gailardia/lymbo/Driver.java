@@ -3,15 +3,12 @@ package com.gailardia.lymbo;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,7 +16,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -32,7 +28,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -40,12 +35,9 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
-import android.text.Editable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -57,7 +49,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -84,29 +75,24 @@ import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import self.philbrown.droidQuery.$;
 import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
-import static android.R.attr.pivotX;
-import static android.R.attr.pivotY;
-
 public class Driver extends FragmentActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
-    Snackbar snackbar;
     public List<Polyline> polyLines = new ArrayList<Polyline>();
     public List<Route> routes = new ArrayList<>();
+    protected boolean inRequest = false;
+    private Dialog callSheetDialog = null;
+    Snackbar snackbar;
     View driverSheet;
     View popedit;
     View container;
@@ -116,17 +102,17 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     int tripPrice;
     Marker destinationMarker;
     int lastRequestId;
-    View coordinatorLayoutView;
+    double custNum;
+    View coordinatorLayoutView, callSheet = null;
+    Dialog mBottomSheetDialog;
+    FloatingActionButton actionButton;
+    int counter = 0;
+    Intent i;
     private JSONArray responseJson;
     private GoogleMap mMap;
     private LocationManager locationManager;
     private boolean isInForeground = false;
     private GoogleApiClient mGoogleApiClient;
-    Dialog mBottomSheetDialog;
-    FloatingActionButton actionButton;
-    int counter = 0;
-    Intent i;
-
     private PopupWindow popup;
     private RelativeLayout rel;
     private RadioGroup radio;
@@ -140,14 +126,65 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             String response = intent.getStringExtra("response");
             Log.i("Response", response);
             try {
-<<<<<<< HEAD
-                if (response.contains("no")) {
-                    Log.i("Response in broadcast", response);
-=======
-                responseJson = new JSONArray(response);
-                if (responseJson == null) {
+                if (response.contains("cancelled")) {
                     Toast.makeText(Driver.this, "startAgain()", Toast.LENGTH_SHORT).show();
->>>>>>> refs/remotes/origin/Ali
+                    if (inRequest) {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                inRequest = false;
+                                unanimateRoute();
+                                if (callSheetDialog != null) {
+                                    callSheetDialog.cancel();
+                                }
+                                ringtone();
+                                PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
+                                PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
+                                wakeLock.acquire();
+                                KeyguardManager keyguardManager = (KeyguardManager) getApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
+                                KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock("TAG");
+                                keyguardLock.disableKeyguard();
+                                if (Build.VERSION.SDK_INT >= 11) {
+                                    ActivityManager am = (ActivityManager) getSystemService(Activity.ACTIVITY_SERVICE);
+                                    List<ActivityManager.RunningTaskInfo> rt = am.getRunningTasks(Integer.MAX_VALUE);
+
+                                    for (int i = 0; i < rt.size(); i++) {
+                                        // bring to front
+                                        if (rt.get(i).baseActivity.toShortString().indexOf("com.gailardia.lymbo") > -1) {
+                                            Intent not = new Intent(getApplicationContext(), Driver.class);
+                                            am.moveTaskToFront(rt.get(i).id, ActivityManager.MOVE_TASK_WITH_HOME);
+                                        }
+                                    }
+                                }
+                                if (actionButton != null) {
+                                    actionButton.setClickable(false);
+                                    actionButton.setAlpha(0);
+                                }
+                                Snackbar.make(coordinatorLayoutView, "Customer has cancelled request.", Snackbar.LENGTH_LONG).setAction("Ok", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        if (actionButton != null) {
+                                            actionButton.setClickable(true);
+                                            actionButton.setAlpha(1);
+                                        }
+                                    }
+                                }).show();
+                                findRider();
+                            }
+                        }, 10000);
+                    }
+                } else if (response.contains("Alive")) {
+                    Log.i("Response in broadcast", response);
+                    Toast.makeText(Driver.this, "checkCancellationAgain()", Toast.LENGTH_SHORT).show();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            findRider();
+                        }
+                    }, 10000);
+                } else if (response.contains("no")) {
+                    Log.i("Response in broadcast", response);
+                    Toast.makeText(Driver.this, "startAgain()", Toast.LENGTH_SHORT).show();
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -157,14 +194,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 } else {
                     responseJson = new JSONArray(response);
                     if (responseJson == null) {
-                        Toast.makeText(Driver.this, "startAgain()", Toast.LENGTH_SHORT).show();
-                        Log.i("ServiceTimer", "startAgain()");
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                findRider();
-                            }
-                        }, 10000);
+                        Log.i("Broadcast", "responseJson is null");
                     } else if (responseJson.getInt(6) == lastRequestId) {
                         Log.i("lastRequest", "Same requestId");
                         new Handler().postDelayed(new Runnable() {
@@ -174,6 +204,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                             }
                         }, 1000);
                     } else {
+                        custNum = responseJson.getDouble(7);
                         Toast.makeText(getApplicationContext(), "Found a customer.", Toast.LENGTH_SHORT).show();
                         ringtone();
                         PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
@@ -319,9 +350,103 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     }
 
     private void findRider() {
-        i = new Intent(Driver.this, DriverTimerService.class);
-        //i.setComponent(new ComponentName("com.gailardia.lymbo", "DriverTimerService.java"));
+        if (inRequest) {
+            i = new Intent(Driver.this, DriverTimerCancelRequest.class);
+            if (callSheet == null) {
+                openCallSheet();
+            }
+        } else {
+            i = new Intent(Driver.this, DriverTimerService.class);
+        }
         startService(i);
+    }
+
+    public void openCallSheet() {
+        if (actionButton != null) {
+            actionButton.setClickable(false);
+            actionButton.setAlpha(0);
+        }
+        callSheet = getLayoutInflater().inflate(R.layout.driver_options, null);
+        callSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
+        ImageButton reached = (ImageButton) callSheet.findViewById(R.id.reachedIcon);
+        ImageButton callButton = (ImageButton) callSheet.findViewById(R.id.callCustomerIcon);
+        ImageButton navigate = (ImageButton) callSheet.findViewById(R.id.navigateToCustomerIcon);
+        callButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + String.valueOf(custNum)));
+                try {
+                    startActivity(intent);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Log.i("Call Activity", "Activity not found");
+                }
+            }
+        });
+        reached.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = null;
+                try {
+                    intent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://maps.google.com/maps?daddr="
+                                    + responseJson.get(2) + "," + responseJson.get(3)));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                startActivity(intent);
+                callSheetDialog.cancel();
+                if (actionButton != null) {
+                    actionButton.setClickable(true);
+                    actionButton.setAlpha(1);
+                }
+                if (actionButton != null) {
+                    actionButton.setClickable(false);
+                    actionButton.setAlpha(0);
+                }
+                Snackbar.make(coordinatorLayoutView, "Ready for your next customer?", Snackbar.LENGTH_INDEFINITE).setAction("Yes", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (actionButton != null) {
+                            actionButton.setClickable(true);
+                            actionButton.setAlpha(1);
+                        }
+                        stopServices();
+                        inRequest = false;
+                        findRider();
+                    }
+                }).show();
+            }
+        });
+        navigate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = null;
+                try {
+                    intent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://maps.google.com/maps?daddr="
+                                    + responseJson.get(0) + "," + responseJson.get(1)));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                startActivity(intent);
+            }
+        });
+        callSheetDialog.setContentView(callSheet);
+        callSheetDialog.setCancelable(false);
+        callSheetDialog.setCanceledOnTouchOutside(false);
+        callSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        callSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+        callSheetDialog.show();
+    }
+
+    private void stopServices() {
+        if (inRequest) {
+            i = new Intent(Driver.this, DriverTimerCancelRequest.class);
+        } else {
+            i = new Intent(Driver.this, DriverTimerService.class);
+        }
+        stopService(i);
     }
 
     public void openDriverSheet() {
@@ -370,7 +495,9 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 try {
                     lastRequestId = responseJson.getInt(6);
                     Intent intent = new Intent(Driver.this, DriverTimerService.class);
-                    stopService(intent);
+                    stopServices();
+                    inRequest = true;
+                    findRider();
                     mBottomSheetDialog.cancel();
                     countDownTimer.cancel();
                     String[] params = new String[]{String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(0)), String.valueOf(responseJson.get(1)), String.valueOf(2)};
@@ -511,19 +638,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             destin.setLongitude(routes.get(routes.size() - 1).getEndLocation().longitude);
             destin.setLatitude(routes.get(routes.size() - 1).getEndLocation().latitude);
         }
-        if (location.distanceTo(destin) < 500) {
-            unanimateRoute();
-            routes.clear();
-            Intent intent = null;
-            try {
-                intent = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://maps.google.com/maps?daddr="
-                                + responseJson.get(2) + "," + responseJson.get(3)));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            startActivity(intent);
-        }
         locationManager.requestLocationUpdates(provider, 400, 1, this);
         this.location = location;
 
@@ -588,21 +702,20 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     protected void onDestroy() {
         super.onDestroy();
         Intent intent = new Intent(this, DriverTimerService.class);
-        stopService(intent);
+        stopServices();
         unregisterReceiver(broadcastReceiver);
     }
 
     protected void onPause() {
         super.onPause();
-        Intent i = new Intent(Driver.this, DriverTimerService.class);
         if (mBottomSheetDialog != null) {
             if (!mBottomSheetDialog.isShowing()) {
-                stopService(i);
-                startService(i);
+                stopServices();
+                findRider();
             }
         } else {
-            stopService(i);
-            startService(i);
+            stopServices();
+            findRider();
         }
 
         isInForeground = true;
@@ -701,11 +814,10 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                     actionMenu.toggle(true);
                     actionMenu4.toggle(true);
                 }
-                if(change[0]){
+                if (change[0]) {
                     actionButton.animate().rotation(45.0f).setDuration(500);
                     change[0] = false;
-                }
-                else {
+                } else {
                     actionButton.animate().rotation(0.0f).setDuration(500);
                     change[0] = true;
                 }
@@ -912,6 +1024,88 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
     }
 
+    public void edit_pop() {
+        int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
+        int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
+        rel = (RelativeLayout) findViewById(R.id.relativeD);
+        container = getLayoutInflater().inflate(R.layout.edit_profile, null);
+        Button cancel = (Button) container.findViewById(R.id.closeedit);
+        popup = new PopupWindow(container, width, height, true);
+        popup.showAtLocation(rel, Gravity.CENTER, 0, 0);
+        popup.setOutsideTouchable(false);
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                popup.dismiss();
+            }
+
+        });
+    }
+
+    public void typechange(View view) {
+        final HashMap map = new HashMap();
+
+        ImageButton car = (ImageButton) container.findViewById(R.id.car1);
+        ImageButton tuktuk = (ImageButton) container.findViewById(R.id.tuktuk1);
+        ImageButton amjad = (ImageButton) container.findViewById(R.id.amjad1);
+        final EditText phone = (EditText) container.findViewById(R.id.newphone);
+        Button submit = (Button) container.findViewById(R.id.editsubmit);
+
+
+        type = "";
+        if (car != null && tuktuk != null && amjad != null) {
+            switch (view.getId()) {
+
+                case R.id.car1:
+                    //Inform the user te button1 has been clicked
+                    car.setImageResource(R.drawable.carsheet);
+                    amjad.setImageResource(R.drawable.amjadchoice);
+                    tuktuk.setImageResource(R.drawable.tuktukchoice);
+
+                    type = "car";
+                    break;
+
+                case R.id.tuktuk1:
+                    car.setImageResource(R.drawable.carchoice);
+                    amjad.setImageResource(R.drawable.amjadchoice);
+                    tuktuk.setImageResource(R.drawable.tuktuksheet);
+
+                    type = "tuktuk";
+                    break;
+                case R.id.amjad1:
+                    //Inform the user the button1 has been clicked
+                    car.setImageResource(R.drawable.carchoice);
+                    amjad.setImageResource(R.drawable.amjadsheet);
+                    tuktuk.setImageResource(R.drawable.tuktukchoice);
+                    type = "amjad";
+                    break;
+
+            }
+        }
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String new_phone = String.valueOf(phone.getText());
+                map.put("phonenum", new_phone);
+                map.put("newtype", type);
+                SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
+                final String restoredText = prefs.getString("username", null);
+                map.put("username", restoredText);
+                PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
+                    @Override
+                    public void processFinish(String s) {
+                        Toast.makeText(getApplicationContext(), "Account successfully updated!", Toast.LENGTH_LONG).show();
+                    }
+                });
+                readTask.execute("http://www.lymbo.esy.es/edit_profile.php");
+                popup.dismiss();
+            }
+
+        });
+
+    }
+
     public class GetRoute extends AsyncTask<String, String, String> {
         private ProgressDialog dialog = new ProgressDialog(Driver.this);
 
@@ -1000,93 +1194,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         protected void onPostExecute(String data) {
 
         }
-    }
-
-    public void edit_pop() {
-        int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
-        int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
-        rel = (RelativeLayout) findViewById(R.id.relativeD);
-        container = getLayoutInflater().inflate(R.layout.edit_profile, null);
-        Button cancel = (Button) container.findViewById(R.id.closeedit);
-
-        popup = new PopupWindow(container, width, height, true);
-        popup.showAtLocation(rel, Gravity.CENTER, 0, 0);
-        popup.setOutsideTouchable(false);
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            popup.dismiss();
-            }
-
-        });
-
-
-    }
-
-    public void typechange(View view) {
-        final HashMap map = new HashMap();
-
-        ImageButton car = (ImageButton) container.findViewById(R.id.car1);
-        ImageButton tuktuk = (ImageButton) container.findViewById(R.id.tuktuk1);
-        ImageButton amjad = (ImageButton) container.findViewById(R.id.amjad1);
-        final EditText phone = (EditText) container.findViewById(R.id.newphone);
-        Button submit = (Button) container.findViewById(R.id.editsubmit);
-
-
-        type = "";
-        if (car != null && tuktuk != null && amjad != null) {
-            switch (view.getId()) {
-
-                case R.id.car1:
-                    //Inform the user te button1 has been clicked
-                    car.setImageResource(R.drawable.carsheet);
-                    amjad.setImageResource(R.drawable.amjadchoice);
-                    tuktuk.setImageResource(R.drawable.tuktukchoice);
-
-                    type = "car";
-                    break;
-
-                case R.id.tuktuk1:
-                    car.setImageResource(R.drawable.carchoice);
-                    amjad.setImageResource(R.drawable.amjadchoice);
-                    tuktuk.setImageResource(R.drawable.tuktuksheet);
-
-                    type = "tuktuk";
-                    break;
-                case R.id.amjad1:
-                    //Inform the user the button1 has been clicked
-                    car.setImageResource(R.drawable.carchoice);
-                    amjad.setImageResource(R.drawable.amjadsheet);
-                    tuktuk.setImageResource(R.drawable.tuktukchoice);
-                    type = "amjad";
-                    break;
-
-            }
-        }
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String new_phone = String.valueOf(phone.getText());
-                map.put("phonenum", new_phone);
-                map.put("newtype", type);
-                SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
-                final String restoredText = prefs.getString("username", null);
-                map.put("username", restoredText);
-                PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
-                    @Override
-                    public void processFinish(String s) {
-                        Toast.makeText(getApplicationContext(), "Account successfully updated!", Toast.LENGTH_LONG).show();
-                    }
-                });
-                readTask.execute("http://www.lymbo.esy.es/edit_profile.php");
-                popup.dismiss();
-
-
-            }
-
-        });
-
     }
 }
 

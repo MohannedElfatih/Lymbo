@@ -14,7 +14,7 @@ import android.widget.Toast;
 /**
  * Created by Gailardia on 8/24/2016.
  */
-public class DriverTimerService extends Service {
+public class DriverTimerCancelRequest extends Service {
     public int time = 0;
     private Handler handler = new Handler();
     public static final String TRANSACTION_DONE = "com.gailardia.TRANSACTION_DONE";
@@ -49,7 +49,7 @@ public class DriverTimerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(DriverTimerService.this, "Searching for customers.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(DriverTimerCancelRequest.this, "Checking request cancellation", Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
 
@@ -57,8 +57,8 @@ public class DriverTimerService extends Service {
 
         @Override
         protected String doInBackground(String... strings) {
-            Log.i("Driver Name", getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL"));
-            String response = new Route().synchronousCall("http://www.lymbo.esy.es/getRequestDetails.php", "{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"}");
+
+            String response = new Route().synchronousCall("http://www.lymbo.esy.es/checkRequestCancel.php", "{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\"}");
             Log.i("reponse", response);
             Log.i("timer", String.valueOf(time++));
             return response;
@@ -67,21 +67,14 @@ public class DriverTimerService extends Service {
         @Override
         protected void onPostExecute(String response) {
             super.onPostExecute(response);
-            if (!response.contains("no") && !response.contains("No")) {
-                Log.i("request", "found request");
-                Intent i = new Intent(TRANSACTION_DONE);
-                i.putExtra("response", response);
-                stopSelf();
-                DriverTimerService.this.sendBroadcast(i);
-            } else {
-                Log.i("request", "Haven't found request");
-                Log.i("response", response);
-                Intent i = new Intent(TRANSACTION_DONE);
-                i.putExtra("response", "no");
-                stopSelf();
-                DriverTimerService.this.sendBroadcast(i);
+            if (response.contains("cancelled")) {
+                Log.i("RequestCancel", "request has been cancelled");
+                Log.i("RequestCancel", response);
             }
+            Intent i = new Intent(TRANSACTION_DONE);
+            i.putExtra("response", response);
             stopSelf();
+            DriverTimerCancelRequest.this.sendBroadcast(i);
         }
     }
 }
