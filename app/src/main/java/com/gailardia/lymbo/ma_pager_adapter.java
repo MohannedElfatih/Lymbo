@@ -22,16 +22,14 @@ public class ma_pager_adapter extends FragmentPagerAdapter {
             case 1:
                 driverReport t2 = new driverReport();
                 return t2;
-            case 2:
-                allReport t3 = new allReport();
-                return t3;
+
         }
         return null;
     }
 
     @Override
     public int getCount() {
-        return 3;
+        return 2;
     }//set the number of tabs
 
     @Override
@@ -42,8 +40,6 @@ public class ma_pager_adapter extends FragmentPagerAdapter {
                 return "Ride Report";
             case 1:
                 return "Driver Report";
-            case 2:
-                return "all Report";
         }
         return null;
     }

@@ -2,6 +2,8 @@ package com.gailardia.lymbo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -14,15 +16,23 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,17 +66,29 @@ public class riderReport extends Fragment{
         farR=shared.getFloat("farR",0.0f);
         personalR=shared.getFloat("personalR",0.0f);
         driverR=shared.getFloat("driverR",0.0f);
-        entries.add(new PieEntry(priceR, "Expensive price"));
-        entries.add(new PieEntry(farR, "Far driver"));
-        entries.add(new PieEntry(personalR, "Personal issue"));
-        entries.add(new PieEntry(driverR, "No available driver"));
-        PieDataSet set = new PieDataSet(entries, "Election Results");
-        set.setColors(ColorTemplate.VORDIPLOM_COLORS);
+        entries.add(new PieEntry(priceR, "Price"));
+        entries.add(new PieEntry(farR, "Distance"));
+        entries.add(new PieEntry(personalR, "Personal"));
+        entries.add(new PieEntry(driverR, "No driver"));
+        PieDataSet set = new PieDataSet(entries, "Results");
         PieData data = new PieData(set);
+        data.setValueTextSize(10);
+        data.setValueTextColor(R.color.chartBlue);
+        data.setValueFormatter(new com.github.mikephil.charting.formatter.PercentFormatter());
+        set.setColors(ColorTemplate.PASTEL_COLORS);
         pieChart.setData(data);
+        pieChart.setEntryLabelTextSize(0);
+        pieChart.setUsePercentValues(true);
         pieChart.setDescription("Statistical Rider Report");
+        pieChart.setDescriptionTextSize(15.0f);
         pieChart.setUsePercentValues(true);
         pieChart.setHoleRadius(0.0f);
+        pieChart.setTransparentCircleAlpha(1);
+        pieChart.getLegend().setEnabled(true);
+        pieChart.getLegend().setPosition(Legend.LegendPosition.RIGHT_OF_CHART_CENTER);
+        pieChart.getLegend().setTextSize(16.0f);
+
         pieChart.invalidate();
     }
+
 }

@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="#EEEEEE"
     tools:context="com.gailardia.lymbo.admin">
 
     <LinearLayout
@@ -12,7 +12,13 @@
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pieD"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.60"></LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

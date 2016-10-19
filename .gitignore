@@ -6,3 +6,6 @@
 .DS_Store
 /build
 /captures
+app/src/main/res/menu/admin_menu.xml
+app/src/main/res/menu/admin_menu.xml
+app/src/main/java/com/gailardia/lymbo/riderReport.java
