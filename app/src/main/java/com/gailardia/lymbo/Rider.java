@@ -1228,7 +1228,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             callSheet = getLayoutInflater().inflate(R.layout.call_bottom_sheet, null);
             final Dialog callSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
             TextView call = (TextView) callSheet.findViewById(R.id.call);
-            TextView callButton = (TextView) callSheet.findViewById(R.id.callButton);
+            ImageButton callButton = (ImageButton) callSheet.findViewById(R.id.callIcon);
             callButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -1242,7 +1242,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     callSheetDialog.cancel();
                 }
             });
-            TextView cancel = (TextView) callSheet.findViewById(R.id.cancelRequest);
+            ImageButton cancel = (ImageButton) callSheet.findViewById(R.id.cancelRequestIcon);
             cancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
