@@ -29,7 +29,7 @@
             android:orientation="vertical">
 
         <TextView
-            android:text="Why did you cancel the request?"
+            android:text="@string/cancel_reason"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/textView"
@@ -50,7 +50,7 @@
                 android:id="@+id/rad">
 
                 <RadioButton
-                    android:text=" Expensive price"
+                    android:text="@string/cancel_reason_1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#EEEEEE"
@@ -61,7 +61,7 @@
                     android:paddingBottom="0dp" />
 
                 <RadioButton
-                    android:text="No drivers available"
+                    android:text="@string/cancel_reason_2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/rideR"
@@ -72,7 +72,7 @@
                     android:paddingBottom="0dp" />
 
                 <RadioButton
-                    android:text="Personal issue"
+                    android:text="@string/cancel_reason_3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/personal"
@@ -84,7 +84,7 @@
                     android:paddingBottom="0dp" />
 
                 <RadioButton
-                    android:text="driver distance is too far"
+                    android:text="@string/cancel_reason_4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/far"

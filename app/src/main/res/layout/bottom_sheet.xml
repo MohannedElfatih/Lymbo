@@ -36,6 +36,7 @@
                 android:orientation="horizontal">
 
                 <ImageButton
+                    android:contentDescription="@string/tuktuk_Image"
                     android:id="@+id/tuktuk"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -48,6 +49,7 @@
                     android:src="@drawable/tuktukchoice" />
 
                 <ImageButton
+                    android:contentDescription="@string/car_Image"
                     android:id="@+id/car"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -61,6 +63,7 @@
                     android:src="@drawable/carchoice" />
 
                 <ImageButton
+                    android:contentDescription="@string/amjad_Image"
                     android:id="@+id/amjad"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -90,6 +93,7 @@
                     android:weightSum="1">
 
                     <ImageView
+                        android:contentDescription="@string/distance_image"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center_vertical"
@@ -116,6 +120,7 @@
                     android:weightSum="1">
 
                     <ImageView
+                        android:contentDescription="@string/price_image"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center_vertical"
@@ -141,6 +146,7 @@
                     android:weightSum="1">
 
                     <ImageView
+                        android:contentDescription="@string/duration_image"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center_vertical"
