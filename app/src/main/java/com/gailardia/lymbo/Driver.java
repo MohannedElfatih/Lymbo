@@ -48,7 +48,6 @@ import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -88,13 +87,12 @@ import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
 public class Driver extends FragmentActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
-    public List<Polyline> polyLines = new ArrayList<Polyline>();
+    public List<Polyline> polyLines = new ArrayList<>();
     public List<Route> routes = new ArrayList<>();
     protected boolean inRequest = false;
     private Dialog callSheetDialog = null;
     Snackbar snackbar;
     View driverSheet;
-    View popedit;
     View container;
     Location location;
     String type = "";
@@ -111,7 +109,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     private JSONArray responseJson;
     private GoogleMap mMap;
     private LocationManager locationManager;
-    private boolean isInForeground = false;
     private GoogleApiClient mGoogleApiClient;
     private PopupWindow popup;
     private RelativeLayout rel;
@@ -458,8 +455,8 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         TextView distance = (TextView) driverSheet.findViewById(R.id.distance);
         final TextView countDown = (TextView) driverSheet.findViewById(R.id.countDownTimer);
         Log.wtf("Route length", String.valueOf(routes.size()));
-        duration.setText("Duration to destination : " + routes.get(routes.size() - 1).durationText);
-        distance.setText("Distance to destination : " + routes.get(routes.size() - 1).distanceText);
+        duration.setText(getString(R.string.duration_to_destination) + routes.get(routes.size() - 1).durationText);
+        distance.setText(getString(R.string.distance_to_destination) + routes.get(routes.size() - 1).distanceText);
         price.setText("Trip price : " + tripPrice + " SDG");
         mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
         mBottomSheetDialog.setContentView(driverSheet);
@@ -494,7 +491,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             public void onClick(View view) {
                 try {
                     lastRequestId = responseJson.getInt(6);
-                    Intent intent = new Intent(Driver.this, DriverTimerService.class);
                     stopServices();
                     inRequest = true;
                     findRider();
@@ -542,23 +538,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         }
     }
 
-    protected void destinationMarker(final LatLng latLng) {
-        if (destinationMarker == null) {
-            destinationMarker = mMap.addMarker(new MarkerOptions()
-                    .title("Destination")
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
-                    .position(latLng));
-        } else {
-            destinationMarker.remove();
-            destinationMarker = mMap.addMarker(new MarkerOptions()
-                    .title("Destination")
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.human))
-                    .draggable(true)
-                    .position(latLng));
-        }
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-    }
-
     protected void animateRoute() {
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         Log.i("route", String.valueOf(routes.size()));
@@ -582,13 +561,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         //destinationMarker(routes.get(routes.size() - 1).getEndLocation());
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
         mMap.animateCamera(cameraUpdate);
-    }
-
-    private void respond(int response) {
-        new Route().asynchronousCall("http://www.lymbo.esy.es/driverResponse.php", "{\"Dname\":\"" + getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE).getString("username", "NULL") + "\""
-                + ",\"latitude\":\"" + location.getLatitude() + "\""
-                + ",\"longitude\":\"" + location.getLongitude()
-                + ",\"response\":\"" + response + "\"}");
     }
 
     @Override
@@ -690,7 +662,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
     protected void onResume() {
         super.onResume();
-        isInForeground = false;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -701,7 +672,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Intent intent = new Intent(this, DriverTimerService.class);
         stopServices();
         unregisterReceiver(broadcastReceiver);
     }
@@ -717,8 +687,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             stopServices();
             findRider();
         }
-
-        isInForeground = true;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -975,7 +943,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                 });
                 readTask.execute("http://lymbo.esy.es/Delete_account.php");
                 SharedPreferences settings = getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
-                settings.edit().clear().commit();
+                settings.edit().clear().apply();
 
                 startActivity(intent);
             }
@@ -1172,8 +1140,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     }
 
     public class Respond extends AsyncTask<String, String, String> {
-        private ProgressDialog dialog = new ProgressDialog(Driver.this);
-
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -1196,65 +1162,4 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         }
     }
 }
-
-    /*try {
-        JSONArray responseJson = new JSONArray(response);
-        URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin="
-                + responseJson.get(0) + "," + responseJson.get(1) + "&"
-                + "destination=" + location.getLatitude() + "," + location.getLongitude() + "&key"
-                + "AIzaSyDtYl3HYOjjLLbyEkISc4jiy9KG4rUDrms");
-        JSONObject jsonObject = new JSONObject(new Route().synchronousCall(String.valueOf(url), ""));
-        JSONArray jsonArray = jsonObject.getJSONArray("routes");
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject jsonRoute = jsonArray.getJSONObject(i);
-            Route route = new Route();
-            JSONObject overviewPoly = jsonRoute.getJSONObject("overview_polyline");
-            JSONArray legs = jsonRoute.getJSONArray("legs");
-            JSONObject leg = legs.getJSONObject(0);
-            route.distance = leg.getJSONObject("distance").getInt("value");
-            route.distanceText = leg.getJSONObject("distance").getString("text");
-            route.duration = leg.getJSONObject("duration").getInt("value");
-            route.durationText = leg.getJSONObject("duration").getString("text");
-            route.endAddress = leg.getString("end_address");
-            route.startAddress = leg.getString("start_address");
-            route.endLocation = new LatLng(leg.getJSONObject("end_location").getDouble("lat"), leg.getJSONObject("end_location").getDouble("lng"));
-            route.startLocation = new LatLng(leg.getJSONObject("start_location").getDouble("lat"), leg.getJSONObject("start_location").getDouble("lng"));
-            route.points = new Route().decodePolyLine(overviewPoly.getString("points"));
-            driverRoutes.add(route);
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    } catch (JSONException e) {
-        e.printStackTrace();
-    }
-    return null;
-}
-
-    @Override
-    protected void onPostExecute(String s) {
-        super.onPostExecute(s);
-        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
-        bounds.include(routes.get(routes.size() - 1).getStartLocation());
-        bounds.include(routes.get(routes.size() - 1).getEndLocation());
-        bounds.include(driverRoutes.get(driverRoutes.size() - 1).getStartLocation());
-        bounds.include(driverRoutes.get(driverRoutes.size() - 1).getEndLocation());
-        PolylineOptions polylineOptions = new PolylineOptions()
-                .geodesic(true)
-                .color(Color.RED)
-                .width(10);
-        polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).startLocation);
-        for (int i = 0; i < driverRoutes.get(driverRoutes.size() - 1).points.size(); i++) {
-            polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).points.get(i));
-        }
-        Log.i("Distance", "Distance is : " + driverRoutes.get(driverRoutes.size() - 1).getDistanceText() + " Duration is : " + driverRoutes.get(driverRoutes.size() - 1).getDurationText());
-        polylineOptions.add(driverRoutes.get(driverRoutes.size() - 1).endLocation);
-        for (int i = 0; i < driverPolylines.size(); i++) {
-            driverPolylines.get(i).remove();
-        }
-        driverPolylines.clear();
-        driverPolylines.add(mMap.addPolyline(polylineOptions));
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
-        mMap.animateCamera(cameraUpdate);
-        dialog.cancel();
-    }*/
 

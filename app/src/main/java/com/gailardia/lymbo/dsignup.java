@@ -2,40 +2,31 @@ package com.gailardia.lymbo;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.kosalgeek.asynctask.AsyncResponse;
 import com.kosalgeek.asynctask.PostResponseAsyncTask;
-
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
-
 import self.philbrown.droidQuery.$;
 import self.philbrown.droidQuery.AjaxOptions;
 import self.philbrown.droidQuery.Function;
 
 public class dsignup extends AppCompatActivity implements AsyncResponse {
-    private final int SELECT_PHOTO = 1;
     LinearLayout scnd;
     LinearLayout first;
-    int carType=0;
-    String Dname,Dpassword1,Dpassword2,DIMEI,type,OnlineState,Dphone;
-    Bitmap selectedImage;
+    String Dname, Dpassword1, Dpassword2, type, Dphone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,77 +43,72 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         first.setVisibility(View.VISIBLE);
     }
 
-    public void Scndsignup(View view){
-        EditText userName=(EditText) findViewById(R.id.name);
-        EditText password1=(EditText) findViewById(R.id.password1);
-        EditText password2=(EditText) findViewById(R.id.password2);
-        EditText firstName=(EditText)findViewById(R.id.firstName);
-        EditText lastName=(EditText)findViewById(R.id.lastName);
-
-        String user = userName.getText().toString();
-        String pass1 = password1.getText().toString();
-        String pass2 = password2.getText().toString();
-        String firstN =firstName.getText().toString();
-        String last =lastName.getText().toString();
-
-        if(user.isEmpty() || pass1.isEmpty() | pass2.isEmpty() || firstN.isEmpty() || last.isEmpty()){
-            Toast.makeText(getApplicationContext(), "Fill all the fields!", Toast.LENGTH_SHORT).show();
-
+    public void Scndsignup(View view) throws MalformedURLException, UnsupportedEncodingException {
+        if (scnd.getVisibility() == View.VISIBLE) {
+            finishsignup();
         } else {
-                 if(!(pass1.equals(pass2))) {
-                     Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
+            EditText userName = (EditText) findViewById(R.id.name);
+            EditText password1 = (EditText) findViewById(R.id.password1);
+            EditText password2 = (EditText) findViewById(R.id.password2);
+            EditText firstName = (EditText) findViewById(R.id.firstName);
+            EditText lastName = (EditText) findViewById(R.id.lastName);
 
-                 } else {
-                     if (isOnline())
-                     {
-                         $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/validateUser.php")
-                                 .type("POST")
-                                 .data("{\"Dname\":\"" + user + "\"}")
-                                 .context(this)
-                                 .success(new Function() {
+            String user = userName != null ? userName.getText().toString() : null;
+            String pass1 = password1 != null ? password1.getText().toString() : null;
+            String pass2 = password2 != null ? password2.getText().toString() : null;
+            String firstN = firstName != null ? firstName.getText().toString() : null;
+            String last = lastName != null ? lastName.getText().toString() : null;
 
-                                     @Override
-                                     public void invoke($ droidQuery, Object... objects) {
-                                         if (((String) objects[0]).equalsIgnoreCase("false")) {
-                                             Toast.makeText(dsignup.this, "Username is used :(", Toast.LENGTH_LONG).show();
-                                         } else if (((String) objects[0]).equalsIgnoreCase("true")) {
-                                             scnd = (LinearLayout) findViewById(R.id.scndSignup);
-                                             first = (LinearLayout) findViewById(R.id.firstSignup);
-                                             first.animate().translationXBy(-1000f).setDuration(700);
-                                             scnd.setAlpha(1f);
-                                             scnd.setVisibility(View.VISIBLE);
-                                             first.postDelayed(new Runnable() {
-                                                 @Override
-                                                 public void run() {
-                                                     first.setVisibility(View.GONE);
-                                                 }
-                                             }, 700);
-                                         }
-                                     }
-                                 })
-                                 .error(new Function() {
-                                     @Override
-                                     public void invoke($ $, Object... args) {
-                                     }
-                                 }));
+            if (user.isEmpty() || pass1.isEmpty() | pass2.isEmpty() || firstN.isEmpty() || last.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Fill all the fields!", Toast.LENGTH_SHORT).show();
+
+            } else {
+                if (!(pass1.equals(pass2))) {
+                    Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    if (isOnline()) {
+                        $.ajax(new AjaxOptions().url("http://www.lymbo.esy.es/validateUser.php")
+                                .type("POST")
+                                .data("{\"Dname\":\"" + user + "\"}")
+                                .context(this)
+                                .success(new Function() {
+
+                                    @Override
+                                    public void invoke($ droidQuery, Object... objects) {
+                                        if (((String) objects[0]).equalsIgnoreCase("false")) {
+                                            Toast.makeText(dsignup.this, "Username is used :(", Toast.LENGTH_LONG).show();
+                                        } else if (((String) objects[0]).equalsIgnoreCase("true")) {
+                                            scnd = (LinearLayout) findViewById(R.id.scndSignup);
+                                            first = (LinearLayout) findViewById(R.id.firstSignup);
+                                            if (first != null) {
+                                                first.animate().translationXBy(-1000f).setDuration(700);
+                                            }
+                                            scnd.setAlpha(1f);
+                                            scnd.setVisibility(View.VISIBLE);
+                                            first.postDelayed(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    first.setVisibility(View.GONE);
+                                                }
+                                            }, 700);
+                                        }
+                                    }
+                                })
+                                .error(new Function() {
+                                    @Override
+                                    public void invoke($ $, Object... args) {
+                                    }
+                                }));
                     /* */
-                 }
-                     else{
-                         Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
-                     }
+                    } else {
+                        Toast.makeText(this, "No Internet access", Toast.LENGTH_LONG).show();
+                    }
+                }
             }
         }
-
     }
 
-    public void goDlogin(View view){
-        dsignup s=new dsignup();
-        dlogin d=new dlogin();
-        d.finishlogin();
-        Intent intent=new Intent(this,dlogin.class);
-        startActivity(intent);
-        finish();
-    }
     public void type(View view) {
         type = "";
         ImageButton car = (ImageButton) findViewById(R.id.car);
@@ -199,7 +185,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         }
     }
 
-    public  void finishsignup(View view) throws MalformedURLException, UnsupportedEncodingException {
+    public void finishsignup() throws MalformedURLException, UnsupportedEncodingException {
         EditText name=(EditText)findViewById(R.id.name);
         EditText password1=(EditText)findViewById(R.id.password1);
         EditText password2=(EditText)findViewById(R.id.password2);
@@ -211,7 +197,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         Dpassword1=password1.getText().toString();
         Dpassword2=password2.getText().toString();
         Dphone=phone.getText().toString();
-
         final HashMap post = new HashMap();
         post.put("Dname", Dname);
         post.put("Dpassword", Dpassword1);
@@ -219,12 +204,11 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         post.put("type",type);
         post.put("firstName", firstName.getText().toString());
         post.put("lastName", lastName.getText().toString());
-        //post.put("image",image);
 
         PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
 
 
-        if(type==""){
+        if (type.equals("")) {
             Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
         }else {
             task.execute("http://www.lymbo.esy.es/signup.php");
@@ -232,13 +216,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
 
     }
-    /*public String getStringImage(Bitmap bmp){
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] imageBytes = baos.toByteArray();
-        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        return encodedImage;
-    }*/
+
     public boolean isOnline() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -262,9 +240,6 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                 Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
             else
                 Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
-            dlogin log = new dlogin();
-
-
         }
     }
 }

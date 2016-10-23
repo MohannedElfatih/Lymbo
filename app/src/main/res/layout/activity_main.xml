@@ -23,7 +23,6 @@
         style="?android:attr/progressBarStyleSmall"
         android:layout_width="50dp"
         android:layout_height="50dp"
-
         android:foregroundTint="#ffffff"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"

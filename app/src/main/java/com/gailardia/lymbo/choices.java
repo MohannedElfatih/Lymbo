@@ -1,9 +1,6 @@
 package com.gailardia.lymbo;
 
-import android.*;
 import android.Manifest;
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,13 +14,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -40,7 +35,6 @@ public class choices extends AppCompatActivity {
     private android.app.Activity act;
     private Boolean exit = false;
     private int counter;
-    public dsignup signupM=new dsignup();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +51,7 @@ public class choices extends AppCompatActivity {
     protected boolean requestPermission(final android.app.Activity choices, View view) {
         act = choices;
         if (ContextCompat.checkSelfPermission(act, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            check = true;
-            return check;
+            return true;
         } else {
             if (ContextCompat.checkSelfPermission(act,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -84,7 +77,7 @@ public class choices extends AppCompatActivity {
                             REQUEST_PERMISSION);
                 }
             }
-            return check;
+            return true;
         }
     }
 
@@ -107,7 +100,6 @@ public class choices extends AppCompatActivity {
                     }
                 }
             }
-            return;
         }
     }
 
@@ -164,11 +156,8 @@ public class choices extends AppCompatActivity {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
-            return true;
-        }
+        return netInfo != null && netInfo.isConnectedOrConnecting();
 
-        return false;
     }
 
     public void openMap(View view) {

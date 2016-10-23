@@ -26,7 +26,6 @@
             android:background="#22313F"
             android:id="@+id/tab_strip"
             android:textColor="#FFFFFF"
-
             android:focusableInTouchMode="false"
             android:layout_height="50dp"></android.support.v4.view.PagerTabStrip>
 

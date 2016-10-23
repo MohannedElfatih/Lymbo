@@ -8,7 +8,6 @@
 
     <fragment
             xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:map="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/mapLayout"
             android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -41,13 +40,4 @@
         android:layout_alignParentTop="false">
 
     </android.support.design.widget.CoordinatorLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true">
-
-    </LinearLayout>
 </RelativeLayout>
