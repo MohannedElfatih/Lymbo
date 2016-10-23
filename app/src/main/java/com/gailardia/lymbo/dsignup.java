@@ -30,9 +30,10 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dsignup);
+        scnd = (LinearLayout) findViewById(R.id.scndSignup);
+        first = (LinearLayout) findViewById(R.id.firstSignup);
         type = "";
     }
 

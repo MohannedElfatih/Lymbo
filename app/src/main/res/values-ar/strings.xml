@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">Lymbo</string>
+
+    <string name="title_activity_choices">Log out</string>
+    <string name="log_out">Log out</string>
+
+
+    <!-- Strings related to login -->
+    <string name="title_activity_maps">خرائط</string>
+    <string name="title_activity_driver">خرائط</string>
+    <string name="car">سيارة</string>
+    <string name="title_activity_admin">ليمبو</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="rider_choice">خيار الراكب</string>
+    <string name="driver_choice">خيار السائق</string>
+    <string name="rider">الراكب</string>
+    <string name="driver">السائق</string>
+    <string name="logo">ليمبو لوجو</string>
+    <string name="field_icon">أيقونة خانة</string>
+    <string name="username">إسم المستخدم</string>
+    <string name="password">كلمة المرور</string>
+    <string name="sign_in">دخول</string>
+    <string name="sign_up">تسجيل</string>
+    <string name="choose_vehicle_signup">إختر نوع مركبتك</string>
+    <string name="tuktuk_Image">صورة ركشة</string>
+    <string name="car_Image">صورة سيارة</string>
+    <string name="amjad_Image">صورة أمجاد</string>
+    <string name="raksha">ركشة</string>
+    <string name="amjad">أمجاد</string>
+    <string name="phone_number">رقم الهاتف</string>
+    <string name="confirm_password">تأكيد كلمة المرور</string>
+    <string name="first_name">الإسم الأول</string>
+    <string name="last_name">إسم العائلة</string>
+    <string name="next">زر التقدم</string>
+    <string name="distance_image">صورة المسافة</string>
+    <string name="price_image">صورة السعر</string>
+    <string name="duration_image">صورة الزمن</string>
+    <string name="enter_phone">أدخل رقم هاتفك</string>
+    <string name="enter_phone_hint">رقم الهاتف</string>
+    <string name="select_type">إختر نوع مركبتك</string>
+    <string name="edit_phone_hint">تعديل رقم الهاتف</string>
+    <string name="cancel_reason">سبب إلغاء الطلب؟</string>
+    <string name="cancel_reason_1">السعر الغالي.</string>
+    <string name="cancel_reason_2">لا وجود لسائقين.</string>
+    <string name="cancel_reason_3">ظروف شخصية.</string>
+    <string name="cancel_reason_4">السائق بعيد جدا.</string>
+    <string name="cancel_reason_5">تعطل السيارة.</string>
+    <string name="cancel_reason_6">الزبون بعيد جدا.</string>
+    <string name="distance_to_destination">"المسافةالمتبقية للوصول للهدف : "</string>
+    <string name="duration_to_destination">"الزمن المتبقي للوصول للهدف : "</string>
+    <string name="choose_vehicle_type_price">" إختر نوع المركبة"</string>
+</resources>
