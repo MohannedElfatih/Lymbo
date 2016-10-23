@@ -12,7 +12,10 @@
         android:layout_height="match_parent"
         android:background="#00ffffff"
         android:padding="0dp"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
         <LinearLayout
             android:orientation="vertical"
@@ -57,7 +60,6 @@
                     android:layout_height="fill_parent"
                     android:inputType="text"
                     android:id="@+id/loginUser"
-                    android:hint="@string/username"
                     android:background="@drawable/lymbo_edit_text_holo_dark"
                     android:paddingStart="6dp"
                     android:paddingLeft="0dp"
@@ -67,7 +69,8 @@
                     android:textColorHint="#9ff1f1f1"
                     android:paddingTop="5dp"
                     android:paddingBottom="10dp"
-                    android:textColor="#fdfdfd" />
+                    android:textColor="#fdfdfd"
+                    android:hint="@string/username" />
 
             </LinearLayout>
 
