@@ -204,12 +204,11 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         post.put("type",type);
         post.put("firstName", firstName.getText().toString());
         post.put("lastName", lastName.getText().toString());
-        //post.put("image",image);
 
         PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
 
 
-        if(type==""){
+        if (type.equals("")) {
             Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
         }else {
             task.execute("http://www.lymbo.esy.es/signup.php");

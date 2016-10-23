@@ -35,11 +35,6 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
         setContentView(R.layout.activity_dlogin);
     }
 
-    public void backToChoices(View view) {
-        Intent intent = new Intent(this, choices.class);
-        startActivity(intent);
-    }
-
     public void Dsignup(View view) {
         Intent intent = new Intent(this, dsignup.class);
         startActivity(intent);
@@ -110,9 +105,6 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
             PostResponseAsyncTask task = new PostResponseAsyncTask(this,map);
             task.execute("http://lymbo.esy.es/signin.php");
         }
-    }
-    public void finishlogin(){
-        finish();
     }
 
     @Override

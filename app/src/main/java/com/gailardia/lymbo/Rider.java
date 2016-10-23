@@ -99,7 +99,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     static Double m[];
     public int rejectStatus = 0;
     public int driverRank = -1;
-    public List<Polyline> polyLines = new ArrayList<Polyline>();
+    public List<Polyline> polyLines = new ArrayList<>();
     public List<Route> routes = new ArrayList<>();
     protected GetRoute getRoute;
     protected DriverMarker driverMarkerTimer;
@@ -314,7 +314,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         Log.wtf("Route length", String.valueOf(routes.size()));
         duration.setText(routes.get(routes.size() - 1).durationText);
         distance.setText(routes.get(routes.size() - 1).distanceText);
-        price.setText(" Choose vehicle type.");
+        price.setText(R.string.choose_vehicle_type_price);
         final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
         mBottomSheetDialog.setCanceledOnTouchOutside(false);
         mBottomSheetDialog.onBackPressed();
@@ -1196,7 +1196,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 JSONArray responseJson = new JSONArray(driverInfo);
                 getDriverFirstName = responseJson.getString(0);
                 getDriverLastName = responseJson.getString(1);
-                getDriverPhone = Double.valueOf(responseJson.getInt(2));
+                getDriverPhone = (double) responseJson.getInt(2);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1301,8 +1301,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
         @Override
         protected String doInBackground(String... strings) {
-            final String response = new Route().synchronousCall("http://www.lymbo.esy.es/driverAccept.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
-            return response;
+            return new Route().synchronousCall("http://www.lymbo.esy.es/driverAccept.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
         }
 
         @Override

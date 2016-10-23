@@ -47,4 +47,7 @@
     <string name="cancel_reason_4">Driver distance is too far.</string>
     <string name="cancel_reason_5">Car problems.</string>
     <string name="cancel_reason_6">Customer distance is too far.</string>
+    <string name="distance_to_destination">"Distance to destination : "</string>
+    <string name="duration_to_destination">"Duration to destination : "</string>
+    <string name="choose_vehicle_type_price">" Choose vehicle type."</string>
 </resources>
