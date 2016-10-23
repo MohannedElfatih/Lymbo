@@ -30,7 +30,7 @@
         android:id="@+id/scndSignup"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="1"
+        android:alpha="0"
         android:orientation="vertical"
         android:visibility="invisible"
         android:layout_marginBottom="90dp"
