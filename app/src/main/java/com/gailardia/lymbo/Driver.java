@@ -124,7 +124,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             Log.i("Response", response);
             try {
                 if (response.contains("cancelled")) {
-                    Toast.makeText(Driver.this, "startAgain()", Toast.LENGTH_SHORT).show();
+                    Log.i("startAgain", "startAgain()");
                     if (inRequest) {
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -172,7 +172,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                     }
                 } else if (response.contains("Alive")) {
                     Log.i("Response in broadcast", response);
-                    Toast.makeText(Driver.this, "checkCancellationAgain()", Toast.LENGTH_SHORT).show();
+                    Log.i("Check Cancellation", "Check Cancellation Again.");
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -181,7 +181,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                     }, 10000);
                 } else if (response.contains("no")) {
                     Log.i("Response in broadcast", response);
-                    Toast.makeText(Driver.this, "startAgain()", Toast.LENGTH_SHORT).show();
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -193,7 +192,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                     if (responseJson == null) {
                         Log.i("Broadcast", "responseJson is null");
                     } else if (responseJson.getInt(6) == lastRequestId) {
-                        Log.i("lastRequest", "Same requestId");
+                        Log.i("lastRequest", "Same requestID");
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -202,7 +201,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                         }, 1000);
                     } else {
                         custNum = responseJson.getDouble(7);
-                        Toast.makeText(getApplicationContext(), "Found a customer.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Found a customer.", Toast.LENGTH_LONG).show();
                         ringtone();
                         PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
                         PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
@@ -610,7 +609,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
             destin.setLongitude(routes.get(routes.size() - 1).getEndLocation().longitude);
             destin.setLatitude(routes.get(routes.size() - 1).getEndLocation().latitude);
         }
-        locationManager.requestLocationUpdates(provider, 400, 1, this);
+        locationManager.requestLocationUpdates(provider, 1000, 1, this);
         this.location = location;
 
     }

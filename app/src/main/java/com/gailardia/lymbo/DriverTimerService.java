@@ -49,7 +49,7 @@ public class DriverTimerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(DriverTimerService.this, "Searching for customers.", Toast.LENGTH_SHORT).show();
+        Log.i("Searching", "Searching for customers");
         return START_STICKY;
     }
 

@@ -286,11 +286,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     @Override
                     public void onResponse(String result) {
                         try {
-
-
                             String hr = String.valueOf(result.charAt(11)) + String.valueOf(result.charAt(12));
                             hour[0] = Integer.parseInt(hr);
-                            Toast.makeText(Rider.this, String.valueOf(hour[0]), Toast.LENGTH_LONG).show();
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
@@ -341,7 +338,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                                 public void invoke($ droidQuery, Object... objects) {
                                     System.out.println("success");
                                     if ((objects[0]).toString().equalsIgnoreCase("No drivers")) {
-                                        Toast.makeText(Rider.this, "No drivers close :(", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(Rider.this, "No nearby drivers.", Toast.LENGTH_LONG).show();
                                         unanimateRoute();
                                         destinationMarker.remove();
                                     } else {
@@ -698,71 +695,87 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     }
 
     protected void setSearchMarker(final Place place) {
-        if (searchMarker != null) {
-            searchMarker.remove();
-            if (destinationMarker != null) {
-                destinationMarker.remove();
+        if (location == null) {
+            Toast.makeText(getApplicationContext(), "Please wait while we get your location.", Toast.LENGTH_SHORT).show();
+        } else {
+            if (searchMarker != null) {
+                searchMarker.remove();
+                if (destinationMarker != null) {
+                    destinationMarker.remove();
+                }
             }
+            searchMarker = mMap.addMarker(new MarkerOptions()
+                    .title("Search Result")
+                    .icon(imageType(place.getPlaceTypes()))
+                    .position(place.getLatLng()));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15));
+            Snackbar.make(coordinatorLayoutView, "Is this your destination?", Snackbar.LENGTH_INDEFINITE)
+                    .setAction("Yes!", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (location == null) {
+                                Toast.makeText(getApplicationContext(), "Please wait while we get your location.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(place.getLatLng().latitude), String.valueOf(place.getLatLng().longitude)};
+                                getRoute = (GetRoute) new GetRoute().execute(params);
+                                if (searchMarker != null) {
+                                    searchMarker.remove();
+                                }
+                                if (destinationMarker == null) {
+                                    destinationMarker = mMap.addMarker(new MarkerOptions()
+                                            .title("Destination")
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                                            .position(place.getLatLng()));
+                                } else {
+                                    destinationMarker.remove();
+                                    destinationMarker = mMap.addMarker(new MarkerOptions()
+                                            .title("Destination")
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                                            .draggable(true)
+                                            .position(place.getLatLng()));
+                                }
+                            }
+                        }
+                    })
+                    .show();
         }
-        searchMarker = mMap.addMarker(new MarkerOptions()
-                .title("Search Result")
-                .icon(imageType(place.getPlaceTypes()))
-                .position(place.getLatLng()));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15));
-        Snackbar.make(coordinatorLayoutView, "Is this your destination?", Snackbar.LENGTH_INDEFINITE)
-                .setAction("Yes!", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(place.getLatLng().latitude), String.valueOf(place.getLatLng().longitude)};
-                        getRoute = (GetRoute) new GetRoute().execute(params);
-                        if (searchMarker != null) {
-                            searchMarker.remove();
-                        }
-                        if (destinationMarker == null) {
-                            destinationMarker = mMap.addMarker(new MarkerOptions()
-                                    .title("Destination")
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
-                                    .position(place.getLatLng()));
-                        } else {
-                            destinationMarker.remove();
-                            destinationMarker = mMap.addMarker(new MarkerOptions()
-                                    .title("Destination")
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
-                                    .draggable(true)
-                                    .position(place.getLatLng()));
-                        }
-                    }
-                })
-                .show();
     }
 
     protected void destinationMarker(final LatLng latLng) {
-        if (searchMarker != null) {
-            searchMarker.remove();
-        }
-        if (destinationMarker == null) {
-            destinationMarker = mMap.addMarker(new MarkerOptions()
-                    .title("Destination")
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
-                    .position(latLng));
+        if (location == null) {
+            Toast.makeText(getApplicationContext(), "Please wait while we get your location.", Toast.LENGTH_SHORT).show();
         } else {
-            destinationMarker.remove();
-            destinationMarker = mMap.addMarker(new MarkerOptions()
-                    .title("Destination")
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
-                    .draggable(true)
-                    .position(latLng));
+            if (searchMarker != null) {
+                searchMarker.remove();
+            }
+            if (destinationMarker == null) {
+                destinationMarker = mMap.addMarker(new MarkerOptions()
+                        .title("Destination")
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                        .position(latLng));
+            } else {
+                destinationMarker.remove();
+                destinationMarker = mMap.addMarker(new MarkerOptions()
+                        .title("Destination")
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.userdestination))
+                        .draggable(true)
+                        .position(latLng));
+            }
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+            Snackbar.make(coordinatorLayoutView, "Is this your destination?", Snackbar.LENGTH_INDEFINITE)
+                    .setAction("Yes!", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (location == null) {
+                                Toast.makeText(getApplicationContext(), "Please wait while we get your location.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(latLng.latitude), String.valueOf(latLng.longitude)};
+                                getRoute = (GetRoute) new GetRoute().execute(params);
+                            }
+                        }
+                    })
+                    .show();
         }
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-        Snackbar.make(coordinatorLayoutView, "Is this your destination?", Snackbar.LENGTH_INDEFINITE)
-                .setAction("Yes!", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String[] params = {String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(latLng.latitude), String.valueOf(latLng.longitude)};
-                        getRoute = (GetRoute) new GetRoute().execute(params);
-                    }
-                })
-                .show();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.gailardia.lymbo;
 
+import android.animation.Animator;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -65,7 +66,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
             } else {
                 if (!(pass1.equals(pass2))) {
-                    Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Passwords don't match.", Toast.LENGTH_SHORT).show();
 
                 } else {
                     if (isOnline()) {
@@ -78,21 +79,35 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                                     @Override
                                     public void invoke($ droidQuery, Object... objects) {
                                         if (((String) objects[0]).equalsIgnoreCase("false")) {
-                                            Toast.makeText(dsignup.this, "Username is used :(", Toast.LENGTH_LONG).show();
+                                            Toast.makeText(dsignup.this, "Username is used.", Toast.LENGTH_LONG).show();
                                         } else if (((String) objects[0]).equalsIgnoreCase("true")) {
                                             scnd = (LinearLayout) findViewById(R.id.scndSignup);
                                             first = (LinearLayout) findViewById(R.id.firstSignup);
                                             if (first != null) {
-                                                first.animate().translationXBy(-1000f).setDuration(700);
+                                                first.animate().alpha(0f).setDuration(700).setListener(new Animator.AnimatorListener() {
+                                                    @Override
+                                                    public void onAnimationStart(Animator animator) {
+
+                                                    }
+
+                                                    @Override
+                                                    public void onAnimationEnd(Animator animator) {
+                                                        first.setVisibility(View.GONE);
+                                                        scnd.setVisibility(View.VISIBLE);
+                                                        scnd.animate().alpha(1f).setDuration(700);
+                                                    }
+
+                                                    @Override
+                                                    public void onAnimationCancel(Animator animator) {
+
+                                                    }
+
+                                                    @Override
+                                                    public void onAnimationRepeat(Animator animator) {
+
+                                                    }
+                                                });
                                             }
-                                            scnd.setAlpha(1f);
-                                            scnd.setVisibility(View.VISIBLE);
-                                            first.postDelayed(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    first.setVisibility(View.GONE);
-                                                }
-                                            }, 700);
                                         }
                                     }
                                 })
@@ -103,7 +118,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                                 }));
                     /* */
                     } else {
-                        Toast.makeText(this, "No Internet access", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "No Internet access.", Toast.LENGTH_LONG).show();
                     }
                 }
             }
@@ -210,7 +225,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
 
         if (type.equals("")) {
-            Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Please choose your type of car.", Toast.LENGTH_LONG).show();
         }else {
             task.execute("http://www.lymbo.esy.es/signup.php");
         }
@@ -238,9 +253,9 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         }
         else {
             if(!isOnline())
-                Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "No Internet access.", Toast.LENGTH_LONG).show();
             else
-                Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Try Again.", Toast.LENGTH_LONG).show();
         }
     }
 }

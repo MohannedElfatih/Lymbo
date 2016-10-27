@@ -99,7 +99,6 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
         }
         else
         {
-
             map.put("Dname",U);
             map.put("Dpassword",P);
             PostResponseAsyncTask task = new PostResponseAsyncTask(this,map);
@@ -109,7 +108,8 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
 
     @Override
     public void processFinish(String s) {
-        Toast.makeText(this,s,Toast.LENGTH_LONG).show();
+        Log.i("Response in Login", s);
+        Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT);
         if(s.equalsIgnoreCase("success")){
             SharedPreferences shared = this.getSharedPreferences("com.gailardia.lymbo", Context.MODE_PRIVATE);
             shared.edit().putString("username", U).apply();

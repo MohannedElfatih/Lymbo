@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg5"
-    tools:context="com.gailardia.lymbo.MainActivity">
+    tools:context="com.gailardia.lymbo.dsignup">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -30,7 +30,7 @@
         android:id="@+id/scndSignup"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="1"
+        android:alpha="0"
         android:orientation="vertical"
         android:visibility="invisible"
         android:layout_marginBottom="90dp"
