@@ -192,7 +192,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                     if (responseJson == null) {
                         Log.i("Broadcast", "responseJson is null");
                     } else if (responseJson.getInt(6) == lastRequestId) {
-                        Log.i("lastRequest", "Same requestId");
+                        Log.i("lastRequest", "Same requestID");
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {

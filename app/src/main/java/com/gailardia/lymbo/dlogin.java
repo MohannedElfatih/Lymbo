@@ -99,7 +99,6 @@ public class dlogin extends AppCompatActivity implements AsyncResponse {
         }
         else
         {
-
             map.put("Dname",U);
             map.put("Dpassword",P);
             PostResponseAsyncTask task = new PostResponseAsyncTask(this,map);
