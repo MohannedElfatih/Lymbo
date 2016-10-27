@@ -1291,6 +1291,9 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            if (driverMarker != null) {
+                driverMarker.remove();
+            }
             driverMarkerIsRunning = true;
         }
 
@@ -1322,27 +1325,32 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             try {
                 JSONArray responseJson = new JSONArray(response);
                 Log.i("DriverMarker", response);
-                driverMarker = mMap.addMarker(new MarkerOptions()
-                        .title("Driver location")
-                        .position(new LatLng(Double.valueOf(responseJson.getString(0)), Double.valueOf(responseJson.getString(1))))
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.drivert)));
-                LatLngBounds.Builder bounds = new LatLngBounds.Builder();
-                bounds.include(destinationMarker.getPosition());
-                bounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
-                bounds.include(driverMarker.getPosition());
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
-                mMap.animateCamera(cameraUpdate);
-                Location destin = new Location(location);
-                destin.setLatitude(driverMarker.getPosition().latitude);
-                destin.setLongitude(driverMarker.getPosition().longitude);
-                /*if (location.distanceTo(destin) < 500) {
+                if (driverMarker != null) {
                     driverMarker.remove();
-                    bounds = new LatLngBounds.Builder();
-                    bounds.include(destinationMarker.getPosition());
+                }
+                //Make Sure location isn't null.
+                if (Double.valueOf(responseJson.getString(0)) != null) {
+                    driverMarker = mMap.addMarker(new MarkerOptions()
+                            .title("Driver location")
+                            .position(new LatLng(Double.valueOf(responseJson.getString(0)), Double.valueOf(responseJson.getString(1))))
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.drivert)));
+                    LatLngBounds.Builder bounds = new LatLngBounds.Builder();
                     bounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
-                    cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
+                    bounds.include(driverMarker.getPosition());
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
                     mMap.animateCamera(cameraUpdate);
-                }*/
+                    Location destin = new Location(location);
+                    destin.setLatitude(driverMarker.getPosition().latitude);
+                    destin.setLongitude(driverMarker.getPosition().longitude);
+                    if (location.distanceTo(destin) < 500) {
+                        driverMarker.remove();
+                        bounds = new LatLngBounds.Builder();
+                        bounds.include(destinationMarker.getPosition());
+                        bounds.include(new LatLng(location.getLatitude(), location.getLongitude()));
+                        cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds.build(), 100);
+                        mMap.animateCamera(cameraUpdate);
+                    }
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
