@@ -49,7 +49,7 @@ public class DriverTimerCancelRequest extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(DriverTimerCancelRequest.this, "Checking request cancellation", Toast.LENGTH_SHORT).show();
+        Log.i("Check Cancellation", "Check Cancellation Again.");
         return START_STICKY;
     }
 

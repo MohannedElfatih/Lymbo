@@ -105,18 +105,20 @@ public class choices extends AppCompatActivity {
 
 
     public  void fade(){
-        LinearLayout choice = (LinearLayout) findViewById(R.id.choice);
         final ImageView logo = (ImageView) findViewById(R.id.imageView2);
-
-        choice.setTranslationY(-1000f);
-        choice.setVisibility(View.VISIBLE);
-        choice.animate().translationYBy(1000f).setDuration(1000);
+        final ImageView rider = (ImageView) findViewById(R.id.imageView8);
+        final ImageView driver = (ImageView) findViewById(R.id.imageView9);
+        rider.setTranslationY(-1000f);
+        rider.setVisibility(View.VISIBLE);
+        rider.animate().translationYBy(1000f).setDuration(1000);
+        driver.setTranslationY(-1000f);
+        driver.setVisibility(View.VISIBLE);
+        driver.animate().translationYBy(1000f).setDuration(1000);
         new CountDownTimer(1400,1400){
             @Override
             public void onTick(long millisUntilFinished) {
 
             }
-
             @Override
             public void onFinish() {
                 logo.animate().alpha(1f).setDuration(300);

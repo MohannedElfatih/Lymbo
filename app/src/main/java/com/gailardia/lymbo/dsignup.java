@@ -66,7 +66,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
             } else {
                 if (!(pass1.equals(pass2))) {
-                    Toast.makeText(getApplicationContext(), "Passwords don't match!!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Passwords don't match.", Toast.LENGTH_SHORT).show();
 
                 } else {
                     if (isOnline()) {
@@ -79,7 +79,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                                     @Override
                                     public void invoke($ droidQuery, Object... objects) {
                                         if (((String) objects[0]).equalsIgnoreCase("false")) {
-                                            Toast.makeText(dsignup.this, "Username is used :(", Toast.LENGTH_LONG).show();
+                                            Toast.makeText(dsignup.this, "Username is used.", Toast.LENGTH_LONG).show();
                                         } else if (((String) objects[0]).equalsIgnoreCase("true")) {
                                             scnd = (LinearLayout) findViewById(R.id.scndSignup);
                                             first = (LinearLayout) findViewById(R.id.firstSignup);
@@ -118,7 +118,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
                                 }));
                     /* */
                     } else {
-                        Toast.makeText(this, "No Internet access", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "No Internet access.", Toast.LENGTH_LONG).show();
                     }
                 }
             }
@@ -225,7 +225,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
 
 
         if (type.equals("")) {
-            Toast.makeText(getApplicationContext(), "Please choose your type of car!!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Please choose your type of car.", Toast.LENGTH_LONG).show();
         }else {
             task.execute("http://www.lymbo.esy.es/signup.php");
         }
@@ -253,9 +253,9 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         }
         else {
             if(!isOnline())
-                Toast.makeText(this,"No Internet access",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "No Internet access.", Toast.LENGTH_LONG).show();
             else
-                Toast.makeText(this,"Try Again",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Try Again.", Toast.LENGTH_LONG).show();
         }
     }
 }

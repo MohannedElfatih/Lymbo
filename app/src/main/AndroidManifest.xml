@@ -24,18 +24,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".choices"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_choices"
+            android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".choices"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_choices"
-            android:theme="@style/FullscreenTheme" />
 
         <supports-screens android:xlargeScreens="true" />
         <supports-screens android:compatibleWidthLimitDp="320" />
