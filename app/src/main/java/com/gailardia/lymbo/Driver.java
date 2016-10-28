@@ -342,7 +342,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(DriverTimerService.TRANSACTION_DONE);
         registerReceiver(broadcastReceiver, intentFilter);
-        findRider();
     }
 
     private void findRider() {
@@ -404,6 +403,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
                     @Override
                     public void onClick(View view) {
                         if (actionButton != null) {
+                            unanimateRoute();
                             actionButton.setClickable(true);
                             actionButton.setAlpha(1);
                         }
@@ -594,6 +594,9 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
     @Override
     public void onLocationChanged(Location location) {
+        if (location != null) {
+            findRider();
+        }
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions

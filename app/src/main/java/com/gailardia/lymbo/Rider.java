@@ -315,13 +315,23 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         final Dialog mBottomSheetDialog = new Dialog(Rider.this, R.style.MaterialDialogSheet);
         mBottomSheetDialog.setCanceledOnTouchOutside(false);
         mBottomSheetDialog.onBackPressed();
+        final String[] startAddressRegion = routes.get(routes.size() - 1).getStartAddress().split(",");
+        final String[] endAddressRegion = routes.get(routes.size() - 1).getEndAddress().split(",");
+        startAddressRegion[1] = startAddressRegion[1].trim();
+        endAddressRegion[1] = endAddressRegion[1].trim();
+        System.out.println(startAddressRegion);
+        System.out.println(endAddressRegion);
+        System.out.println(startAddressRegion[1]);
+        System.out.println(endAddressRegion[1]);
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                animateRoute();
                 if (vehicleType.equalsIgnoreCase("")) {
                     Toast.makeText(Rider.this, "Please choose a vehicle type.", Toast.LENGTH_LONG).show();
+                } else if (vehicleType.contains("tuktuk") && !startAddressRegion[1].equals(endAddressRegion[1]) && !startAddressRegion[1].equals("Sudan") && !endAddressRegion[1].equals("Sudan")) {
+                    Toast.makeText(Rider.this, "Raksha can't travel between cities.", Toast.LENGTH_LONG).show();
                 } else {
+                    animateRoute();
                     final String[] params = {vehicleType,
                             String.valueOf(location.getLatitude()),
                             String.valueOf(location.getLongitude()),
@@ -429,6 +439,8 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
 
     protected void animateRoute() {
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        Log.i("address", routes.get(routes.size() - 1).getStartAddress());
+        Log.i("address", routes.get(routes.size() - 1).getEndAddress());
         bounds.include(routes.get(routes.size() - 1).getStartLocation());
         bounds.include(routes.get(routes.size() - 1).getEndLocation());
         PolylineOptions polylineOptions = new PolylineOptions()
@@ -438,6 +450,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         polylineOptions.add(routes.get(routes.size() - 1).startLocation);
         for (int i = 0; i < routes.get(routes.size() - 1).points.size(); i++) {
             polylineOptions.add(routes.get(routes.size() - 1).points.get(i));
+
         }
         Log.i("Distance", "Distance is : " + routes.get(routes.size() - 1).getDistanceText() + " Duration is : " + routes.get(routes.size() - 1).getDurationText());
         polylineOptions.add(routes.get(routes.size() - 1).endLocation);
@@ -450,12 +463,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         mMap.animateCamera(cameraUpdate);
     }
 
-    public void type(View view) {
-        String type = "", textprice;
-        ImageButton car = (ImageButton) bottomsheet.findViewById(R.id.car);
-        ImageButton tuktuk = (ImageButton) bottomsheet.findViewById(R.id.tuktuk);
-        ImageButton amjad = (ImageButton) bottomsheet.findViewById(R.id.amjad);
-        TextView text = (TextView) bottomsheet.findViewById(R.id.price);
+    protected void animateButton() {
         final ImageButton accept = (ImageButton) bottomsheet.findViewById(R.id.accept);
         Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
         final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
@@ -481,12 +489,53 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 animation.cancel();
             }
         });
-        if (car != null && tuktuk != null && amjad != null) {
-            if (change == 0) {
-                System.out.println(change);
-                accept.startAnimation(outAnimation);
-                change = 1;
+        if (change == 0) {
+            System.out.println(change);
+            accept.startAnimation(outAnimation);
+            change = 1;
+        }
+    }
+
+    protected void unanimateButton() {
+        final ImageButton accept = (ImageButton) bottomsheet.findViewById(R.id.accept);
+        Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
+        final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
+        accept.setTag(R.drawable.notchecked);
+        outAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+            // Other callback methods omitted for clarity.
+
+            @Override
+            public void onAnimationStart(Animation animation) {
             }
+
+            public void onAnimationEnd(Animation animation) {
+
+                // Modify the resource of the ImageButton
+                accept.setImageResource(R.drawable.notchecked);
+                // Create the new Animation to apply to the ImageButton.
+                accept.startAnimation(inAnimation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                animation.cancel();
+            }
+        });
+        if (change == 1) {
+            System.out.println(change);
+            accept.startAnimation(outAnimation);
+            change = 0;
+        }
+    }
+
+    public void type(View view) {
+        String type = "", textprice;
+        ImageButton car = (ImageButton) bottomsheet.findViewById(R.id.car);
+        ImageButton tuktuk = (ImageButton) bottomsheet.findViewById(R.id.tuktuk);
+        ImageButton amjad = (ImageButton) bottomsheet.findViewById(R.id.amjad);
+        TextView text = (TextView) bottomsheet.findViewById(R.id.price);
+        if (car != null && tuktuk != null && amjad != null) {
             switch (view.getId()) {
                 case R.id.car:
                     //Inform the user te button1 has been clicked
@@ -523,6 +572,22 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             }
         }
         vehicleType = type;
+        final String[] startAddressRegion = routes.get(routes.size() - 1).getStartAddress().split(",");
+        final String[] endAddressRegion = routes.get(routes.size() - 1).getEndAddress().split(",");
+        startAddressRegion[1] = startAddressRegion[1].trim();
+        endAddressRegion[1] = endAddressRegion[1].trim();
+        System.out.println(startAddressRegion);
+        System.out.println(endAddressRegion);
+        System.out.println(startAddressRegion[1]);
+        System.out.println(endAddressRegion[1]);
+        if (vehicleType.contains("tuktuk") && !startAddressRegion[1].equals(endAddressRegion[1]) && !startAddressRegion[1].equals("Sudan") && !endAddressRegion[1].equals("Sudan")) {
+            if (change == 1) {
+                unanimateButton();
+            }
+            Toast.makeText(Rider.this, "Raksha can't travel between cities.", Toast.LENGTH_LONG).show();
+        } else {
+            animateButton();
+        }
         Log.i("DistanceVal", String.valueOf(routes.get(routes.size() - 1).distance));
     }
 
