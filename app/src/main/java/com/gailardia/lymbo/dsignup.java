@@ -8,6 +8,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -28,6 +30,7 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
     LinearLayout scnd;
     LinearLayout first;
     String Dname, Dpassword1, Dpassword2, type, Dphone;
+    final boolean[] validNumber = {false};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,7 +211,33 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         EditText phone=(EditText)findViewById(R.id.phone);
         EditText firstName = (EditText)findViewById(R.id.firstName);
         EditText lastName = (EditText)findViewById(R.id.lastName);
+        phone.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String number = String.valueOf(editable);
+                System.out.println(editable);
+                if (number.length() == 10) {
+                    if (number.substring(0, 2).contains("01") || number.substring(0, 2).contains("09")) {
+                        validNumber[0] = true;
+                    } else {
+                        validNumber[0] = false;
+                    }
+                } else {
+                    validNumber[0] = false;
+                }
+                System.out.println(validNumber[0]);
+            }
+        });
         Dname=name.getText().toString();
         Dpassword1=password1.getText().toString();
         Dpassword2=password2.getText().toString();
@@ -222,15 +251,13 @@ public class dsignup extends AppCompatActivity implements AsyncResponse {
         post.put("lastName", lastName.getText().toString());
 
         PostResponseAsyncTask task = new PostResponseAsyncTask(this, post);
-
-
         if (type.equals("")) {
             Toast.makeText(getApplicationContext(), "Please choose your type of car.", Toast.LENGTH_LONG).show();
-        }else {
+        } else if (validNumber[0] != true) {
+            Toast.makeText(getApplicationContext(), "Please enter a valid number.", Toast.LENGTH_SHORT).show();
+        } else {
             task.execute("http://www.lymbo.esy.es/signup.php");
         }
-
-
     }
 
     public boolean isOnline() {

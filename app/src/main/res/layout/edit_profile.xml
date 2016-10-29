@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
@@ -10,7 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="13dp"
-        android:background="@null">
+        android:background="@null"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="150dp"
+        app:cardCornerRadius="15dp"
+        app:cardElevation="13dp">
 
         <LinearLayout
             android:orientation="vertical"
@@ -80,7 +87,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="visible"
-                android:weightSum="2">
+                android:weightSum="2"
+                android:layout_marginLeft="15dp">
 
                 <ImageView
                     android:layout_height="50dp"
@@ -91,7 +99,7 @@
                     android:layout_width="30dp" />
 
                 <EditText
-                    android:layout_width="188dp"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:inputType="phone"
                     android:background="@drawable/lymbo_edit_text_holo_dark"
@@ -101,8 +109,9 @@
                     android:hint="@string/edit_phone_hint"
                     android:selectAllOnFocus="false"
                     android:maxLines="1"
-                    android:layout_marginLeft="40dp"
-                    android:layout_weight="1.21" />
+                    android:layout_marginLeft="15dp"
+                    android:layout_weight="1.21"
+                    android:layout_marginRight="20dp" />
             </LinearLayout>
             <LinearLayout
                 android:baselineAligned="false"
@@ -121,7 +130,7 @@
 
                     <Button
                         android:id="@+id/editsubmit"
-                        android:background="@drawable/checked"
+                        android:background="@drawable/notchecked"
                         android:textColor="#22313F"
                         android:textSize="16sp"
                         android:layout_weight="0"

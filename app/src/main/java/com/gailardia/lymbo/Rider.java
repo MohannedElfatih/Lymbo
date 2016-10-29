@@ -26,6 +26,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -113,8 +115,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     ArrayList<String> name;
     ArrayList<Double> metars;
     Double getDriverdestLat, getDriverdestLong, getDrivercustLat, getDrivercustLong;
-    int getDriverPrice;
-    int change;
+    int getDriverPrice, change, driverCounter;
     Double getDriverPhone;
     String getDriverType, getDriverFirstName, getDriverLastName, report;
     private GoogleApiClient mGoogleApiClient;
@@ -162,8 +163,73 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                 .addApi(AppIndex.API).build();
     }
 
+    protected void animateSubmit(final View submit) {
+        final Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
+        final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
+        outAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+            // Other callback methods omitted for clarity.
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            public void onAnimationEnd(Animation animation) {
+
+                // Modify the resource of the ImageButton
+                submit.setBackground(getResources().getDrawable(R.drawable.checked));
+                // Create the new Animation to apply to the ImageButton.
+                submit.startAnimation(inAnimation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                animation.cancel();
+            }
+        });
+        if (change == 0) {
+            System.out.println(change);
+            submit.startAnimation(outAnimation);
+            change = 1;
+            System.out.println(change);
+        }
+    }
+
+    protected void unanimateSubmit(final View submit) {
+        final Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
+        final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
+        outAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+            // Other callback methods omitted for clarity.
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            public void onAnimationEnd(Animation animation) {
+
+                // Modify the resource of the ImageButton
+                submit.setBackground(getResources().getDrawable(R.drawable.notchecked));
+                // Create the new Animation to apply to the ImageButton.
+                submit.startAnimation(inAnimation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                animation.cancel();
+            }
+        });
+        if (change == 1) {
+            System.out.println(change);
+            submit.startAnimation(outAnimation);
+            change = 0;
+            System.out.println(change);
+        }
+    }
+
     public void customerPhone() {
         if (showPhonePop) {
+            final boolean[] validNumber = {false};
             final SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
             int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
@@ -173,50 +239,51 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             final Button submit = (Button) container.findViewById(R.id.customerNumberSubmit);
             popup = new PopupWindow(container, width, height, true);
             popup.showAtLocation(relPhone, Gravity.CENTER, 0, 0);
-            final Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
-            final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
-            outAnimation.setAnimationListener(new Animation.AnimationListener() {
-
-                // Other callback methods omitted for clarity.
-
-                @Override
-                public void onAnimationStart(Animation animation) {
-                }
-
-                public void onAnimationEnd(Animation animation) {
-
-                    // Modify the resource of the ImageButton
-                    submit.setBackground(getResources().getDrawable(R.drawable.checked));
-                    // Create the new Animation to apply to the ImageButton.
-                    submit.startAnimation(inAnimation);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                    animation.cancel();
-                }
-            });
             final EditText phone = (EditText) container.findViewById(R.id.customerPhoneNumber);
-            phone.setOnClickListener(new View.OnClickListener() {
+            phone.addTextChangedListener(new TextWatcher() {
                 @Override
-                public void onClick(View view) {
-                    if (change == 0) {
-                        System.out.println(change);
-                        submit.startAnimation(outAnimation);
-                        change = 1;
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+                    String number = String.valueOf(editable);
+                    System.out.println(editable);
+                    if (number.length() == 10) {
+                        if (number.substring(0, 2).contains("01") || number.substring(0, 2).contains("09")) {
+                            validNumber[0] = true;
+                            animateSubmit(submit);
+                        } else {
+                            validNumber[0] = false;
+                            unanimateSubmit(submit);
+                        }
+                    } else {
+                        validNumber[0] = false;
+                        unanimateSubmit(submit);
                     }
                 }
             });
             popup.setOutsideTouchable(false);
+            submit.setClickable(false);
             submit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String newPhone = String.valueOf(phone.getText());
-                    shared.edit().putString("phoneNum", newPhone).apply();
-                    Log.i("Customer Number", shared.getString("phoneNum", "Unavailable"));
-                    showPhonePop = false;
-                    popup.dismiss();
-                    openBottomSheet();
+                    if (validNumber[0]) {
+                        String newPhone = String.valueOf(phone.getText());
+                        shared.edit().putString("phoneNum", newPhone).apply();
+                        Log.i("Customer Number", shared.getString("phoneNum", "Unavailable"));
+                        showPhonePop = false;
+                        popup.dismiss();
+                        openBottomSheet();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "The number you entered isn't valid.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         } else {
@@ -1016,7 +1083,10 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                         + strings[0] + "," + strings[1] + "&"
                         + "destination=" + strings[2] + "," + strings[3] + "&key"
                         + "AIzaSyDtYl3HYOjjLLbyEkISc4jiy9KG4rUDrms");
-                JSONObject jsonObject = new JSONObject(new Route().synchronousCall(String.valueOf(url), ""));
+                String response = new Route().synchronousCall(String.valueOf(url), "");
+                result = response;
+                Log.i("Route response", response);
+                JSONObject jsonObject = new JSONObject(response);
                 JSONArray jsonArray = jsonObject.getJSONArray("routes");
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonRoute = jsonArray.getJSONObject(i);
@@ -1040,7 +1110,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return null;
+            return result;
         }
 
         @Override
@@ -1048,7 +1118,11 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-            customerPhone();
+            if (data.equals("Failure to connect.")) {
+                Toast.makeText(getApplicationContext(), "Couldn't download Route, check your Internet connection", Toast.LENGTH_LONG);
+            } else {
+                customerPhone();
+            }
         }
     }
 
@@ -1126,6 +1200,10 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                             //Driver rejected request, or he already exists in table. notify next driver and repeat the loop.
                             Log.i("Postexecute", "going to next driver");
                             repeat = true;
+                        } else if (result == 5) {
+                            //Driver is offline, notify next driver and update the onlineStatus in signup table.
+                            Log.i("Postexecute", "Driver is offline");
+                            repeat = true;
                         }
                     } else {
                         //if result is outside expected parameters, don't repeat loop.
@@ -1173,6 +1251,7 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
     public class NotifyNextDriver implements Callable<Integer> {
         @Override
         public Integer call() throws Exception {
+            driverCounter = 0;
             SharedPreferences shared = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             final int[] result = new int[1];
             final boolean[] repeat = {true};
@@ -1220,6 +1299,10 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
                     //An error happened.
                     Log.i("timer", "Timer error");
                     result[0] = 2;
+                } else if (rejectStatus == 5) {
+                    //Driver is offline, update his onlineStatus and go to next Driver.
+                    Log.i("timer", "rejectStatus = 5");
+                    result[0] = 5;
                 }
             }
             Log.i("result", "Result in notify driver before returning is : " + String.valueOf(result[0]));
@@ -1227,23 +1310,31 @@ public class Rider extends AppCompatActivity implements OnMapReadyCallback, Loca
         }
 
         protected void timer() {
-            String response = new Route().synchronousCall("http://www.lymbo.esy.es/checkRequestStatus.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
-            if (response.equals("Failure to connect.")) {
-                Log.i("php", "Couldn't find php.");
+            driverCounter++;
+            Log.i("driverCounter", "Driver counter is ; " + String.valueOf(driverCounter));
+            if (driverCounter > 5) {
+                String response = new Route().synchronousCall("http://www.lymbo.esy.es/DriverOffline.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+                Log.i("DriverOfflien", response);
+                rejectStatus = 5;
             } else {
-                Log.i("Object Timer", response);
-                if (response.contains("0")) {
-                    Log.i("timer", "Request hasn't been responded to.");
-                } else if (response.contains("1")) {
-                    rejectStatus = 1;
-                    Log.i("timer", "Request has been rejected.");
-                } else if (response.contains("2")) {
-                    rejectStatus = 2;
-                    Log.i("timer", "Request has been accepted");
+                String response = new Route().synchronousCall("http://www.lymbo.esy.es/checkRequestStatus.php", "{\"Dname\":\"" + n[driverRank] + "\"}");
+                if (response.equals("Failure to connect.")) {
+                    Log.i("php", "Couldn't find php.");
                 } else {
                     Log.i("Object Timer", response);
-                    Log.i("php", "Error in SQL.");
-                    rejectStatus = 3;
+                    if (response.contains("0")) {
+                        Log.i("timer", "Request hasn't been responded to.");
+                    } else if (response.contains("1")) {
+                        rejectStatus = 1;
+                        Log.i("timer", "Request has been rejected.");
+                    } else if (response.contains("2")) {
+                        rejectStatus = 2;
+                        Log.i("timer", "Request has been accepted");
+                    } else {
+                        Log.i("Object Timer", response);
+                        Log.i("php", "Error in SQL.");
+                        rejectStatus = 3;
+                    }
                 }
             }
             Log.i("rejectStatus", "RejectStatus in Timer is : " + String.valueOf(rejectStatus));

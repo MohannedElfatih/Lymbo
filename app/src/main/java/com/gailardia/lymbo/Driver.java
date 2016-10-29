@@ -35,9 +35,13 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -99,7 +103,7 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     String provider, report;
     int tripPrice;
     Marker destinationMarker;
-    int lastRequestId;
+    int lastRequestId, change;
     double custNum;
     View coordinatorLayoutView, callSheet = null;
     Dialog mBottomSheetDialog;
@@ -446,85 +450,87 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     }
 
     public void openDriverSheet() {
-        driverSheet = getLayoutInflater().inflate(R.layout.driver_sheet, null);
-        ImageButton accept = (ImageButton) driverSheet.findViewById(R.id.accept);
-        ImageButton cancel = (ImageButton) driverSheet.findViewById(R.id.cancel);
-        TextView price = (TextView) driverSheet.findViewById(R.id.price);
-        TextView duration = (TextView) driverSheet.findViewById(R.id.duration);
-        TextView distance = (TextView) driverSheet.findViewById(R.id.distance);
-        final TextView countDown = (TextView) driverSheet.findViewById(R.id.countDownTimer);
-        Log.wtf("Route length", String.valueOf(routes.size()));
-        duration.setText(getString(R.string.duration_to_destination) + routes.get(routes.size() - 1).durationText);
-        distance.setText(getString(R.string.distance_to_destination) + routes.get(routes.size() - 1).distanceText);
-        price.setText("Trip price : " + tripPrice + " SDG");
-        mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
-        mBottomSheetDialog.setContentView(driverSheet);
-        mBottomSheetDialog.setCancelable(true);
-        mBottomSheetDialog.setCanceledOnTouchOutside(false);
-        mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
-        mBottomSheetDialog.show();
-        final CountDownTimer countDownTimer = new CountDownTimer(15000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                //TextView countDown = (TextView) driverSheet.findViewById(R.id.countDownTimer);
-                Log.i("timer", String.valueOf(millisUntilFinished));
-                int show = (int) TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished);
-                countDown.setText(String.valueOf(show));
-            }
-
-            @Override
-            public void onFinish() {
-                mBottomSheetDialog.cancel();
-                try {
-                    lastRequestId = responseJson.getInt(6);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        if (!mBottomSheetDialog.isShowing()) {
+            driverSheet = getLayoutInflater().inflate(R.layout.driver_sheet, null);
+            ImageButton accept = (ImageButton) driverSheet.findViewById(R.id.accept);
+            ImageButton cancel = (ImageButton) driverSheet.findViewById(R.id.cancel);
+            TextView price = (TextView) driverSheet.findViewById(R.id.price);
+            TextView duration = (TextView) driverSheet.findViewById(R.id.duration);
+            TextView distance = (TextView) driverSheet.findViewById(R.id.distance);
+            final TextView countDown = (TextView) driverSheet.findViewById(R.id.countDownTimer);
+            Log.wtf("Route length", String.valueOf(routes.size()));
+            duration.setText(getString(R.string.duration_to_destination) + routes.get(routes.size() - 1).durationText);
+            distance.setText(getString(R.string.distance_to_destination) + routes.get(routes.size() - 1).distanceText);
+            price.setText("Trip price : " + tripPrice + " SDG");
+            mBottomSheetDialog = new Dialog(Driver.this, R.style.MaterialDialogSheet);
+            mBottomSheetDialog.setContentView(driverSheet);
+            mBottomSheetDialog.setCancelable(true);
+            mBottomSheetDialog.setCanceledOnTouchOutside(false);
+            mBottomSheetDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            mBottomSheetDialog.getWindow().setGravity(Gravity.BOTTOM);
+            mBottomSheetDialog.show();
+            final CountDownTimer countDownTimer = new CountDownTimer(15000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    //TextView countDown = (TextView) driverSheet.findViewById(R.id.countDownTimer);
+                    Log.i("timer", String.valueOf(millisUntilFinished));
+                    int show = (int) TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished);
+                    countDown.setText(String.valueOf(show));
                 }
-                new Respond().execute(String.valueOf(1));
-                findRider();
-            }
-        }.start();
-        accept.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    lastRequestId = responseJson.getInt(6);
-                    stopServices();
-                    inRequest = true;
-                    findRider();
+
+                @Override
+                public void onFinish() {
                     mBottomSheetDialog.cancel();
-                    countDownTimer.cancel();
-                    String[] params = new String[]{String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(0)), String.valueOf(responseJson.get(1)), String.valueOf(2)};
-                    new GetRoute().execute(params);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                new Respond().execute(String.valueOf(2));
-            }
-        });
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    lastRequestId = responseJson.getInt(6);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                new Respond().execute(String.valueOf(1));
-                countDownTimer.cancel();
-                mBottomSheetDialog.cancel();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        findRider();
+                    try {
+                        lastRequestId = responseJson.getInt(6);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                }, 5000);
-                openpop();
-                findRider();
-            }
-        });
+                    new Respond().execute(String.valueOf(1));
+                    findRider();
+                }
+            }.start();
+            accept.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        lastRequestId = responseJson.getInt(6);
+                        stopServices();
+                        inRequest = true;
+                        findRider();
+                        mBottomSheetDialog.cancel();
+                        countDownTimer.cancel();
+                        String[] params = new String[]{String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(responseJson.get(0)), String.valueOf(responseJson.get(1)), String.valueOf(2)};
+                        new GetRoute().execute(params);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    new Respond().execute(String.valueOf(2));
+                }
+            });
+            cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        lastRequestId = responseJson.getInt(6);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    new Respond().execute(String.valueOf(1));
+                    countDownTimer.cancel();
+                    mBottomSheetDialog.cancel();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            findRider();
+                        }
+                    }, 5000);
+                    openpop();
+                    findRider();
+                }
+            });
+        }
     }
 
     protected void unanimateRoute() {
@@ -995,6 +1001,8 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
     }
 
     public void edit_pop() {
+        final boolean[] validNumber = {false};
+        final HashMap map = new HashMap();
         int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.85);
         int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.90);
         rel = (RelativeLayout) findViewById(R.id.relativeD);
@@ -1003,26 +1011,142 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
         popup = new PopupWindow(container, width, height, true);
         popup.showAtLocation(rel, Gravity.CENTER, 0, 0);
         popup.setOutsideTouchable(false);
+        final EditText phone = (EditText) container.findViewById(R.id.newphone);
+        final Button submit = (Button) container.findViewById(R.id.editsubmit);
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 popup.dismiss();
             }
+        });
+        phone.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String number = String.valueOf(editable);
+                System.out.println(editable);
+                if (number.length() == 10) {
+                    if (number.substring(0, 2).contains("01") || number.substring(0, 2).contains("09")) {
+                        validNumber[0] = true;
+                        animateSubmit(submit);
+                    } else {
+                        validNumber[0] = false;
+                        unanimateSubmit(submit);
+                    }
+                } else {
+                    validNumber[0] = false;
+                    unanimateSubmit(submit);
+                }
+            }
+        });
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (type.equals("") || validNumber[0] == false) {
+                    if (type.equals("")) {
+                        Toast.makeText(getApplicationContext(), "Choose vehicle type", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Number is invalid", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    String new_phone = String.valueOf(phone.getText());
+                    map.put("phonenum", new_phone);
+                    map.put("newtype", type);
+                    SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
+                    final String restoredText = prefs.getString("username", null);
+                    map.put("username", restoredText);
+                    PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
+                        @Override
+                        public void processFinish(String s) {
+                            Toast.makeText(getApplicationContext(), "Account successfully updated!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    readTask.execute("http://www.lymbo.esy.es/edit_profile.php");
+                    popup.dismiss();
+                }
+            }
         });
     }
 
-    public void typechange(View view) {
-        final HashMap map = new HashMap();
+    protected void animateSubmit(final View submit) {
+        final Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
+        final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
+        outAnimation.setAnimationListener(new Animation.AnimationListener() {
 
+            // Other callback methods omitted for clarity.
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            public void onAnimationEnd(Animation animation) {
+
+                // Modify the resource of the ImageButton
+                submit.setBackground(getResources().getDrawable(R.drawable.checked));
+                // Create the new Animation to apply to the ImageButton.
+                submit.startAnimation(inAnimation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                animation.cancel();
+            }
+        });
+        if (change == 0) {
+            System.out.println(change);
+            submit.startAnimation(outAnimation);
+            change = 1;
+            System.out.println(change);
+        }
+    }
+
+    protected void unanimateSubmit(final View submit) {
+        final Animation outAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadeout);
+        final Animation inAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fadein);
+        outAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+            // Other callback methods omitted for clarity.
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            public void onAnimationEnd(Animation animation) {
+
+                // Modify the resource of the ImageButton
+                submit.setBackground(getResources().getDrawable(R.drawable.notchecked));
+                // Create the new Animation to apply to the ImageButton.
+                submit.startAnimation(inAnimation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                animation.cancel();
+            }
+        });
+        if (change == 1) {
+            System.out.println(change);
+            submit.startAnimation(outAnimation);
+            change = 0;
+            System.out.println(change);
+        }
+    }
+
+    public void typechange(View view) {
         ImageButton car = (ImageButton) container.findViewById(R.id.car1);
         ImageButton tuktuk = (ImageButton) container.findViewById(R.id.tuktuk1);
         ImageButton amjad = (ImageButton) container.findViewById(R.id.amjad1);
         final EditText phone = (EditText) container.findViewById(R.id.newphone);
         Button submit = (Button) container.findViewById(R.id.editsubmit);
-
-
         type = "";
         if (car != null && tuktuk != null && amjad != null) {
             switch (view.getId()) {
@@ -1053,27 +1177,6 @@ public class Driver extends FragmentActivity implements OnMapReadyCallback, Loca
 
             }
         }
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String new_phone = String.valueOf(phone.getText());
-                map.put("phonenum", new_phone);
-                map.put("newtype", type);
-                SharedPreferences prefs = getSharedPreferences("com.gailardia.lymbo", MODE_PRIVATE);
-                final String restoredText = prefs.getString("username", null);
-                map.put("username", restoredText);
-                PostResponseAsyncTask readTask = new PostResponseAsyncTask(Driver.this, map, false, new AsyncResponse() {
-                    @Override
-                    public void processFinish(String s) {
-                        Toast.makeText(getApplicationContext(), "Account successfully updated!", Toast.LENGTH_LONG).show();
-                    }
-                });
-                readTask.execute("http://www.lymbo.esy.es/edit_profile.php");
-                popup.dismiss();
-            }
-
-        });
-
     }
 
     public class GetRoute extends AsyncTask<String, String, String> {
