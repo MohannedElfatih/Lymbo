@@ -14,9 +14,9 @@ Data is stored in a MySQLi Database provided by a back end as a service to ensur
 Here are some videos of the application in action:
 
 Driver:
-<iframe width="560" height="315" src="https://www.youtube.com/embed/LpEzG2hn5lQ" frameborder="0" allowfullscreen></iframe>
+https://www.youtube.com/embed/LpEzG2hn5lQ
 
 
 
 Rider: 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/BBF0kzrE-3E" frameborder="0" allowfullscreen></iframe>
+https://www.youtube.com/embed/BBF0kzrE-3E
